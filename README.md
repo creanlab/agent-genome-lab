@@ -88,31 +88,9 @@ If you want to **fully integrate** the genome system into an existing project, f
 
 ## 🧠 How It Works: 3-Layer DNA Memory
 
-```
-                    ┌─────────────────────────────────────┐
-                    │           YOUR AI AGENT              │
-                    │   Reads MEMORY.md at session start    │
-                    │   "Don't do X, always verify Y"      │
-                    └────────────────┬────────────────────┘
-                                     │ reads
-                    ┌────────────────▼────────────────────┐
-   Layer 3          │        MEMORY.md  (~30 lines)       │
-   Compact          │   Top-K verified lessons + warnings  │
-                    └────────────────┬────────────────────┘
-                                     │ generated from
-                    ┌────────────────▼────────────────────┐
-   Layer 2          │     FAILURE GENOMES  (verified)      │
-   Verified         │   FG-000001.json — utility: 0.92    │
-                    │   family: "partial-import-missing"   │
-                    │   promotion: "promoted" ✅           │
-                    └────────────────┬────────────────────┘
-                                     │ distilled from
-                    ┌────────────────▼────────────────────┐
-   Layer 1          │       INCIDENTS  (raw records)       │
-   Raw              │   INC-000001.json — severity: 8     │
-                    │   root_cause, fix_applied, evidence  │
-                    └─────────────────────────────────────┘
-```
+<p align="center">
+  <img src="docs/images/dna-layers.png" alt="3-Layer DNA Memory Model" width="600">
+</p>
 
 **Key concepts:**
 
@@ -219,6 +197,8 @@ A gamified 3000+ line dashboard with XP, levels, achievements, and visual evolut
 node cli/nve-export-dashboard.js    # generates web/data.js
 # Open web/index.html in any browser → works as file://
 ```
+
+### 🌐 Live Demo: [tama-frontend-819335696518.europe-west1.run.app](https://tama-frontend-819335696518.europe-west1.run.app)
 
 ### Features:
 
@@ -328,30 +308,9 @@ redact_code = true             # Strip code from shared packs
 
 ## 🏗️ Architecture
 
-```
-YOUR PROJECT
-│
-├── .evolution/                        ← Canonical Memory Layer
-│   ├── incidents/     → INC-*.json    ← Raw failure records
-│   ├── experience_units/ → EXP-*.json ← Distilled lessons
-│   ├── failure_genomes/  → FG-*.json  ← Verified DNA
-│   ├── MEMORY.md                      ← Compact agent memory
-│   └── config.toml                    ← Thresholds & settings
-│
-├── cli/                               ← 13 CLI tools
-│   ├── nve-scaffold → create          ← scaffold → distill → replay → memory
-│   ├── nve-distill  → classify
-│   ├── nve-replay   → verify
-│   └── nve-memory   → compact
-│
-├── .agents/                           ← Agent behavior layer
-│   ├── rules/       → 7 rules        ← Always-active constraints
-│   ├── skills/      → 6 skills       ← Reusable capabilities
-│   └── workflows/   → 9 workflows    ← Step-by-step procedures
-│
-└── 5-Axis Audit ──→ VS Code Extension + Web Dashboard
-    nve-pack     ──→ Other Projects (collective intelligence)
-```
+<p align="center">
+  <img src="docs/images/architecture.png" alt="Agent Genome Lab Architecture" width="700">
+</p>
 
 ---
 
