@@ -1,4 +1,4 @@
-# Antigravity Prompt — Post-Migration Validation
+# Agent Prompt — Post-Migration Validation
 
 The migration and Failure Genome installation were already applied.
 

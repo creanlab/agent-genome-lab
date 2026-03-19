@@ -1,17 +1,14 @@
-# Antigravity Prompt — Preflight for Universal Failure Genome Migration
+# Agent Prompt — Preflight for Genome Toolkit Migration
 
 You are inspecting this repository before any structural migration.
 
 ## Read first
-Read these files from `_migration_inputs/NVE_universal_failure_genome_v2/`:
+Read these files from the Agent Genome Lab toolkit:
 - `README.md`
 - `AGENTS.md`
 - `docs/UNIVERSAL_ARCHITECTURE.md`
-- `docs/INSTALL_INTO_ANTIGRAVITY.md`
 - `docs/SAFE_MIGRATION_PLAYBOOK.md`
-- `docs/OLD_TO_NEW_MAP.md`
 - `docs/FAILURE_GENOME_HYPOTHESIS_V1.md`
-- `docs/ANTIGRAVITY_PROMPT_SEQUENCE.md`
 
 ## Mission
 Inspect the current repo and produce a safe migration plan.

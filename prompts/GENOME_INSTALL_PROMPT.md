@@ -1,9 +1,9 @@
-# Antigravity Prompt — Install Failure Genome Layer v2
+# Agent Prompt — Install Failure Genome Layer
 
 Assume the structural migration is already complete.
 
 ## Read first
-Read these files from `_migration_inputs/NVE_universal_failure_genome_v2/`:
+Read these files from the Agent Genome Lab toolkit:
 - `docs/FAILURE_GENOME_HYPOTHESIS_V1.md`
 - `docs/FAILURE_GENOME_EXPERIMENT_PLAN_V1.md`
 - `schemas/failure-genome.schema.json`
@@ -11,7 +11,7 @@ Read these files from `_migration_inputs/NVE_universal_failure_genome_v2/`:
 - `.agents/rules/60-failure-genome-promotion.md`
 - `.agents/workflows/20-incident-capture.md`
 - `.agents/workflows/50-failure-genome-review.md`
-- `.agents/skills/failure-genome-lab/SKILL.md`
+- `.agents/skills/genome-analyzer/SKILL.md`
 
 ## Goal
 Add Failure Genome as a stable, family-level memory layer on top of canonical incidents.
