@@ -63,6 +63,29 @@ node cli/nve-memory.js
 
 ---
 
+## 📋 Agent Prompt Sequence (for full migration)
+
+If you want to **fully integrate** the genome system into an existing project, feed these 4 prompts to your AI agent **in order**:
+
+| Step | Prompt File                           | What it does                                                    |
+|:-----|:--------------------------------------|:----------------------------------------------------------------|
+| 1️⃣  | `prompts/01-PREFLIGHT.md`             | Agent inspects your repo and creates a safe migration plan      |
+| 2️⃣  | `prompts/02-MIGRATION.md`             | Agent installs the full structure: rules, workflows, `.evolution/`, schemas, CLI |
+| 3️⃣  | `prompts/03-GENOME_INSTALL.md`        | Agent adds the Failure Genome layer on top of canonical incidents |
+| 4️⃣  | `prompts/04-VALIDATION.md`            | Agent validates everything works — runs audit, manifest, validate |
+
+**How to use:**
+1. Clone this repo → copy the `prompts/` folder into your project
+2. Open your project in VS Code (or any IDE with an AI agent)
+3. Paste the content of `01-PREFLIGHT.md` into the agent chat — **don't apply changes yet**, just review the plan
+4. If the plan looks good, paste `02-MIGRATION.md` → agent installs the structure
+5. Paste `03-GENOME_INSTALL.md` → agent adds the genome layer
+6. Paste `04-VALIDATION.md` → agent runs all checks and reports status
+
+> 💡 **Tip:** For a quick start without full migration, just use `node cli/nve-init.js --yes` — it creates the basic `.evolution/` structure instantly.
+
+---
+
 ## 🧠 How It Works: 3-Layer DNA Memory
 
 ```
@@ -400,14 +423,21 @@ We'd love your help! Here's how:
 
 ---
 
-## 📚 Docs
+## 📚 Docs & Prompts
 
+**Documentation:**
 - [Architecture Deep Dive](docs/UNIVERSAL_ARCHITECTURE.md)
 - [Research Foundations](docs/RESEARCH_FOUNDATIONS.md)
 - [Failure Genome Hypothesis](docs/FAILURE_GENOME_HYPOTHESIS_V1.md)
 - [Experiment Plan](docs/FAILURE_GENOME_EXPERIMENT_PLAN_V1.md)
 - [Migration Playbook](docs/SAFE_MIGRATION_PLAYBOOK.md)
 - [User Flow: Audit & Share](docs/USER_FLOW_AUDIT_AND_SHARE.md)
+
+**Agent Prompts (use in order):**
+1. [Preflight](prompts/01-PREFLIGHT.md) — inspect repo, create migration plan
+2. [Migration](prompts/02-MIGRATION.md) — install structure
+3. [Genome Install](prompts/03-GENOME_INSTALL.md) — add failure genome layer
+4. [Validation](prompts/04-VALIDATION.md) — run all checks
 
 ---
 
