@@ -1,0 +1,53 @@
+{
+  "genome_id": "FG-000001",
+  "created_at": "2026-03-18T12:10:00Z",
+  "incident_id": "INC-000001",
+  "context_fingerprint": {
+    "stack_tags": [
+      "node",
+      "cloud-run"
+    ],
+    "surface_tags": [
+      "deploy"
+    ],
+    "environment_tags": [
+      "windows-powershell"
+    ],
+    "repo_maturity": "hybrid"
+  },
+  "family": "command-shell-mismatch",
+  "violated_invariant": "done_means_verified",
+  "repair_operator": "replace-bash-chain-with-shell-safe-command",
+  "verifier_evidence": [
+    {
+      "kind": "healthcheck",
+      "ref": ".evolution/audits/deploy-healthcheck.txt",
+      "summary": "200 OK after deploy"
+    }
+  ],
+  "transferability_tags": [
+    "deploy",
+    "windows-shell",
+    "cloud-run"
+  ],
+  "utility": {
+    "score": 0.82,
+    "reuse_count": 1,
+    "prevention_count": 1,
+    "negative_transfer_count": 0,
+    "last_used_at": "2026-03-18T12:20:00Z"
+  },
+  "replay": {
+    "status": "passed",
+    "family_sample_size": 2,
+    "holdout_sample_size": 1,
+    "pass_rate": 1.0,
+    "notes": "Passed related family checks."
+  },
+  "proposed_patch_types": [
+    "workflow_patch",
+    "verifier_patch"
+  ],
+  "promotion_decision": "promoted",
+  "notes": "Good candidate for shared prevention guidance."
+}

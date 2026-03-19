@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/audit-report.schema.json",
+  "title": "Audit Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "scores",
+    "findings",
+    "recommended_packs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scores": {
+      "type": "object",
+      "properties": {
+        "structure": {
+          "type": "integer"
+        },
+        "memory": {
+          "type": "integer"
+        },
+        "verification": {
+          "type": "integer"
+        },
+        "shareability": {
+          "type": "integer"
+        },
+        "evolution_intelligence": {
+          "type": "integer"
+        },
+        "overall": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "severity",
+          "code",
+          "message"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "recommended_packs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/repo-manifest.schema.json",
+  "title": "Repo Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project_name",
+    "generated_at",
+    "runtime",
+    "model",
+    "stack_tags",
+    "counts",
+    "capabilities"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "root_path": {
+      "type": "string"
+    },
+    "runtime": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "stack_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "frameworks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "counts": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "workflows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skills": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "docs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "incident_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "experience_unit_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failure_genome_files": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "has_ci": {
+          "type": "boolean"
+        },
+        "has_tests": {
+          "type": "boolean"
+        },
+        "has_canonical_memory": {
+          "type": "boolean"
+        },
+        "has_exec_plans": {
+          "type": "boolean"
+        },
+        "has_failure_genome_layer": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

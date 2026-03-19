@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/failure-genome.schema.json",
+  "title": "FailureGenome",
+  "type": "object",
+  "required": [
+    "genome_id",
+    "created_at",
+    "incident_id",
+    "family",
+    "violated_invariant",
+    "repair_operator",
+    "utility",
+    "replay"
+  ],
+  "properties": {
+    "genome_id": {
+      "type": "string",
+      "pattern": "^FG-[0-9]{6}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "incident_id": {
+      "type": "string"
+    },
+    "context_fingerprint": {
+      "type": "object",
+      "properties": {
+        "stack_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "surface_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "environment_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "repo_maturity": {
+          "type": "string",
+          "enum": [
+            "greenfield",
+            "legacy",
+            "hybrid",
+            "unknown"
+          ],
+          "default": "unknown"
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    },
+    "family": {
+      "type": "string",
+      "minLength": 3
+    },
+    "violated_invariant": {
+      "type": "string",
+      "minLength": 3
+    },
+    "repair_operator": {
+      "type": "string",
+      "minLength": 3
+    },
+    "verifier_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "ref"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "test",
+              "command_output",
+              "screenshot",
+              "healthcheck",
+              "diff",
+              "replay_report",
+              "other"
+            ]
+          },
+          "ref": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "transferability_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "utility": {
+      "type": "object",
+      "required": [
+        "score"
+      ],
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reuse_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "prevention_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "negative_transfer_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "last_used_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "replay": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_run",
+            "passed",
+            "failed",
+            "partial"
+          ]
+        },
+        "family_sample_size": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "holdout_sample_size": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "pass_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "proposed_patch_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "rule_patch",
+          "workflow_patch",
+          "skill_patch",
+          "verifier_patch",
+          "doc_patch"
+        ]
+      },
+      "default": []
+    },
+    "promotion_decision": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "promoted",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

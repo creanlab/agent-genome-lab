@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/experience-unit.schema.json",
+  "title": "Experience Unit",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "experience_id",
+    "canonical_key",
+    "title",
+    "anti_pattern",
+    "preventive_pattern",
+    "verifier_recipe",
+    "applicability_tags",
+    "confidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "experience_id": {
+      "type": "string"
+    },
+    "canonical_key": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "anti_pattern": {
+      "type": "string"
+    },
+    "preventive_pattern": {
+      "type": "string"
+    },
+    "verifier_recipe": {
+      "type": "string"
+    },
+    "rule_patch": {
+      "type": "string"
+    },
+    "workflow_patch": {
+      "type": "string"
+    },
+    "skill_patch": {
+      "type": "string"
+    },
+    "verifier_patch": {
+      "type": "string"
+    },
+    "doc_patch": {
+      "type": "string"
+    },
+    "applicability_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "repo_specific": {
+      "type": "boolean",
+      "default": false
+    },
+    "support_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "validation_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "source_incident_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

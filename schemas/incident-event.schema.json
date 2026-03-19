@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/incident-event.schema.json",
+  "title": "Incident Event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "event_id",
+    "project_id",
+    "occurred_at",
+    "status",
+    "stage",
+    "failure_class",
+    "safe_title",
+    "safe_summary",
+    "verifier",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "observed",
+        "fixed",
+        "prevented",
+        "deferred"
+      ]
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "code",
+        "test",
+        "build",
+        "deploy",
+        "runtime",
+        "review",
+        "docs",
+        "ops"
+      ]
+    },
+    "failure_class": {
+      "type": "string"
+    },
+    "safe_title": {
+      "type": "string"
+    },
+    "safe_summary": {
+      "type": "string"
+    },
+    "safe_root_cause": {
+      "type": "string"
+    },
+    "repair_class": {
+      "type": "string"
+    },
+    "impact_score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "stack_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "repeat_detected": {
+      "type": "boolean"
+    },
+    "files_touched_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "patch_suggestions": {
+      "type": "object",
+      "properties": {
+        "rule_patch": {
+          "type": "string"
+        },
+        "workflow_patch": {
+          "type": "string"
+        },
+        "skill_patch": {
+          "type": "string"
+        },
+        "verifier_patch": {
+          "type": "string"
+        },
+        "doc_patch": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "verifier": {
+      "type": "object",
+      "required": [
+        "type",
+        "outcome"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "partial",
+            "not_run",
+            "manual"
+          ]
+        },
+        "details": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "object",
+      "required": [
+        "sharing_tier",
+        "contains_code",
+        "contains_secrets"
+      ],
+      "properties": {
+        "sharing_tier": {
+          "type": "string",
+          "enum": [
+            "private",
+            "manifest",
+            "distilled",
+            "research"
+          ]
+        },
+        "contains_code": {
+          "type": "boolean"
+        },
+        "contains_secrets": {
+          "type": "boolean"
+        },
+        "redaction_notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

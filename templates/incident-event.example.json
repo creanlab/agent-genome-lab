@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "event_id": "INC-000001",
+  "project_id": "example-project",
+  "occurred_at": "2026-03-18T12:00:00Z",
+  "status": "fixed",
+  "stage": "deploy",
+  "failure_class": "command-shell-mismatch",
+  "safe_title": "Deploy script failed in PowerShell",
+  "safe_summary": "A shell-specific command chain failed during deploy.",
+  "safe_root_cause": "The command assumed bash semantics in a PowerShell environment.",
+  "repair_class": "shell-safe-command-rewrite",
+  "impact_score": 6,
+  "stack_tags": [
+    "node",
+    "cloud-run",
+    "windows-powershell"
+  ],
+  "repeat_detected": true,
+  "files_touched_count": 2,
+  "patch_suggestions": {
+    "workflow_patch": "update deploy workflow with shell-safe examples"
+  },
+  "verifier": {
+    "type": "command",
+    "name": "deploy check",
+    "outcome": "passed",
+    "details": "Health check returned 200."
+  },
+  "privacy": {
+    "sharing_tier": "distilled",
+    "contains_code": false,
+    "contains_secrets": false,
+    "redaction_notes": "Safe summary only."
+  }
+}

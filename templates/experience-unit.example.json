@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "experience_id": "EXP-000001",
+  "canonical_key": "windows-shell-deploy-safety",
+  "title": "Prefer shell-safe deploy commands",
+  "anti_pattern": "Bash-specific deploy chain in non-bash environment",
+  "preventive_pattern": "Use environment-safe command forms and verify with a post-deploy health check",
+  "verifier_recipe": "Run deploy command, then run health check against target URL",
+  "workflow_patch": "update cloud deploy workflow examples",
+  "applicability_tags": [
+    "cloud-run",
+    "windows-powershell",
+    "deploy"
+  ],
+  "repo_specific": false,
+  "support_count": 2,
+  "validation_count": 1,
+  "confidence": 0.76,
+  "source_incident_ids": [
+    "INC-000001"
+  ]
+}

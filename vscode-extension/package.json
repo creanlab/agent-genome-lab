@@ -1,0 +1,37 @@
+{
+  "name": "nve-genome-explorer",
+  "displayName": "NVE Genome Explorer",
+  "description": "Sidebar: Failure Genome summary, 5-axis audit score, replay gate status, sharing",
+  "version": "0.1.0",
+  "publisher": "creanlab",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "activationEvents": ["workspaceContains:.evolution/failure_genomes"],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "nve-genome",
+          "title": "NVE Genome",
+          "icon": "$(beaker)"
+        }
+      ]
+    },
+    "views": {
+      "nve-genome": [
+        { "id": "nveAuditScore", "name": "5-Axis Audit" },
+        { "id": "nveGenomeFamilies", "name": "Genome Families" },
+        { "id": "nveReplayGate", "name": "Replay Gate" },
+        { "id": "nveQuickActions", "name": "Quick Actions" }
+      ]
+    },
+    "commands": [
+      { "command": "nve.runAudit", "title": "NVE: Run 5-Axis Audit" },
+      { "command": "nve.runDistill", "title": "NVE: Distill Genomes" },
+      { "command": "nve.runReplay", "title": "NVE: Run Replay Gate" },
+      { "command": "nve.runPack", "title": "NVE: Export Pack" },
+      { "command": "nve.refreshAll", "title": "NVE: Refresh All" }
+    ]
+  }
+}

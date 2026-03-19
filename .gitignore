@@ -1,0 +1,5 @@
+node_modules/
+.env
+*.log
+.evolution/exports/
+web/data.js

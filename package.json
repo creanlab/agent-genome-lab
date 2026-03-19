@@ -1,0 +1,49 @@
+﻿{
+  "name": "agent-genome-lab",
+  "version": "2.2.0",
+  "description": "Self-evolving memory layer for AI coding agents. Captures failure DNA, prevents bug repetition, enables collective intelligence across projects.",
+  "author": "CreanLab",
+  "license": "MIT",
+  "bin": {
+    "nve-init": "./cli/nve-init.js",
+    "nve-scaffold": "./cli/nve-scaffold.js",
+    "nve-memory": "./cli/nve-memory.js",
+    "nve-export-dashboard": "./cli/nve-export-dashboard.js",
+    "nve-audit": "./cli/nve-audit.js",
+    "nve-validate": "./cli/nve-validate.js",
+    "nve-distill": "./cli/nve-distill.js",
+    "nve-replay": "./cli/nve-replay.js",
+    "nve-utility": "./cli/nve-utility.js",
+    "nve-pack": "./cli/nve-pack.js",
+    "nve-fg-summary": "./cli/nve-fg-summary.js",
+    "nve-manifest": "./cli/nve-manifest.js"
+  },
+  "files": [
+    "cli/",
+    "schemas/",
+    "templates/",
+    "prompts/",
+    "docs/",
+    ".agents/",
+    "vscode-extension/",
+    "web/",
+    "AGENTS.md",
+    "README.md"
+  ],
+  "keywords": [
+    "ai-agent", "failure-genome", "self-evolution",
+    "code-quality", "memory-layer", "replay-gate",
+    "coding-assistant", "collective-intelligence",
+    "agent-memory", "failure-patterns", "bug-prevention",
+    "ai-evolution", "knowledge-sharing", "vscode-extension",
+    "gamified-dashboard", "deterministic-testing"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/creanlab/agent-genome-lab"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
+

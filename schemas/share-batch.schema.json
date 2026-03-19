@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/share-batch.schema.json",
+  "title": "Share Batch",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "created_at",
+    "sharing_tier",
+    "project_name",
+    "redaction_report",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sharing_tier": {
+      "type": "string",
+      "enum": [
+        "manifest",
+        "distilled",
+        "research"
+      ]
+    },
+    "project_name": {
+      "type": "string"
+    },
+    "redaction_report": {
+      "type": "object",
+      "required": [
+        "included",
+        "excluded"
+      ],
+      "properties": {
+        "included": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

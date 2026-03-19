@@ -1,0 +1,3318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolution Tamagotchi — AI Agent Evolution Visualizer</title>
+    <meta name="description" content="Gamified visualization of AI agent evolution. Track XP, levels, patterns, and anti-patterns in a beautiful Tamagotchi interface.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ==================== RESET & BASE ==================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #0f0f2a;
+            --bg-card: rgba(20, 20, 50, 0.6);
+            --bg-card-hover: rgba(30, 30, 70, 0.7);
+            --border-card: rgba(120, 80, 255, 0.15);
+            --border-card-hover: rgba(120, 80, 255, 0.35);
+            --text-primary: #e8e6f0;
+            --text-secondary: #9b97b0;
+            --text-muted: #6b6780;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06d6a0;
+            --accent-pink: #ec4899;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --gradient-main: linear-gradient(135deg, #8b5cf6, #06d6a0);
+            --gradient-xp: linear-gradient(90deg, #8b5cf6, #06d6a0, #8b5cf6);
+            --gradient-card: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(6,214,160,0.05));
+            --glass-blur: 20px;
+            --glass-bg: rgba(15, 15, 42, 0.75);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            --font-display: 'Outfit', 'Inter', sans-serif;
+            --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.15);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ==================== GRID BACKGROUND ==================== */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(139,92,246,0.08), transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(6,214,160,0.05), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ==================== LAYOUT ==================== */
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ==================== HEADER ==================== */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header__logo {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header__subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* ==================== INPUT SECTION ==================== */
+        .input-section {
+            margin-bottom: 3rem;
+        }
+
+        .input-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-card);
+            transition: border-color var(--transition-smooth);
+        }
+
+        .input-card:hover {
+            border-color: var(--border-card-hover);
+        }
+
+        .input-card__title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .input-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .input-tab {
+            padding: 0.5rem 1.2rem;
+            background: transparent;
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+        }
+
+        .input-tab:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+
+        .input-tab.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .drop-zone__icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .drop-zone__text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .drop-zone__text strong {
+            color: var(--accent-purple);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .paste-area {
+            display: none;
+        }
+
+        .paste-area.active {
+            display: block;
+        }
+
+        .paste-area textarea {
+            width: 100%;
+            min-height: 160px;
+            background: rgba(10, 10, 26, 0.8);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            transition: border-color var(--transition-smooth);
+        }
+
+        .paste-area textarea:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        .paste-area textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.8rem;
+            background: var(--gradient-main);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-demo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 2rem;
+            background: rgba(6, 214, 160, 0.08);
+            border: 2px solid var(--accent-cyan);
+            border-radius: var(--radius-sm);
+            color: var(--accent-cyan);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            margin-top: 0;
+            animation: demoPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes demoPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(6, 214, 160, 0.2); }
+            50% { box-shadow: 0 0 16px 4px rgba(6, 214, 160, 0.15); }
+        }
+
+        .btn-demo:hover {
+            background: rgba(6, 214, 160, 0.15);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(6, 214, 160, 0.25);
+            animation: none;
+        }
+
+        .input-divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .input-divider::before, .input-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-card);
+        }
+
+        /* ==================== MAIN DASHBOARD (hidden until data) ==================== */
+        .dashboard {
+            display: none;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .dashboard.visible { display: block; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==================== HERO — AVATAR + STATUS ==================== */
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .avatar-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-glow), var(--shadow-card);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-card::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(139,92,246,0.12), transparent 70%);
+            pointer-events: none;
+        }
+
+        .avatar-creature {
+            font-size: 5rem;
+            line-height: 1;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+            animation: breathe 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.06) translateY(-4px); }
+        }
+
+        .avatar-ring {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: conic-gradient(var(--accent-purple), var(--accent-cyan), var(--accent-purple));
+            padding: 4px;
+            animation: ringRotate 8s linear infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes ringRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .avatar-ring__inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: ringRotateReverse 8s linear infinite;
+        }
+
+        @keyframes ringRotateReverse {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        .avatar-name {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .avatar-project {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ==================== XP CARD ==================== */
+        .xp-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-xl);
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            width: fit-content;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            border: 1px solid;
+        }
+
+        .xp-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+        }
+
+        .xp-label__current {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .xp-label__next {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .xp-bar-container {
+            width: 100%;
+            height: 14px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 50px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            border-radius: 50px;
+            background: var(--gradient-xp);
+            background-size: 200% 100%;
+            animation: xpShimmer 2s ease-in-out infinite;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+        }
+
+        @keyframes xpShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .xp-percent {
+            text-align: right;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .xp-meta {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-card);
+        }
+
+        .xp-meta-item {
+            text-align: center;
+        }
+
+        .xp-meta-item__value {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .xp-meta-item__label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.15rem;
+        }
+
+        /* ==================== STATS ROW ==================== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+            text-align: center;
+            transition: all var(--transition-smooth);
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-card-hover);
+            transform: translateY(-2px);
+        }
+
+        .stat-card__icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card__value {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.15rem;
+        }
+
+        .stat-card__label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* ==================== TIMELINE ==================== */
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .evo-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+            transition: all var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .evo-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--gradient-main);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .evo-card:hover {
+            border-color: var(--border-card-hover);
+            transform: translateX(4px);
+        }
+
+        .evo-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .evo-card__id {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.95rem;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .evo-card__date {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .evo-card__title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .evo-card__meta {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .evo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(139, 92, 246, 0.12);
+            color: var(--accent-purple);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            white-space: nowrap;
+        }
+
+        .evo-badge.impact-high {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--accent-red);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .evo-badge.impact-mid {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-amber);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .evo-badge.xp-badge {
+            background: rgba(6, 214, 160, 0.12);
+            color: var(--accent-cyan);
+            border-color: rgba(6, 214, 160, 0.2);
+        }
+
+        /* ==================== PATTERN REGISTRY ==================== */
+        .patterns-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .pattern-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-card);
+            transition: all var(--transition-smooth);
+        }
+
+        .pattern-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .pattern-card__id {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.4rem;
+        }
+
+        .pattern-card__name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .pattern-card__source {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* ==================== ANTI-PATTERNS ==================== */
+        .anti-patterns-list {
+            display: grid;
+            gap: 0.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .ap-item {
+            background: rgba(239, 68, 68, 0.04);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            transition: all var(--transition-smooth);
+        }
+
+        .ap-item:hover {
+            border-color: rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .ap-item__id {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--accent-red);
+            font-size: 0.75rem;
+            min-width: 55px;
+        }
+
+        .ap-item__name {
+            font-weight: 500;
+        }
+
+        /* ==================== FOOTER ==================== */
+        .footer {
+            text-align: center;
+            padding-top: 3rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--accent-purple);
+            text-decoration: none;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .hero { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .patterns-grid { grid-template-columns: 1fr; }
+            .header__logo { font-size: 1.8rem; }
+            .avatar-creature { font-size: 3.5rem; }
+            .avatar-ring { width: 110px; height: 110px; }
+        }
+
+        @media (max-width: 480px) {
+            .app { padding: 1rem 0.75rem 3rem; }
+            .stats-row { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+            .xp-meta { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+            .input-tabs { flex-wrap: wrap; }
+        }
+
+        /* ==================== LEVEL-UP ANIMATION ==================== */
+        .level-up-flash {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .level-up-flash.active {
+            animation: flashPulse 1.5s ease-out forwards;
+        }
+
+        @keyframes flashPulse {
+            0% { opacity: 0; background: radial-gradient(circle, rgba(139,92,246,0.3), transparent 70%); }
+            20% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Particle system for level-up */
+        .particle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+        }
+
+        /* =================== EMPTY STATE =================== */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        .empty-state__icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* =================== MULTI-USER NAV =================== */
+        .mode-tabs { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; }
+        .mode-tab { padding: 0.5rem 1.4rem; background: transparent; border: 1px solid var(--border-card); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all var(--transition-smooth); }
+        .mode-tab:hover { border-color: var(--accent-purple); color: var(--text-primary); }
+        .mode-tab.active { background: rgba(139,92,246,0.15); border-color: var(--accent-purple); color: var(--accent-purple); }
+
+        /* =================== MULTI-USER DROP =================== */
+        .multi-drop { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .user-slot { border: 2px dashed var(--border-card); border-radius: var(--radius-md); padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: all var(--transition-smooth); position: relative; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .user-slot:hover, .user-slot.drag-over { border-color: var(--accent-purple); background: rgba(139,92,246,0.05); }
+        .user-slot.loaded { border-style: solid; border-color: var(--accent-cyan); background: rgba(6,214,160,0.05); }
+        .user-slot input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .user-slot__emoji { font-size: 2rem; margin-bottom: 0.3rem; }
+        .user-slot__name { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
+        .user-slot__info { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .user-slot__remove { position: absolute; top: 6px; right: 8px; background: none; border: none; color: var(--accent-red); cursor: pointer; font-size: 1rem; opacity: 0; transition: opacity 0.2s; }
+        .user-slot.loaded:hover .user-slot__remove { opacity: 1; }
+
+        .btn-compare { display: none; margin: 1.5rem auto 0; padding: 0.7rem 2rem; background: var(--gradient-main); border: none; border-radius: var(--radius-sm); color: #fff; font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all var(--transition-smooth); }
+        .btn-compare.show { display: inline-flex; align-items: center; gap: 0.5rem; animation: demoPulse 2s ease-in-out infinite; }
+        .btn-compare:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(139,92,246,0.3); animation: none; }
+
+        /* =================== LEADERBOARD =================== */
+        .leaderboard { display: none; animation: fadeInUp 0.6s ease-out; }
+        .leaderboard.visible { display: block; }
+        .lb-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+        .lb-table th { text-align: left; padding: 0.6rem 1rem; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--border-card); }
+        .lb-table td { padding: 0.8rem 1rem; border-bottom: 1px solid rgba(120,80,255,0.06); font-size: 0.9rem; }
+        .lb-table tr:hover td { background: rgba(139,92,246,0.04); }
+        .lb-rank { font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; width: 40px; }
+        .lb-rank.gold { color: #f59e0b; }
+        .lb-rank.silver { color: #94a3b8; }
+        .lb-rank.bronze { color: #b45309; }
+        .lb-avatar { font-size: 1.5rem; width: 40px; text-align: center; }
+        .lb-name { font-weight: 600; }
+        .lb-xp-bar { width: 120px; height: 8px; background: rgba(139,92,246,0.1); border-radius: 50px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 0.5rem; }
+        .lb-xp-fill { height: 100%; background: var(--gradient-xp); border-radius: 50px; }
+        .lb-stat { color: var(--text-secondary); font-size: 0.85rem; }
+
+        /* =================== SIDE BY SIDE =================== */
+        .side-by-side { display: grid; gap: 1.5rem; margin-bottom: 2rem; }
+        .side-by-side.cols-2 { grid-template-columns: 1fr 1fr; }
+        .side-by-side.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        @media (max-width: 768px) { .side-by-side.cols-2, .side-by-side.cols-3 { grid-template-columns: 1fr; } }
+        .mini-card { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; transition: all var(--transition-smooth); }
+        .mini-card:hover { border-color: var(--border-card-hover); }
+        .mini-avatar { font-size: 3rem; margin-bottom: 0.5rem; animation: breathe 3s ease-in-out infinite; display: inline-block; }
+        .mini-name { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+        .mini-level { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+        .mini-xp-bar { height: 10px; background: rgba(139,92,246,0.1); border-radius: 50px; overflow: hidden; margin-bottom: 0.5rem; }
+        .mini-xp-fill { height: 100%; background: var(--gradient-xp); background-size: 200% 100%; animation: xpShimmer 2s ease-in-out infinite; border-radius: 50px; }
+        .mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-card); }
+        .mini-stat { font-size: 0.75rem; color: var(--text-muted); }
+        .mini-stat span { display: block; font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+        /* =================== HEALTH SCORE =================== */
+        .health-section { margin-bottom: 2rem; }
+        .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .health-card { background: var(--glass-bg); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 1.2rem; text-align: center; }
+        .health-card__value { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; }
+        .health-card__label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem; }
+        .health-bar { height: 6px; background: rgba(139,92,246,0.1); border-radius: 50px; margin-top: 0.5rem; overflow: hidden; }
+        .health-fill { height: 100%; border-radius: 50px; transition: width 1s ease; }
+        .health-fill.good { background: var(--accent-cyan); }
+        .health-fill.warn { background: var(--accent-amber); }
+        .health-fill.bad { background: var(--accent-red); }
+
+        /* =================== EXPERIENCE SHARING =================== */
+        .exp-sharing { margin-bottom: 2rem; }
+        .exp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 768px) { .exp-grid { grid-template-columns: 1fr; } }
+        .exp-card { background: var(--glass-bg); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 1.2rem; }
+        .exp-card h4 { font-family: var(--font-display); font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem; }
+        .exp-item { font-size: 0.8rem; padding: 0.3rem 0; color: var(--text-secondary); border-bottom: 1px solid rgba(120,80,255,0.06); }
+        .exp-item:last-child { border: none; }
+
+        /* =================== BACK BUTTON =================== */
+        .btn-back { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.2rem; background: transparent; border: 1px solid var(--border-card); border-radius: var(--radius-sm); color: var(--text-secondary); font-family: var(--font-body); font-size: 0.85rem; cursor: pointer; transition: all var(--transition-smooth); margin-bottom: 1.5rem; }
+        .btn-back:hover { border-color: var(--accent-purple); color: var(--text-primary); }
+
+        /* =================== ACHIEVEMENT BADGES (TAMA-2.7) =================== */
+        .badges-section { margin-bottom: 2.5rem; }
+        .badges-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .achievement-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; background: var(--glass-bg); border: 1px solid var(--border-card); transition: all var(--transition-smooth); cursor: default; position: relative; overflow: hidden; }
+        .achievement-badge::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent); pointer-events: none; }
+        .achievement-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(139,92,246,0.2); }
+        .achievement-badge.earned { border-color: var(--accent-cyan); background: rgba(6,214,160,0.08); }
+        .achievement-badge.earned .badge-icon { filter: none; }
+        .achievement-badge.locked { opacity: 0.4; filter: grayscale(0.8); }
+        .badge-icon { font-size: 1.1rem; }
+        .badge-label { color: var(--text-primary); }
+        .achievement-badge.locked .badge-label { color: var(--text-muted); }
+
+        /* =================== XP TIMELINE GRAPH (TAMA-2.8) =================== */
+        .xp-graph-section { margin-bottom: 2.5rem; }
+        .xp-graph-card { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-card); }
+        .xp-graph-card svg { width: 100%; height: 200px; overflow: visible; }
+        .xp-graph-card .graph-line { fill: none; stroke: url(#xpGradient); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(139,92,246,0.4)); }
+        .xp-graph-card .graph-area { fill: url(#xpAreaGradient); opacity: 0.3; }
+        .xp-graph-card .graph-dot { fill: var(--accent-purple); stroke: var(--bg-primary); stroke-width: 2; cursor: pointer; transition: r 0.2s; }
+        .xp-graph-card .graph-dot:hover { r: 6; }
+        .xp-graph-card .graph-label { fill: var(--text-muted); font-size: 10px; font-family: var(--font-body); }
+        .xp-graph-card .graph-grid { stroke: rgba(120,80,255,0.08); stroke-width: 1; }
+        .graph-tooltip { position: absolute; background: rgba(20,20,50,0.95); border: 1px solid var(--accent-purple); border-radius: var(--radius-sm); padding: 0.4rem 0.7rem; font-size: 0.75rem; color: var(--text-primary); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 100; white-space: nowrap; }
+
+        /* =================== LOCALSTORAGE INDICATOR (TAMA-2.9) =================== */
+        .save-indicator { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; color: var(--text-muted); background: rgba(6,214,160,0.06); border: 1px solid rgba(6,214,160,0.15); margin-left: 0.5rem; transition: all 0.3s; }
+        .save-indicator.saving { color: var(--accent-cyan); border-color: var(--accent-cyan); animation: savePulse 0.6s ease-out; }
+        @keyframes savePulse { 0% { box-shadow: 0 0 0 0 rgba(6,214,160,0.3); } 100% { box-shadow: 0 0 0 8px rgba(6,214,160,0); } }
+        .btn-load-saved { display: none; margin-top: 0.75rem; padding: 0.5rem 1.2rem; background: rgba(139,92,246,0.08); border: 1px solid var(--accent-purple); border-radius: var(--radius-sm); color: var(--accent-purple); font-family: var(--font-body); font-size: 0.85rem; cursor: pointer; transition: all var(--transition-smooth); }
+        .btn-load-saved.show { display: inline-flex; align-items: center; gap: 0.4rem; }
+        .btn-load-saved:hover { background: rgba(139,92,246,0.15); }
+
+        /* =================== ADAPTIVE XP (TAMA-2.11) =================== */
+        .adaptive-xp-info { margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); border-radius: var(--radius-sm); font-size: 0.75rem; color: var(--text-secondary); }
+        /* =================== GIST INPUT (TAMA-2.4/2.5) =================== */
+        .gist-input { display: none; }
+        .gist-input.active { display: block; }
+        .gist-row { display: flex; gap: 0.75rem; align-items: flex-end; }
+        .gist-row input[type="text"] { flex: 1; padding: 0.65rem 1rem; background: rgba(10,10,26,0.8); border: 1px solid var(--border-card); border-radius: var(--radius-sm); color: var(--text-primary); font-family: var(--font-body); font-size: 0.85rem; transition: border-color var(--transition-smooth); }
+        .gist-row input:focus { outline: none; border-color: var(--accent-purple); }
+        .gist-row input::placeholder { color: var(--text-muted); }
+        .refresh-toggle { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; }
+        .refresh-toggle input[type="checkbox"] { accent-color: var(--accent-cyan); width: 14px; height: 14px; }
+        .refresh-indicator { display: none; margin-top: 0.5rem; font-size: 0.75rem; color: var(--accent-cyan); }
+        .refresh-indicator.active { display: flex; align-items: center; gap: 0.3rem; animation: pulse 1s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+        /* =================== TOAST NOTIFICATIONS (TAMA-3.4) =================== */
+        .toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 10001; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.5rem; background: rgba(10,10,30,0.95); backdrop-filter: blur(16px); border: 1px solid var(--accent-purple); border-radius: var(--radius-lg); color: var(--text-primary); font-family: var(--font-body); font-size: 0.9rem; box-shadow: 0 8px 32px rgba(139,92,246,0.25); pointer-events: all; animation: toastIn 0.4s ease-out, toastOut 0.3s ease-in 4.7s forwards; max-width: 380px; }
+        .toast.achievement { border-color: var(--accent-cyan); box-shadow: 0 8px 32px rgba(6,214,160,0.25); }
+        .toast.streak { border-color: var(--accent-amber); box-shadow: 0 8px 32px rgba(245,158,11,0.25); }
+        .toast__icon { font-size: 1.8rem; flex-shrink: 0; }
+        .toast__body { display: flex; flex-direction: column; gap: 0.15rem; }
+        .toast__title { font-weight: 700; font-size: 0.95rem; }
+        .toast__sub { font-size: 0.75rem; color: var(--text-muted); }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateX(100px) scale(0.8); } }
+
+        /* =================== DNA MUTATION TIMELINE (TAMA-3.5) =================== */
+        .dna-section { margin-bottom: 2.5rem; }
+        .dna-timeline { display: flex; flex-direction: column; gap: 0.5rem; }
+        .dna-entry { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; background: var(--glass-bg); border: 1px solid var(--border-card); border-radius: var(--radius-sm); transition: all var(--transition-smooth); }
+        .dna-entry:hover { border-color: var(--accent-purple); transform: translateX(4px); }
+        .dna-entry__icon { font-size: 1.2rem; flex-shrink: 0; }
+        .dna-entry__date { font-size: 0.7rem; color: var(--text-muted); min-width: 80px; }
+        .dna-entry__desc { font-size: 0.8rem; color: var(--text-secondary); flex: 1; }
+        .dna-entry__type { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 50px; background: rgba(139,92,246,0.1); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.2); }
+        .dna-entry__type.add { background: rgba(6,214,160,0.1); color: var(--accent-cyan); border-color: rgba(6,214,160,0.2); }
+        .dna-entry__type.remove { background: rgba(239,68,68,0.1); color: var(--accent-red); border-color: rgba(239,68,68,0.2); }
+        .dna-entry__type.mutate { background: rgba(245,158,11,0.1); color: var(--accent-amber); border-color: rgba(245,158,11,0.2); }
+
+        /* =================== FITNESS DASHBOARD (TAMA-5.3) =================== */
+        .fitness-section { margin-bottom: 2.5rem; }
+        .fitness-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+        .fitness-card { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 1rem; text-align: center; transition: all var(--transition-smooth); }
+        .fitness-card:hover { border-color: var(--accent-purple); transform: translateY(-2px); }
+        .fitness-card__label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+        .fitness-card__value { font-size: 1.4rem; font-weight: 700; font-family: var(--font-head); }
+        .fitness-card__trend { font-size: 0.7rem; margin-top: 0.25rem; }
+        .fitness-card__trend.good { color: var(--accent-cyan); }
+        .fitness-card__trend.warn { color: var(--accent-amber); }
+        .fitness-card__trend.bad { color: var(--accent-red); }
+        .fitness-card__bar { height: 4px; border-radius: 2px; margin-top: 0.5rem; background: rgba(255,255,255,0.05); overflow: hidden; }
+        .fitness-card__fill { height: 100%; border-radius: 2px; transition: width 0.8s ease-out; }
+
+        /* =================== DANGER ZONE (TAMA-5.7) =================== */
+        .danger-section { margin-bottom: 2.5rem; }
+        .danger-cards { display: flex; flex-direction: column; gap: 0.5rem; }
+        .danger-card { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.15); border-radius: var(--radius-sm); transition: all var(--transition-smooth); }
+        .danger-card:hover { border-color: rgba(239,68,68,0.4); transform: translateX(4px); }
+        .danger-card__icon { font-size: 1.3rem; }
+        .danger-card__body { flex: 1; }
+        .danger-card__title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .danger-card__sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.1rem; }
+        .danger-card__risk { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 50px; font-weight: 600; }
+        .danger-card__risk.high { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .danger-card__risk.medium { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+        .danger-card__risk.low { background: rgba(6,214,160,0.15); color: var(--accent-cyan); }
+
+        /* =================== PATTERN SUGGESTIONS (TAMA-5.1) =================== */
+        .suggestions-section { margin-bottom: 2.5rem; }
+        .suggestion-card { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(139,92,246,0.04); border: 1px solid rgba(139,92,246,0.15); border-radius: var(--radius-sm); margin-bottom: 0.5rem; transition: all var(--transition-smooth); }
+        .suggestion-card:hover { border-color: rgba(139,92,246,0.35); }
+        .suggestion-card__icon { font-size: 1.2rem; margin-top: 0.1rem; }
+        .suggestion-card__body { flex: 1; }
+        .suggestion-card__name { font-size: 0.85rem; font-weight: 600; color: var(--accent-purple); }
+        .suggestion-card__reason { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; }
+        .suggestion-card__source { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.1rem; font-style: italic; }
+
+        /* =================== RECURRENCE DETECTOR (TAMA-5.2) =================== */
+        .recurrence-section { margin-bottom: 2.5rem; }
+        .recurrence-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.12); border-radius: var(--radius-sm); margin-bottom: 0.4rem; }
+        .recurrence-item__match { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 50px; background: rgba(239,68,68,0.15); color: var(--accent-red); font-weight: 600; min-width: 45px; text-align: center; }
+        .recurrence-item__ap { font-size: 0.8rem; color: var(--text-secondary); flex: 1; }
+        .recurrence-item__evo { font-size: 0.7rem; color: var(--text-muted); }
+
+        /* =================== SELF-QUESTIONING (TAMA-5.8) =================== */
+        .questions-section { margin-bottom: 2.5rem; }
+        .question-card { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.65rem 1rem; background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.12); border-radius: var(--radius-sm); margin-bottom: 0.4rem; transition: all var(--transition-smooth); }
+        .question-card:hover { border-color: rgba(245,158,11,0.3); transform: translateX(3px); }
+        .question-card__icon { font-size: 1.1rem; margin-top: 0.05rem; }
+        .question-card__text { font-size: 0.82rem; color: var(--text-secondary); flex: 1; }
+        .question-card__source { font-size: 0.65rem; color: var(--text-muted); margin-left: 0.5rem; white-space: nowrap; }
+
+        /* =================== AI INSIGHTS (TAMA-5.6) =================== */
+        .ai-insights-section { margin-bottom: 2.5rem; }
+        .ai-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(6,182,212,0.2)); border: 1px solid rgba(139,92,246,0.3); border-radius: var(--radius-sm); color: var(--accent-purple); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all var(--transition-smooth); }
+        .ai-btn:hover { background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(6,182,212,0.3)); transform: translateY(-1px); }
+        .ai-btn:disabled { opacity: 0.5; cursor: wait; }
+        .ai-btn .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(139,92,246,0.3); border-top-color: var(--accent-purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ai-insights-content { margin-top: 1rem; padding: 1rem 1.2rem; background: rgba(139,92,246,0.04); border: 1px solid rgba(139,92,246,0.12); border-radius: var(--radius-sm); font-size: 0.82rem; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap; }
+        .ai-insights-content strong { color: var(--accent-cyan); }
+        .ai-insights-content em { color: var(--accent-amber); font-style: normal; }
+
+        /* =================== FAILURE GENOME SECTION (V4) =================== */
+        .genome-section { margin-bottom: 2.5rem; }
+        .genome-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .genome-card { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 1.25rem; box-shadow: var(--shadow-card); transition: all var(--transition-smooth); position: relative; overflow: hidden; }
+        .genome-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, #8b5cf6, #22d3ee); border-radius: 0 3px 3px 0; }
+        .genome-card:hover { border-color: var(--border-card-hover); transform: translateY(-2px); }
+        .genome-card__family { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; background: linear-gradient(135deg, #8b5cf6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.4rem; }
+        .genome-card__invariant { font-size: 0.78rem; color: var(--accent-amber); font-family: 'Courier New', monospace; margin-bottom: 0.5rem; }
+        .genome-card__repair { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .genome-card__meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .genome-tag { display: inline-flex; align-items: center; gap: 0.2rem; padding: 0.15rem 0.5rem; border-radius: 50px; font-size: 0.65rem; font-weight: 600; background: rgba(139,92,246,0.1); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.2); }
+        .genome-tag.utility { background: rgba(6,214,160,0.1); color: var(--accent-cyan); border-color: rgba(6,214,160,0.2); }
+        .genome-tag.replay { background: rgba(245,158,11,0.1); color: var(--accent-amber); border-color: rgba(245,158,11,0.2); }
+        .genome-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+        .genome-stat { text-align: center; padding: 0.75rem; background: var(--glass-bg); border: 1px solid var(--border-card); border-radius: var(--radius-sm); }
+        .genome-stat__value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
+        .genome-stat__label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.15rem; }
+        @media (max-width: 768px) { .genome-grid { grid-template-columns: 1fr; } .genome-stats { grid-template-columns: repeat(2, 1fr); } }
+
+        /* =================== SHARE + COMMUNITY (V4) =================== */
+        .share-section { margin-bottom: 2.5rem; }
+        .share-card { background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(6,214,160,0.04)); border: 1px solid rgba(139,92,246,0.2); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .share-card__info { flex: 1; min-width: 250px; }
+        .share-card__info h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .share-card__info p { font-size: 0.82rem; color: var(--text-muted); }
+        .share-btn { padding: 0.65rem 1.5rem; background: var(--gradient-main); border: none; border-radius: var(--radius-sm); color: #fff; font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all var(--transition-smooth); white-space: nowrap; }
+        .share-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(139,92,246,0.3); }
+        .share-btn:disabled { opacity: 0.5; cursor: wait; }
+        .share-result { margin-top: 0.75rem; font-size: 0.8rem; padding: 0.5rem 1rem; border-radius: var(--radius-sm); display: none; }
+        .share-result.success { display: block; background: rgba(6,214,160,0.08); border: 1px solid rgba(6,214,160,0.2); color: var(--accent-cyan); }
+        .share-result.error { display: block; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: var(--accent-red); }
+        .community-section { margin-bottom: 2.5rem; }
+        .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; }
+        .community-card { background: var(--glass-bg); border: 1px solid var(--border-card); border-radius: var(--radius-sm); padding: 1rem; transition: all var(--transition-smooth); }
+        .community-card:hover { border-color: var(--accent-cyan); }
+        .community-card__family { font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.3rem; }
+        .community-card__invariant { font-size: 0.72rem; color: var(--accent-amber); font-family: monospace; margin-bottom: 0.3rem; }
+        .community-card__meta { font-size: 0.7rem; color: var(--text-muted); }
+        .community-empty { color: var(--text-muted); font-size: 0.85rem; padding: 1rem; text-align: center; }
+        .load-community-btn { padding: 0.5rem 1.2rem; background: rgba(6,214,160,0.08); border: 1px solid var(--accent-cyan); border-radius: var(--radius-sm); color: var(--accent-cyan); font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all var(--transition-smooth); margin-bottom: 1rem; }
+        .load-community-btn:hover { background: rgba(6,214,160,0.15); }
+    </style>
+</head>
+<body>
+    <div class="level-up-flash" id="levelUpFlash"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="app">
+        <!-- HEADER -->
+        <header class="header">
+            <h1 class="header__logo">🧬 Evolution Tamagotchi</h1>
+            <p class="header__subtitle">Harness-First Self-Evolving Agent Tracker — XP, Patterns, Failure Genomes & Growth</p>
+        </header>
+
+        <!-- INPUT SECTION -->
+        <section class="input-section" id="inputSection">
+            <div class="input-card">
+                <h2 class="input-card__title">📂 Load Evolution Data</h2>
+
+                <!-- Mode Tabs: Solo vs Multi -->
+                <div class="mode-tabs" id="modeTabs">
+                    <button class="mode-tab active" data-mode="solo" id="modeSolo">🦊 Solo</button>
+                    <button class="mode-tab" data-mode="multi" id="modeMulti">👥 Multi-User</button>
+                </div>
+
+                <!-- SOLO MODE -->
+                <div id="soloMode">
+                    <div class="input-tabs" id="inputTabs">
+                        <button class="input-tab active" data-tab="file" id="tabFile">📁 Upload .md</button>
+                        <button class="input-tab" data-tab="paste" id="tabPaste">📋 Paste</button>
+                        <button class="input-tab" data-tab="gist" id="tabGist">🔗 Gist</button>
+                        <button class="input-tab" data-tab="jsonpack" id="tabJsonPack">📦 JSON Pack</button>
+                    </div>
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-zone__icon">📄</div>
+                        <div class="drop-zone__text">
+                            Drag & drop <strong>evolution_journal.md</strong> here<br>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">or click to browse</span>
+                        </div>
+                        <input type="file" accept=".md,.txt,.json" id="fileInput">
+                    </div>
+                    <!-- JSON PACK DROP ZONE -->
+                    <div class="drop-zone" id="jsonPackZone" style="display:none;">
+                        <div class="drop-zone__icon">📦</div>
+                        <div class="drop-zone__text">
+                            Drag & drop <strong>nve-pack distilled</strong> JSON<br>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">output from: node cli/nve-pack.js distilled</span><br>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">also accepts individual FG-*.json, INC-*.json, EXP-*.json</span>
+                        </div>
+                        <input type="file" accept=".json" id="jsonPackInput" multiple>
+                    </div>
+                    <div class="paste-area" id="pasteArea">
+                        <textarea id="jsonInput" placeholder='Paste the entire evolution_journal.md content here...'></textarea>
+                        <button class="btn-primary" id="parseBtn">🚀 Parse & Visualize</button>
+                    </div>
+                    <div class="gist-input" id="gistArea">
+                        <div class="gist-row">
+                            <input type="text" id="gistIdInput" placeholder="Paste GitHub Gist ID or URL">
+                            <button class="btn-primary" id="gistLoadBtn" style="margin-top:0;">🔗 Load Gist</button>
+                        </div>
+                        <label class="refresh-toggle">
+                            <input type="checkbox" id="gistAutoRefresh"> Auto-refresh every 60s
+                        </label>
+                        <div class="refresh-indicator" id="gistRefreshIndicator">🔄 Next refresh in <span id="gistCountdown">60</span>s</div>
+                    </div>
+                </div>
+
+                <!-- MULTI-USER MODE -->
+                <div id="multiMode" style="display:none;">
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Upload journals from multiple users to compare progress, share patterns, and view leaderboard.</p>
+                    <div class="multi-drop" id="multiDrop">
+                        <div class="user-slot" data-slot="0">
+                            <div class="user-slot__emoji">📄</div>
+                            <div class="user-slot__name">User 1</div>
+                            <div class="user-slot__info">Drop journal here</div>
+                            <input type="file" accept=".md,.txt,.json" class="multi-file-input" data-slot="0">
+                        </div>
+                        <div class="user-slot" data-slot="1">
+                            <div class="user-slot__emoji">📄</div>
+                            <div class="user-slot__name">User 2</div>
+                            <div class="user-slot__info">Drop journal here</div>
+                            <input type="file" accept=".md,.txt,.json" class="multi-file-input" data-slot="1">
+                        </div>
+                        <div class="user-slot" data-slot="2">
+                            <div class="user-slot__emoji">📄</div>
+                            <div class="user-slot__name">User 3</div>
+                            <div class="user-slot__info">Drop journal here</div>
+                            <input type="file" accept=".md,.txt,.json" class="multi-file-input" data-slot="2">
+                        </div>
+                        <div class="user-slot" data-slot="3" id="addSlotBtn">
+                            <div class="user-slot__emoji">➕</div>
+                            <div class="user-slot__name">Add User</div>
+                            <div class="user-slot__info">Click to add slot</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;">
+                        <button class="btn-compare" id="compareBtn">🏆 Compare & View Leaderboard</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-divider"><span>or try instantly</span></div>
+            <div style="text-align: center; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button class="btn-demo" id="demoBtn">⚡ Load Demo Data</button>
+                <button class="btn-demo" id="demoMultiBtn" style="border-color: var(--accent-purple); color: var(--accent-purple);">👥 Demo Multi-User</button>
+            </div>
+            <div style="text-align:center; margin-top: 0.75rem;">
+                <button class="btn-load-saved" id="loadSavedBtn">💾 Resume Last Session</button>
+            </div>
+        </section>
+
+        <!-- DASHBOARD (hidden until loaded) — single user -->
+        <main class="dashboard" id="dashboard">
+            <button class="btn-back" id="backBtn">← Back to Input</button>
+
+            <!-- HERO: Avatar + XP -->
+            <section class="hero">
+                <div class="avatar-card">
+                    <div class="avatar-ring">
+                        <div class="avatar-ring__inner">
+                            <div class="avatar-creature" id="avatarCreature">🦊</div>
+                        </div>
+                    </div>
+                    <div class="avatar-name" id="avatarName">vectory-agent-001</div>
+                    <div class="avatar-project" id="avatarProject">NVE-beta / VECTORY</div>
+                </div>
+
+                <div class="xp-card">
+                    <div class="level-badge" id="levelBadge">
+                        <span id="levelEmoji">🟣</span>
+                        <span>Level <span id="levelNum">23</span> — <span id="levelName">Operative</span></span>
+                    </div>
+                    <div class="xp-label">
+                        <span class="xp-label__current"><span id="xpCurrent">160</span> XP</span>
+                        <span class="xp-label__next">Next: <span id="xpNext">220</span> XP</span>
+                    </div>
+                    <div class="xp-bar-container">
+                        <div class="xp-bar-fill" id="xpBar" style="width: 0%"></div>
+                    </div>
+                    <div class="xp-percent" id="xpPercent">73%</div>
+                    <div class="xp-meta">
+                        <div class="xp-meta-item">
+                            <div class="xp-meta-item__value" id="metaEntries">4</div>
+                            <div class="xp-meta-item__label">Entries</div>
+                        </div>
+                        <div class="xp-meta-item">
+                            <div class="xp-meta-item__value" id="metaStreak">4</div>
+                            <div class="xp-meta-item__label">Streak</div>
+                        </div>
+                        <div class="xp-meta-item">
+                            <div class="xp-meta-item__value" id="metaTopImpact">8</div>
+                            <div class="xp-meta-item__label">Top Impact</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATS ROW -->
+            <section class="stats-row" id="statsRow">
+                <div class="stat-card">
+                    <div class="stat-card__icon">📊</div>
+                    <div class="stat-card__value" id="statAvgImpact">7.25</div>
+                    <div class="stat-card__label">Avg Impact</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon">🛡️</div>
+                    <div class="stat-card__value" id="statPreventive">75%</div>
+                    <div class="stat-card__label">Preventive</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon">🧠</div>
+                    <div class="stat-card__value" id="statPatterns">4</div>
+                    <div class="stat-card__label">Patterns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon">🚫</div>
+                    <div class="stat-card__value" id="statAntiPatterns">11</div>
+                    <div class="stat-card__label">Anti-Patterns</div>
+                </div>
+            </section>
+
+            <!-- ACHIEVEMENT BADGES (TAMA-2.7) -->
+            <section class="badges-section">
+                <h2 class="section-title">🏅 Achievements</h2>
+                <div class="badges-grid" id="badgesGrid"></div>
+            </section>
+
+            <!-- FITNESS DASHBOARD (TAMA-5.3) -->
+            <section class="fitness-section">
+                <h2 class="section-title">🏋️ Fitness Dashboard</h2>
+                <div class="fitness-grid" id="fitnessGrid"></div>
+            </section>
+
+            <!-- 5-AXIS AUDIT PANEL (D.2) -->
+            <section class="fitness-section">
+                <h2 class="section-title">🧬 5-Axis Audit Score</h2>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="auditPanel">
+                    <div style="grid-column:1/-1;">
+                        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+                            <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:900;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;" id="auditOverall">—</div>
+                            <div style="font-size:0.85rem;color:var(--text-muted);">Overall Score<br><span style="font-size:0.75rem;">Run: <code>node cli/nve-audit.js</code></span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="padding:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-size:0.8rem;font-weight:600;">🏗 Structure</span>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--accent-cyan);" id="axisStructure">—</span>
+                        </div>
+                        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;"><div id="barStructure" style="height:100%;background:var(--accent-cyan);border-radius:3px;width:0%;transition:width .8s;"></div></div>
+                    </div>
+                    <div class="stat-card" style="padding:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-size:0.8rem;font-weight:600;">🗃 Memory</span>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--accent-green);" id="axisMemory">—</span>
+                        </div>
+                        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;"><div id="barMemory" style="height:100%;background:var(--accent-green);border-radius:3px;width:0%;transition:width .8s;"></div></div>
+                    </div>
+                    <div class="stat-card" style="padding:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-size:0.8rem;font-weight:600;">🔒 Verification</span>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--accent-amber);" id="axisVerification">—</span>
+                        </div>
+                        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;"><div id="barVerification" style="height:100%;background:var(--accent-amber);border-radius:3px;width:0%;transition:width .8s;"></div></div>
+                    </div>
+                    <div class="stat-card" style="padding:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-size:0.8rem;font-weight:600;">📤 Shareability</span>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--accent-purple);" id="axisShareability">—</span>
+                        </div>
+                        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;"><div id="barShareability" style="height:100%;background:var(--accent-purple);border-radius:3px;width:0%;transition:width .8s;"></div></div>
+                    </div>
+                    <div class="stat-card" style="grid-column:1/-1;padding:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-size:0.8rem;font-weight:600;">🧬 Evolution Intelligence</span>
+                            <span style="font-family:var(--font-display);font-weight:700;color:var(--accent-red);" id="axisEvolution">—</span>
+                        </div>
+                        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;"><div id="barEvolution" style="height:100%;background:linear-gradient(90deg,var(--accent-purple),var(--accent-red));border-radius:3px;width:0%;transition:width .8s;"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- REPLAY GATE TIMELINE (D.3) -->
+            <section class="fitness-section">
+                <h2 class="section-title">🔄 Replay Gate Status</h2>
+                <div id="replayTimeline" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+            </section>
+
+            <!-- REPO MANIFEST PANEL (D.4) -->
+            <section class="fitness-section">
+                <h2 class="section-title">📋 Repo Manifest</h2>
+                <div id="manifestPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.75rem;"></div>
+            </section>
+
+            <!-- XP TIMELINE GRAPH (TAMA-2.8) -->
+            <section class="xp-graph-section">
+                <h2 class="section-title">📈 XP Timeline</h2>
+                <div class="xp-graph-card" id="xpGraphCard" style="position:relative;">
+                    <svg id="xpGraphSvg" viewBox="0 0 800 200" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#8b5cf6"/>
+                                <stop offset="100%" stop-color="#06d6a0"/>
+                            </linearGradient>
+                            <linearGradient id="xpAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.3"/>
+                                <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="graph-tooltip" id="graphTooltip"></div>
+                </div>
+            </section>
+
+            <!-- EVO TIMELINE -->
+            <section>
+                <h2 class="section-title">📓 Evolution Timeline</h2>
+                <div class="timeline" id="evoTimeline"></div>
+            </section>
+
+            <!-- PATTERNS -->
+            <section>
+                <h2 class="section-title">🧠 Pattern Registry</h2>
+                <div class="patterns-grid" id="patternsGrid"></div>
+            </section>
+
+            <!-- ANTI-PATTERNS -->
+            <section>
+                <h2 class="section-title">🚫 Anti-Pattern Registry</h2>
+                <div class="anti-patterns-list" id="antiPatternsList"></div>
+            </section>
+
+            <!-- DANGER ZONE (TAMA-5.7) -->
+            <section class="danger-section">
+                <h2 class="section-title">⚠️ What Will Break Next?</h2>
+                <div class="danger-cards" id="dangerCards"></div>
+            </section>
+
+            <!-- PATTERN SUGGESTIONS (TAMA-5.1) -->
+            <section class="suggestions-section">
+                <h2 class="section-title">💡 Pattern Suggestions</h2>
+                <div id="suggestionsContainer"></div>
+            </section>
+
+            <!-- RECURRENCE DETECTOR (TAMA-5.2) -->
+            <section class="recurrence-section">
+                <h2 class="section-title">🔁 Anti-Pattern Recurrence Detector</h2>
+                <div id="recurrenceContainer"></div>
+            </section>
+
+            <!-- DNA MUTATION TIMELINE (TAMA-3.5) -->
+            <section class="dna-section">
+                <h2 class="section-title">🧬 DNA Mutation Log</h2>
+                <div class="dna-timeline" id="dnaTimeline"></div>
+            </section>
+
+            <!-- SELF-QUESTIONING (TAMA-5.8) -->
+            <section class="questions-section">
+                <h2 class="section-title">❓ Self-Questioning Engine</h2>
+                <div id="questionsContainer"></div>
+            </section>
+
+            <!-- AI INSIGHTS (TAMA-5.6) -->
+            <section class="ai-insights-section">
+                <h2 class="section-title">🤖 AI Insights (Gemini)</h2>
+                <button class="ai-btn" id="aiInsightsBtn" onclick="generateAIInsights()">✨ Generate AI Insights</button>
+                <div id="aiInsightsContent" class="ai-insights-content" style="display:none"></div>
+            </section>
+
+            <!-- FAILURE GENOME DASHBOARD (V4) -->
+            <section class="genome-section">
+                <h2 class="section-title">🧬 Failure Genome Families</h2>
+                <div class="genome-stats" id="genomeStats"></div>
+                <div class="genome-grid" id="genomeGrid"></div>
+            </section>
+
+            <!-- SHARE TO COMMUNITY (V4 consent-based) -->
+            <section class="share-section">
+                <h2 class="section-title">📤 Share to Community</h2>
+                <div class="share-card" style="flex-direction:column;align-items:stretch;">
+                    <div class="share-card__info" style="margin-bottom:1rem;">
+                        <h3>Безопасный экспорт в Community Pool</h3>
+                        <p>Данные проходят тройную фильтрацию: (1) CLI <code>nve-pack distilled</code> убирает код и секреты локально, (2) вы видите превью до отправки, (3) сервер применяет rule-50 redaction. <strong>Code, secrets, paths, logs — не отправляются никогда.</strong></p>
+                    </div>
+
+                    <!-- Step 1: Import -->
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div id="packDropZone" style="flex:1;min-width:250px;border:2px dashed var(--border-card);border-radius:var(--radius-md);padding:1.5rem;text-align:center;cursor:pointer;transition:all .3s;" ondragover="event.preventDefault();this.style.borderColor='var(--accent-purple)'" ondragleave="this.style.borderColor='var(--border-card)'" ondrop="handlePackDrop(event)">
+                            <div style="font-size:1.5rem;margin-bottom:0.5rem;">📦</div>
+                            <div style="font-size:0.85rem;font-weight:600;">Drop <code>nve-pack distilled</code> JSON here</div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">or click to select file</div>
+                            <input type="file" id="packFileInput" accept=".json" style="display:none" onchange="handlePackFile(this.files[0])">
+                        </div>
+                        <div style="display:flex;align-items:center;color:var(--text-muted);font-size:0.8rem;font-weight:600;">или</div>
+                        <button class="share-btn" style="height:fit-content;align-self:center;" onclick="previewFromLoaded()">
+                            📋 Preview from Loaded Data
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Preview (hidden until data) -->
+                    <div id="sharePreview" style="display:none;">
+                        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.5rem;color:var(--accent-amber);">⚠️ Превью: вот что будет отправлено</div>
+                        <div style="background:var(--bg-primary);border:1px solid var(--border-card);border-radius:var(--radius-sm);padding:1rem;max-height:300px;overflow-y:auto;margin-bottom:1rem;">
+                            <table style="width:100%;font-size:0.78rem;border-collapse:collapse;">
+                                <thead><tr style="border-bottom:1px solid var(--border-card);color:var(--text-muted);">
+                                    <th style="text-align:left;padding:4px 8px;">Family</th>
+                                    <th style="text-align:left;padding:4px 8px;">Invariant</th>
+                                    <th style="text-align:left;padding:4px 8px;">Repair</th>
+                                    <th style="text-align:right;padding:4px 8px;">Utility</th>
+                                </tr></thead>
+                                <tbody id="sharePreviewBody"></tbody>
+                            </table>
+                        </div>
+                        <div style="display:flex;gap:1rem;align-items:center;">
+                            <button class="share-btn" id="confirmShareBtn" onclick="confirmShare()" style="background:linear-gradient(135deg,#06d6a0,#22d3ee);">
+                                ✅ Confirm & Share (<span id="shareCount">0</span> genomes)
+                            </button>
+                            <button class="share-btn" onclick="cancelShare()" style="background:rgba(239,68,68,0.15);color:var(--accent-red);">
+                                ❌ Cancel
+                            </button>
+                            <span style="font-size:0.75rem;color:var(--text-muted);">
+                                ✅ No code &nbsp;✅ No secrets &nbsp;✅ No paths &nbsp;✅ No logs
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Result -->
+                    <div class="share-result" id="shareResult"></div>
+                </div>
+            </section>
+
+            <!-- COMMUNITY FAMILIES (V4) -->
+            <section class="community-section">
+                <h2 class="section-title">🌍 Community Failure Families</h2>
+                <button class="load-community-btn" id="loadCommunityBtn" onclick="loadCommunityGenomes()">🔄 Load Community Data</button>
+                <div class="community-grid" id="communityGrid">
+                    <div class="community-empty">Click "Load Community Data" to see failure families from other developers.</div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>Evolution Tamagotchi v4.0 — Harness-First Self-Evolving Agent Tracker <span class="save-indicator" id="saveIndicator">💾 Auto-saved</span></p>
+        </footer>
+
+        <!-- LEADERBOARD VIEW (hidden until multi-user compare) -->
+        <main class="leaderboard" id="leaderboard">
+            <button class="btn-back" id="backBtnLb">← Back to Input</button>
+            <h2 class="section-title">🏆 Leaderboard</h2>
+            <div class="side-by-side" id="sideBySide"></div>
+            <table class="lb-table" id="lbTable">
+                <thead><tr><th>#</th><th></th><th>Agent</th><th>Level</th><th>XP</th><th>Entries</th><th>Patterns</th><th>Health</th></tr></thead>
+                <tbody id="lbBody"></tbody>
+            </table>
+            <section class="health-section">
+                <h2 class="section-title">💚 Health Score Comparison</h2>
+                <div class="health-grid" id="healthGrid"></div>
+            </section>
+            <section class="exp-sharing">
+                <h2 class="section-title">🔀 Experience Sharing (GEA)</h2>
+                <div class="exp-grid" id="expGrid"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+    /* ==================== DATA ==================== */
+    const AVATAR_MAP = {
+        1: { emoji: '🥚', name: 'Egg' }, 2: { emoji: '🐣', name: 'Chick' },
+        3: { emoji: '🦊', name: 'Fox Cub' }, 4: { emoji: '🐉', name: 'Dragon' },
+        5: { emoji: '🦅', name: 'Eagle' }, 6: { emoji: '🐺', name: 'Wolf' },
+        7: { emoji: '🦁', name: 'Lion' }, 8: { emoji: '🐲', name: 'Dragon King' },
+        9: { emoji: '🦄', name: 'Unicorn' }, 10: { emoji: '⭐', name: 'Star' },
+    };
+    const LEVEL_COLORS = {
+        '🟢': { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)', color: '#22c55e' },
+        '🔵': { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.3)', color: '#3b82f6' },
+        '🟣': { bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.3)', color: '#8b5cf6' },
+        '🟠': { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.3)', color: '#f97316' },
+        '🔴': { bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.3)', color: '#ef4444' },
+        '⚫': { bg: 'rgba(100,100,120,0.12)', border: 'rgba(100,100,120,0.3)', color: '#94a3b8' },
+        '🌟': { bg: 'rgba(234,179,8,0.12)', border: 'rgba(234,179,8,0.3)', color: '#eab308' },
+        '💎': { bg: 'rgba(6,182,212,0.12)', border: 'rgba(6,182,212,0.3)', color: '#06b6d4' },
+        '🏆': { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', color: '#f59e0b' },
+        '👑': { bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.3)', color: '#a855f7' },
+    };
+
+    // Multi-user state
+    const multiUsers = {}; // slot -> parsed data
+
+    const DEMO_DATA = {
+        status: { agent_id: "vectory-agent-001", project: "NVE-beta / VECTORY", level: 39, level_name: "Specialist", level_emoji: "🟠", xp_current: 375, xp_next_level: 400, total_entries: 14, total_patterns: 15, total_anti_patterns: 23, top_impact: 10, streak: 14, last_updated: "2026-03-18T14:50:00+03:00" },
+        entries: [
+            { id: "EVO-001", date: "2026-03-16", impact: 8, xp: 13, category: "Preventive", type: "Documentation Drift", pattern: "PAT-001", title: "Auth Deploy Trap" },
+            { id: "EVO-002", date: "2026-03-16", impact: 7, xp: 13, category: "Preventive", type: "Process failure", pattern: "PAT-002", title: "Silent Fallback Elimination" },
+            { id: "EVO-003", date: "2026-03-16", impact: 6, xp: 8, category: "Structural", type: "Gap", pattern: "PAT-003", title: "Hardcoded CSS to Style Mirror" },
+            { id: "EVO-004", date: "2026-03-16", impact: 8, xp: 13, category: "Preventive", type: "Credentials Drift", pattern: "PAT-004", title: "Stale Credentials in Build Config" },
+            { id: "EVO-005", date: "2026-03-16", impact: 9, xp: 15, category: "Preventive", type: "Secret Sanitization", pattern: "PAT-005", title: "Perplexity Key Trailing CRLF" },
+            { id: "EVO-006", date: "2026-03-16", impact: 6, xp: 8, category: "Structural", type: "Shell Incompatibility", pattern: "PAT-006", title: "PowerShell && → semicolon" },
+            { id: "EVO-007", date: "2026-03-16", impact: 9, xp: 21, category: "Paradigm Shift", type: "Architectural Blindspot", pattern: "PAT-007", title: "Resurrection Audit — Cloud Run Ephemeral FS" },
+            { id: "EVO-008", date: "2026-03-16", impact: 10, xp: 26, category: "Paradigm Shift", type: "Module Interface Mismatch", pattern: "PAT-008", title: "Style Source Mislabel" },
+            { id: "EVO-009", date: "2026-03-17", impact: 9, xp: 21, category: "Paradigm Shift", type: "Multi-Root-Cause Discovery", pattern: "PAT-009", title: "P21 Triple Root Cause — Artifact Mismatch + Deploy Desync" },
+            { id: "EVO-010", date: "2026-03-17", impact: 8, xp: 13, category: "Preventive", type: "Regression", pattern: "PAT-012", title: "Read Architecture Before Fixing" },
+            { id: "EVO-011", date: "2026-03-17", impact: 8, xp: 13, category: "Preventive", type: "Gap", pattern: "PAT-013", title: "CSS Variable Blindness → Fidelity Gate Expansion" },
+            { id: "EVO-012", date: "2026-03-17", impact: 7, xp: 13, category: "Structural", type: "Gap", pattern: "PAT-014", title: "Flat vs Nested Baseline Confusion" },
+            { id: "EVO-013", date: "2026-03-17", impact: 10, xp: 21, category: "Paradigm Shift", type: "Gap", pattern: "PAT-015", title: "LLM Score Rounding → Structural Composite" },
+            { id: "EVO-014", date: "2026-03-18", impact: 7, xp: 8, category: "Preventive", type: "Process", pattern: "PAT-016", title: "Partial Fix (Missing Import)" }
+        ],
+        patterns: [
+            { id: "PAT-001", name: "Single Source of Truth Enforcement", source: "EVO-001" },
+            { id: "PAT-002", name: "Loud Failure > Silent Success", source: "EVO-002" },
+            { id: "PAT-003", name: "Data Extraction ≠ Data Usage", source: "EVO-003" },
+            { id: "PAT-004", name: "Multi-Source Credential Sync", source: "EVO-004" },
+            { id: "PAT-005", name: "Secret Manager Value Sanitization", source: "EVO-005" },
+            { id: "PAT-006", name: "Shell-Agnostic Command Chaining", source: "EVO-006" },
+            { id: "PAT-007", name: "Production-Verified DOD", source: "EVO-007" },
+            { id: "PAT-008", name: "Module Interface Contract Audit", source: "EVO-008" },
+            { id: "PAT-009", name: "Artifact Type Name Verification", source: "EVO-009" },
+            { id: "PAT-010", name: "Atomic Deploy (front+back)", source: "EVO-009" },
+            { id: "PAT-011", name: "Fallback Data Marking", source: "EVO-009" },
+            { id: "PAT-012", name: "Read Architecture Before Fixing", source: "EVO-010" },
+            { id: "PAT-013", name: "Quality ≠ Presence (CSS var check)", source: "EVO-011" },
+            { id: "PAT-014", name: "Write/Read Format Alignment", source: "EVO-012" },
+            { id: "PAT-015", name: "Structural Composite > Single LLM Score", source: "EVO-013" }
+        ],
+        antiPatterns: [
+            { id: "AP-001", name: "Feature Sprint Blindness" }, { id: "AP-002", name: "Test-Only Validation" },
+            { id: "AP-003", name: "Copy-Paste Deploy Command" }, { id: "AP-004", name: "Dismissive Bug Triage" },
+            { id: "AP-005", name: "Fallback Addiction" }, { id: "AP-006", name: "Scale Confusion (0-1 vs 0-100)" },
+            { id: "AP-007", name: "Provider/Model Mismatch" }, { id: "AP-008", name: "Domain Name as Keyword" },
+            { id: "AP-009", name: "'in dir()' Variable Check" }, { id: "AP-010", name: "Documentation Drift" },
+            { id: "AP-011", name: "Partial Credential Migration" }, { id: "AP-012", name: "Secret Manager Whitespace" },
+            { id: "AP-013", name: "False Done Status" }, { id: "AP-014", name: "False Done Status (ZIP)" },
+            { id: "AP-015", name: "Module Name Drift" },
+            { id: "AP-016", name: "Artifact Type Name Mismatch" },
+            { id: "AP-017", name: "Frontend/Backend Deploy Desync" },
+            { id: "AP-018", name: "Fallback Pollution (Generic Keywords)" },
+            { id: "AP-019", name: "Default Substitution" },
+            { id: "AP-020", name: "CSS Variable Blindness" },
+            { id: "AP-021", name: "Nested/Flat Storage Confusion" },
+            { id: "AP-022", name: "LLM Score Rounding" },
+            { id: "AP-023", name: "Partial Fix (Missing Import)" }
+        ],
+        genomes: [
+            { family: "credential-drift-after-refactor", invariant: "deploy_requires_all_env_vars_verified", repair: "strip-and-verify-env-vars", utility: 0.80, replay: "not_run", source: "EVO-001" },
+            { family: "verification-skipped-before-done", invariant: "done_means_verified_on_production", repair: "add-production-verification-step", utility: 0.90, replay: "not_run", source: "EVO-003" },
+            { family: "silent-fallback-introduced", invariant: "no_silent_fallbacks", repair: "remove-fallback-fix-extraction", utility: 0.85, replay: "not_run", source: "EVO-010" },
+            { family: "data-quality-gate-bypass", invariant: "presence_does_not_equal_quality", repair: "add-resolvability-check", utility: 0.75, replay: "not_run", source: "EVO-011" },
+            { family: "write-read-contract-mismatch", invariant: "write_format_must_match_read_format", repair: "add-dual-path-lookup", utility: 0.70, replay: "not_run", source: "EVO-012" },
+            { family: "llm-output-structural-bias", invariant: "never_trust_single_llm_number", repair: "compute-structural-composite", utility: 0.90, replay: "not_run", source: "EVO-013" },
+            { family: "command-shell-mismatch", invariant: "check_os_before_shell_commands", repair: "replace-with-ps-safe-command", utility: 0.70, replay: "not_run", source: "EVO-006" }
+        ]
+    };
+
+    const DEMO_MULTI = [
+        DEMO_DATA,
+        {
+            status: { agent_id: "alex-coder-42", project: "WebShop / React", level: 15, level_name: "Apprentice", level_emoji: "🔵", xp_current: 90, xp_next_level: 120, total_entries: 3, total_patterns: 2, total_anti_patterns: 5, top_impact: 7, streak: 3, last_updated: "2026-03-15" },
+            entries: [
+                { id: "EVO-001", date: "2026-03-14", impact: 5, xp: 5, category: "Structural", pattern: "PAT-001", title: "Missing Error Boundary" },
+                { id: "EVO-002", date: "2026-03-15", impact: 7, xp: 10, category: "Preventive", pattern: "PAT-002", title: "Race Condition in useEffect" },
+                { id: "EVO-003", date: "2026-03-15", impact: 6, xp: 8, category: "Preventive", title: "Stale Closure in Event Handler" }
+            ],
+            patterns: [
+                { id: "PAT-001", name: "Single Source of Truth Enforcement", source: "EVO-001" },
+                { id: "PAT-002", name: "Cleanup Function Always", source: "EVO-002" }
+            ],
+            antiPatterns: [
+                { id: "AP-001", name: "Feature Sprint Blindness" }, { id: "AP-002", name: "Missing Cleanup" },
+                { id: "AP-003", name: "Copy-Paste Deploy Command" }, { id: "AP-004", name: "Unhandled Promise" },
+                { id: "AP-005", name: "Stale State Closure" }
+            ]
+        },
+        {
+            status: { agent_id: "maria-dev-99", project: "DataPipe / Python", level: 31, level_name: "Specialist", level_emoji: "🟠", xp_current: 250, xp_next_level: 350, total_entries: 6, total_patterns: 5, total_anti_patterns: 8, top_impact: 9, streak: 6, last_updated: "2026-03-16" },
+            entries: [
+                { id: "EVO-001", date: "2026-03-12", impact: 9, xp: 18, category: "Preventive", pattern: "PAT-001", title: "Database Connection Pool Exhaustion" },
+                { id: "EVO-002", date: "2026-03-13", impact: 7, xp: 10, category: "Preventive", pattern: "PAT-002", title: "Pandas Memory Leak in Loop" },
+                { id: "EVO-003", date: "2026-03-14", impact: 6, xp: 8, category: "Structural", pattern: "PAT-003", title: "Config Validation on Startup" },
+                { id: "EVO-004", date: "2026-03-14", impact: 8, xp: 13, category: "Preventive", pattern: "PAT-004", title: "Multi-Source Credential Sync" },
+                { id: "EVO-005", date: "2026-03-15", impact: 5, xp: 5, category: "Structural", pattern: "PAT-005", title: "Logging Before Exception" },
+                { id: "EVO-006", date: "2026-03-16", impact: 7, xp: 10, category: "Preventive", title: "Timezone Aware Datetime Always" }
+            ],
+            patterns: [
+                { id: "PAT-001", name: "Connection Pool Monitoring", source: "EVO-001" },
+                { id: "PAT-002", name: "Chunked Processing > Full Load", source: "EVO-002" },
+                { id: "PAT-003", name: "Single Source of Truth Enforcement", source: "EVO-003" },
+                { id: "PAT-004", name: "Multi-Source Credential Sync", source: "EVO-004" },
+                { id: "PAT-005", name: "Loud Failure > Silent Success", source: "EVO-005" }
+            ],
+            antiPatterns: [
+                { id: "AP-001", name: "Feature Sprint Blindness" }, { id: "AP-002", name: "Unbounded Query" },
+                { id: "AP-003", name: "Copy-Paste Deploy Command" }, { id: "AP-004", name: "Silent Exception Swallow" },
+                { id: "AP-005", name: "Fallback Addiction" }, { id: "AP-006", name: "Naive Datetime" },
+                { id: "AP-007", name: "Documentation Drift" }, { id: "AP-008", name: "Hardcoded Credentials" }
+            ]
+        }
+    ];
+
+    /* ==================== PARSER ==================== */
+    function parseMarkdown(text) {
+        const result = { status: null, entries: [], patterns: [], antiPatterns: [] };
+        const statusRe = new RegExp('<' + '!--\\s*STATUS_JSON[\\s\\S]*?(\\{[\\s\\S]*?\\})\\s*-' + '->');
+        const statusMatch = text.match(statusRe);
+        if (statusMatch) { try { result.status = JSON.parse(statusMatch[1]); } catch(e) {} }
+        const evoRe = new RegExp('<' + '!--\\s*EVO_JSON\\s*\\n?\\s*(\\{[\\s\\S]*?\\})\\s*-' + '->', 'g');
+        for (const m of text.matchAll(evoRe)) { try { result.entries.push(JSON.parse(m[1])); } catch(e) {} }
+        for (const m of text.matchAll(/\|\s*(PAT-\d+)\s*\|\s*\*\*([^*]+)\*\*\s*\|\s*(EVO-\d+)/g)) {
+            result.patterns.push({ id: m[1], name: m[2].trim(), source: m[3] });
+        }
+        for (const m of text.matchAll(/\|\s*(AP-\d+)\s*\|\s*\*\*([^*]+)\*\*/g)) {
+            result.antiPatterns.push({ id: m[1], name: m[2].trim() });
+        }
+        return result;
+    }
+
+    /* ==================== HELPERS ==================== */
+    function getAvatarTier(level) {
+        if (level <= 10) return 1; if (level <= 20) return 2; if (level <= 30) return 3;
+        if (level <= 40) return 4; if (level <= 50) return 5; if (level <= 60) return 6;
+        if (level <= 70) return 7; if (level <= 80) return 8; if (level <= 90) return 9;
+        return 10;
+    }
+    function impactClass(impact) {
+        if (impact >= 7) return 'impact-high'; if (impact >= 5) return 'impact-mid'; return '';
+    }
+    function calcHealth(data) {
+        const s = data.status; const e = data.entries;
+        const preventive = e.filter(x => x.category === 'Preventive').length;
+        const preventiveRatio = e.length > 0 ? preventive / e.length : 0;
+        const patternReuse = s.total_patterns > 0 ? Math.min(1, s.total_patterns / Math.max(1, s.total_entries)) : 0;
+        const repeatRate = s.total_anti_patterns > 0 ? Math.min(1, s.total_anti_patterns / (s.total_anti_patterns + s.total_patterns + s.total_entries)) : 0;
+        const freshness = 1; // assume fresh
+        const score = Math.round((0.3 * (1 - repeatRate) + 0.3 * preventiveRatio + 0.2 * patternReuse + 0.2 * freshness) * 100);
+        return { score, repeatRate: Math.round(repeatRate * 100), preventiveRatio: Math.round(preventiveRatio * 100), patternReuse: Math.round(patternReuse * 100), freshness: 100 };
+    }
+
+    /* ==================== NAV ==================== */
+    function showView(view) {
+        document.getElementById('inputSection').style.display = view === 'input' ? '' : 'none';
+        document.getElementById('dashboard').classList.toggle('visible', view === 'solo');
+        document.getElementById('leaderboard').classList.toggle('visible', view === 'multi');
+    }
+
+    /* ==================== ACHIEVEMENT BADGES ENGINE (TAMA-2.7) ==================== */
+    const ACHIEVEMENTS = [
+        { id: 'first_blood', icon: '🩸', label: 'First Blood', desc: 'Record your first EVO entry', check: d => d.entries.length >= 1 },
+        { id: 'pattern_hunter', icon: '🎯', label: 'Pattern Hunter', desc: 'Extract 3+ patterns', check: d => d.patterns.length >= 3 },
+        { id: 'pattern_master', icon: '🧬', label: 'Pattern Master', desc: 'Extract 7+ patterns', check: d => d.patterns.length >= 7 },
+        { id: 'shield_bearer', icon: '🛡️', label: 'Shield Bearer', desc: '50%+ preventive entries', check: d => { const p = d.entries.filter(e => e.category === 'Preventive').length; return d.entries.length >= 2 && (p / d.entries.length) >= 0.5; } },
+        { id: 'high_impact', icon: '💥', label: 'High Impact', desc: 'Record an impact 9+ entry', check: d => d.entries.some(e => e.impact >= 9) },
+        { id: 'streak_3', icon: '🔥', label: 'On Fire', desc: '3+ entry streak', check: d => d.status.streak >= 3 },
+        { id: 'streak_7', icon: '🌋', label: 'Inferno', desc: '7+ entry streak', check: d => d.status.streak >= 7 },
+        { id: 'level_10', icon: '🐣', label: 'Hatched', desc: 'Reach level 10', check: d => d.status.level >= 10 },
+        { id: 'level_30', icon: '🐉', label: 'Dragon Blood', desc: 'Reach level 30', check: d => d.status.level >= 30 },
+        { id: 'level_50', icon: '🦅', label: 'Soaring Eagle', desc: 'Reach level 50', check: d => d.status.level >= 50 },
+        { id: 'anti_aware', icon: '🚫', label: 'Anti-Pattern Aware', desc: 'Register 10+ anti-patterns', check: d => d.antiPatterns.length >= 10 },
+        { id: 'xp_100', icon: '💯', label: 'Century', desc: 'Reach 100 XP', check: d => d.status.xp_current >= 100 },
+        { id: 'xp_500', icon: '🏆', label: 'Grand Master', desc: 'Reach 500 XP', check: d => d.status.xp_current >= 500 },
+    ];
+
+    function renderBadges(data) {
+        const grid = document.getElementById('badgesGrid'); grid.innerHTML = '';
+        for (const ach of ACHIEVEMENTS) {
+            const earned = ach.check(data);
+            const el = document.createElement('div');
+            el.className = `achievement-badge ${earned ? 'earned' : 'locked'}`;
+            el.title = ach.desc;
+            el.innerHTML = `<span class="badge-icon">${ach.icon}</span><span class="badge-label">${ach.label}</span>`;
+            grid.appendChild(el);
+        }
+    }
+
+    /* ==================== XP TIMELINE GRAPH (TAMA-2.8) ==================== */
+    function renderXPGraph(data) {
+        const svg = document.getElementById('xpGraphSvg');
+        // Clear previous content except defs
+        const defs = svg.querySelector('defs');
+        svg.innerHTML = ''; svg.appendChild(defs);
+
+        const entries = [...data.entries].sort((a, b) => a.id.localeCompare(b.id));
+        if (entries.length < 2) {
+            svg.innerHTML += `<text x="400" y="100" text-anchor="middle" class="graph-label" style="font-size:14px">Need 2+ EVO entries for graph</text>`;
+            return;
+        }
+
+        // Calculate cumulative XP
+        let cumXP = 0;
+        const points = entries.map(e => { cumXP += e.xp; return { id: e.id, date: e.date, xp: e.xp, cumXP, title: e.title, impact: e.impact }; });
+
+        const padX = 50, padY = 20;
+        const W = 800 - padX * 2, H = 200 - padY * 2;
+        const maxXP = Math.max(...points.map(p => p.cumXP));
+        const minXP = 0;
+
+        // Grid lines
+        for (let i = 0; i <= 4; i++) {
+            const y = padY + (H / 4) * i;
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', padX); line.setAttribute('y1', y);
+            line.setAttribute('x2', 800 - padX); line.setAttribute('y2', y);
+            line.setAttribute('class', 'graph-grid');
+            svg.appendChild(line);
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', padX - 8); label.setAttribute('y', y + 3);
+            label.setAttribute('text-anchor', 'end'); label.setAttribute('class', 'graph-label');
+            label.textContent = Math.round(maxXP - (maxXP / 4) * i);
+            svg.appendChild(label);
+        }
+
+        // Build path
+        const coords = points.map((p, i) => {
+            const x = padX + (i / (points.length - 1)) * W;
+            const y = padY + H - ((p.cumXP - minXP) / (maxXP - minXP || 1)) * H;
+            return { x, y, ...p };
+        });
+
+        // Area fill
+        const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const areaD = `M${coords[0].x},${padY + H} ` + coords.map(c => `L${c.x},${c.y}`).join(' ') + ` L${coords[coords.length-1].x},${padY + H} Z`;
+        areaPath.setAttribute('d', areaD); areaPath.setAttribute('class', 'graph-area');
+        svg.appendChild(areaPath);
+
+        // Line
+        const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const lineD = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x},${c.y}`).join(' ');
+        linePath.setAttribute('d', lineD); linePath.setAttribute('class', 'graph-line');
+        svg.appendChild(linePath);
+
+        // Dots + labels
+        const tooltip = document.getElementById('graphTooltip');
+        coords.forEach((c, i) => {
+            // X-axis label
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', c.x); label.setAttribute('y', padY + H + 16);
+            label.setAttribute('text-anchor', 'middle'); label.setAttribute('class', 'graph-label');
+            label.textContent = c.id;
+            svg.appendChild(label);
+            // Dot
+            const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            dot.setAttribute('cx', c.x); dot.setAttribute('cy', c.y); dot.setAttribute('r', 4);
+            dot.setAttribute('class', 'graph-dot');
+            dot.addEventListener('mouseenter', (ev) => {
+                tooltip.innerHTML = `<strong>${c.id}</strong> · ${c.date}<br>+${c.xp} XP → ${c.cumXP} total · Impact ${c.impact}/10<br>${c.title}`;
+                tooltip.style.opacity = 1;
+                const rect = document.getElementById('xpGraphCard').getBoundingClientRect();
+                const svgRect = svg.getBoundingClientRect();
+                tooltip.style.left = (c.x / 800 * svgRect.width) + 'px';
+                tooltip.style.top = (c.y / 200 * svgRect.height - 60) + 'px';
+            });
+            dot.addEventListener('mouseleave', () => { tooltip.style.opacity = 0; });
+            svg.appendChild(dot);
+        });
+    }
+
+    /* ==================== LOCALSTORAGE PERSISTENCE (TAMA-2.9) ==================== */
+    const STORAGE_KEY = 'tama_last_session';
+
+    function saveToStorage(data, mode) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, mode, savedAt: new Date().toISOString() }));
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('saving');
+            indicator.textContent = '💾 Saved!';
+            setTimeout(() => { indicator.classList.remove('saving'); indicator.textContent = '💾 Auto-saved'; }, 1500);
+        } catch(e) { /* quota exceeded — fail silently */ }
+    }
+
+    function loadFromStorage() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch(e) { return null; }
+    }
+
+    function checkSavedSession() {
+        const saved = loadFromStorage();
+        const btn = document.getElementById('loadSavedBtn');
+        if (saved && saved.data) {
+            const ago = Math.round((Date.now() - new Date(saved.savedAt).getTime()) / 60000);
+            const timeLabel = ago < 60 ? `${ago}m ago` : ago < 1440 ? `${Math.round(ago/60)}h ago` : `${Math.round(ago/1440)}d ago`;
+            btn.classList.add('show');
+            btn.textContent = `💾 Resume: ${saved.data.status?.agent_id || 'Session'} (${timeLabel})`;
+        }
+    }
+
+    /* ==================== ADAPTIVE XP FORMULA (TAMA-2.11) ==================== */
+    function getAdaptiveMultiplier(level) {
+        // SEAD curriculum: higher levels = harder to gain XP
+        if (level <= 10) return 1.0;
+        if (level <= 20) return 0.9;
+        if (level <= 30) return 0.8;
+        if (level <= 40) return 0.7;
+        if (level <= 50) return 0.6;
+        if (level <= 60) return 0.5;
+        if (level <= 70) return 0.4;
+        if (level <= 80) return 0.35;
+        if (level <= 90) return 0.3;
+        return 0.25;
+    }
+
+    /* ==================== TOAST NOTIFICATIONS (TAMA-3.4) ==================== */
+    function showToast(icon, title, sub, type = '') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span class="toast__icon">${icon}</span><div class="toast__body"><span class="toast__title">${title}</span><span class="toast__sub">${sub}</span></div>`;
+        container.appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 5200);
+    }
+
+    let _prevNotifState = null;
+    function checkNotifications(data) {
+        const s = data.status;
+        if (!s) return;
+        const prev = _prevNotifState;
+        _prevNotifState = { level: s.level, xp: s.xp_current, streak: s.streak, entries: data.entries.length, badges: ACHIEVEMENTS.filter(a => a.check(data)).length };
+        if (!prev) return; // first load — no notifications
+
+        // Level up
+        if (s.level > prev.level) {
+            showToast('🎉', `Level Up! → ${s.level}`, `${s.level_name} unlocked!`);
+            const flash = document.getElementById('levelUpFlash');
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 1600);
+        }
+        // New achievement
+        const earnedNow = ACHIEVEMENTS.filter(a => a.check(data)).length;
+        if (earnedNow > prev.badges) {
+            const newBadge = ACHIEVEMENTS.filter(a => a.check(data)).reverse().find((a, i) => i < earnedNow - prev.badges);
+            if (newBadge) showToast(newBadge.icon, `Achievement: ${newBadge.label}`, newBadge.desc, 'achievement');
+        }
+        // Streak milestone
+        if (s.streak >= 5 && prev.streak < 5) showToast('🔥', 'Streak: 5!', 'You\'re on fire!', 'streak');
+        if (s.streak >= 10 && prev.streak < 10) showToast('🌋', 'Streak: 10!', 'Unstoppable!', 'streak');
+        // New entry
+        if (data.entries.length > prev.entries) {
+            const latest = [...data.entries].sort((a, b) => b.id.localeCompare(a.id))[0];
+            if (latest) showToast('📝', `New: ${latest.id}`, latest.title);
+        }
+    }
+
+    /* ==================== DNA MUTATION LOG (TAMA-3.5) ==================== */
+    function renderDNALog(data) {
+        const container = document.getElementById('dnaTimeline');
+        container.innerHTML = '';
+        const mutations = buildDNALog(data);
+        if (mutations.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">No mutations recorded yet. Evolution events will appear here.</div>';
+            return;
+        }
+        for (const m of mutations) {
+            const e = document.createElement('div');
+            e.className = 'dna-entry';
+            e.innerHTML = `<span class="dna-entry__icon">${m.icon}</span><span class="dna-entry__date">${m.date}</span><span class="dna-entry__desc">${m.desc}</span><span class="dna-entry__type ${m.type}">${m.label}</span>`;
+            container.appendChild(e);
+        }
+    }
+
+    function buildDNALog(data) {
+        const log = [];
+        // Each EVO entry = a mutation event
+        for (const e of data.entries) {
+            log.push({ icon: '🧬', date: e.date, desc: `${e.id}: ${e.title}`, type: e.category === 'Preventive' ? 'add' : 'mutate', label: e.category === 'Preventive' ? 'Preventive' : 'Reactive' });
+        }
+        // Each pattern = DNA acquisition
+        for (const p of data.patterns) {
+            log.push({ icon: '🧠', date: '—', desc: `${p.id}: ${p.name} (from ${p.source})`, type: 'add', label: 'Pattern' });
+        }
+        // Each anti-pattern = mutation failure
+        for (const ap of data.antiPatterns) {
+            log.push({ icon: '⚠️', date: '—', desc: `${ap.id}: ${ap.name}`, type: 'remove', label: 'Anti-Pattern' });
+        }
+        // Sort: entries first (by ID desc), then patterns, then anti-patterns
+        return log;
+    }
+
+    /* ==================== FITNESS DASHBOARD (TAMA-5.3) ==================== */
+    function renderFitness(data) {
+        const grid = document.getElementById('fitnessGrid');
+        grid.innerHTML = '';
+        const s = data.status;
+        const entries = data.entries;
+        if (!s || entries.length === 0) return;
+
+        const preventive = entries.filter(e => e.category === 'Preventive').length;
+        const preventiveRatio = preventive / entries.length;
+        const patternReuse = s.total_patterns > 0 ? Math.min(1, s.total_patterns / Math.max(1, s.total_entries)) : 0;
+        const repeatRate = s.total_anti_patterns > 0 ? Math.min(1, s.total_anti_patterns / (s.total_anti_patterns + s.total_patterns + s.total_entries)) : 0;
+        const avgImpact = entries.reduce((a, e) => a + e.impact, 0) / entries.length;
+        const healthScore = Math.round((0.3 * (1 - repeatRate) + 0.3 * preventiveRatio + 0.2 * patternReuse + 0.2 * 1) * 100);
+
+        const metrics = [
+            { label: 'Health Score', value: healthScore + '%', pct: healthScore, color: healthScore >= 70 ? '#06d6a0' : healthScore >= 40 ? '#f59e0b' : '#ef4444', trend: healthScore >= 70 ? '↑ Strong' : healthScore >= 40 ? '→ Average' : '↓ Needs work', trendClass: healthScore >= 70 ? 'good' : healthScore >= 40 ? 'warn' : 'bad' },
+            { label: 'Preventive %', value: Math.round(preventiveRatio * 100) + '%', pct: preventiveRatio * 100, color: preventiveRatio >= 0.5 ? '#06d6a0' : '#f59e0b', trend: preventiveRatio >= 0.5 ? '↑ Proactive' : '↓ Reactive', trendClass: preventiveRatio >= 0.5 ? 'good' : 'warn' },
+            { label: 'Repeat Rate', value: Math.round(repeatRate * 100) + '%', pct: repeatRate * 100, color: repeatRate <= 0.2 ? '#06d6a0' : repeatRate <= 0.4 ? '#f59e0b' : '#ef4444', trend: repeatRate <= 0.2 ? '↓ Clean' : '↑ Recurring', trendClass: repeatRate <= 0.2 ? 'good' : 'bad' },
+            { label: 'Pattern Reuse', value: Math.round(patternReuse * 100) + '%', pct: patternReuse * 100, color: '#8b5cf6', trend: patternReuse >= 0.5 ? '↑ Extracting' : '→ Room to grow', trendClass: patternReuse >= 0.5 ? 'good' : 'warn' },
+            { label: 'Avg Impact', value: avgImpact.toFixed(1), pct: avgImpact * 10, color: avgImpact >= 7 ? '#ef4444' : avgImpact >= 5 ? '#f59e0b' : '#06d6a0', trend: avgImpact >= 7 ? '🔴 High stakes' : '🟡 Moderate', trendClass: avgImpact >= 7 ? 'bad' : 'warn' },
+            { label: 'Entries', value: entries.length, pct: Math.min(100, entries.length * 10), color: '#8b5cf6', trend: `${s.streak} streak`, trendClass: s.streak >= 3 ? 'good' : 'warn' },
+        ];
+
+        for (const m of metrics) {
+            const card = document.createElement('div');
+            card.className = 'fitness-card';
+            card.innerHTML = `<div class="fitness-card__label">${m.label}</div><div class="fitness-card__value" style="color:${m.color}">${m.value}</div><div class="fitness-card__trend ${m.trendClass}">${m.trend}</div><div class="fitness-card__bar"><div class="fitness-card__fill" style="width:0;background:${m.color}"></div></div>`;
+            grid.appendChild(card);
+            // Animate bar
+            setTimeout(() => { card.querySelector('.fitness-card__fill').style.width = Math.min(100, m.pct) + '%'; }, 100);
+        }
+    }
+
+    /* ==================== 5-AXIS AUDIT PANEL (D.2) ==================== */
+    function renderAuditPanel(data) {
+        const genomes = data.genomes || [];
+        const entries = data.entries || [];
+        const patterns = data.patterns || [];
+
+        // Estimate scores from dashboard data
+        const structureScore = Math.min(100, 50 + patterns.length * 5 + entries.length * 2);
+        const memoryScore = Math.min(100, entries.length * 8 + genomes.length * 10);
+        const verifScore = Math.min(100, 60 + (entries.filter(e => e.category === 'Preventive').length * 5));
+        const shareScore = Math.min(100, genomes.length > 0 ? 70 + genomes.length * 3 : 30);
+        const evoScore = Math.min(100, genomes.length * 12 + (genomes.filter(g => g.replay && g.replay !== 'not_run').length * 15));
+        const overall = Math.round((structureScore + memoryScore + verifScore + shareScore + evoScore) / 5);
+
+        document.getElementById('auditOverall').textContent = overall + '%';
+
+        const axes = [
+            { id: 'Structure', score: structureScore },
+            { id: 'Memory', score: memoryScore },
+            { id: 'Verification', score: verifScore },
+            { id: 'Shareability', score: shareScore },
+            { id: 'Evolution', score: evoScore },
+        ];
+
+        for (const ax of axes) {
+            const scoreEl = document.getElementById('axis' + ax.id);
+            const barEl = document.getElementById('bar' + ax.id);
+            if (scoreEl) scoreEl.textContent = ax.score + '%';
+            if (barEl) setTimeout(() => { barEl.style.width = ax.score + '%'; }, 200);
+        }
+    }
+
+    /* ==================== REPLAY GATE TIMELINE (D.3) ==================== */
+    function renderReplayTimeline(data) {
+        const container = document.getElementById('replayTimeline');
+        container.innerHTML = '';
+        const genomes = data.genomes || [];
+
+        if (genomes.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">🧬 No genomes to display. Create via: node cli/nve-distill.js</div>';
+            return;
+        }
+
+        for (const g of genomes) {
+            const replay = g.replay || 'not_run';
+            const promotion = g.promotion_decision || (replay === 'not_run' ? 'pending' : 'promoted');
+            let statusIcon, statusColor, statusLabel;
+
+            if (promotion === 'promoted' || replay === 'passed' || replay === 'completed') {
+                statusIcon = '✅'; statusColor = 'var(--accent-green)'; statusLabel = 'Promoted';
+            } else if (promotion === 'rejected') {
+                statusIcon = '❌'; statusColor = 'var(--accent-red)'; statusLabel = 'Rejected';
+            } else {
+                statusIcon = '⏳'; statusColor = 'var(--accent-amber)'; statusLabel = 'Pending';
+            }
+
+            const family = g.family || '—';
+            const utility = (g.utility?.score ?? g.utility ?? 0);
+            const utilityDisplay = typeof utility === 'number' ? utility.toFixed(2) : utility;
+
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:0.75rem;padding:0.6rem 1rem;background:var(--bg-secondary);border:1px solid var(--border-card);border-radius:var(--radius-sm);transition:all .2s;';
+            row.onmouseenter = () => row.style.borderColor = statusColor;
+            row.onmouseleave = () => row.style.borderColor = 'var(--border-card)';
+
+            row.innerHTML = `
+                <span style="font-size:1.2rem;">${statusIcon}</span>
+                <span style="flex:1;font-size:0.82rem;font-weight:600;color:var(--text-primary);">${family}</span>
+                <span style="font-size:0.75rem;color:var(--text-muted);">⭐ ${utilityDisplay}</span>
+                <span style="font-size:0.7rem;font-weight:700;color:${statusColor};padding:2px 8px;border-radius:10px;border:1px solid ${statusColor};">${statusLabel}</span>
+            `;
+            container.appendChild(row);
+        }
+    }
+
+    /* ==================== REPO MANIFEST PANEL (D.4) ==================== */
+    function renderManifestPanel(data) {
+        const container = document.getElementById('manifestPanel');
+        container.innerHTML = '';
+        const s = data.status || {};
+        const genomes = data.genomes || [];
+        const entries = data.entries || [];
+        const patterns = data.patterns || [];
+
+        const badges = [
+            { icon: '📂', label: s.project || 'Unknown', color: 'var(--accent-purple)' },
+            { icon: '📝', label: `${entries.length} entries`, color: 'var(--accent-cyan)' },
+            { icon: '🧠', label: `${patterns.length} patterns`, color: 'var(--accent-green)' },
+            { icon: '🧬', label: `${genomes.length} genomes`, color: 'var(--accent-amber)' },
+            { icon: '🏅', label: `Level ${s.level || 1}`, color: 'var(--accent-red)' },
+            { icon: '⚡', label: `${s.xp_current || 0} XP`, color: 'var(--accent-purple)' },
+        ];
+
+        // Add stack tags if available
+        const project = (s.project || '').toLowerCase();
+        const stackTags = [];
+        if (project.includes('node') || project.includes('js') || project.includes('json')) stackTags.push('Node.js');
+        if (project.includes('python') || project.includes('django') || project.includes('flask')) stackTags.push('Python');
+        if (project.includes('react') || project.includes('next')) stackTags.push('React');
+        if (project.includes('vue')) stackTags.push('Vue');
+        if (project.includes('docker') || project.includes('cloud')) stackTags.push('Cloud');
+        if (genomes.length > 0) stackTags.push('FG Layer ✅');
+        if (entries.length >= 5) stackTags.push('Active ✅');
+
+        for (const tag of stackTags) {
+            badges.push({ icon: '🏷', label: tag, color: 'var(--text-muted)' });
+        }
+
+        for (const b of badges) {
+            const el = document.createElement('div');
+            el.style.cssText = `display:flex;align-items:center;gap:0.4rem;padding:0.5rem 0.75rem;background:var(--bg-secondary);border:1px solid var(--border-card);border-radius:var(--radius-sm);font-size:0.78rem;`;
+            el.innerHTML = `<span>${b.icon}</span><span style="font-weight:600;color:${b.color};">${b.label}</span>`;
+            container.appendChild(el);
+        }
+    }
+
+    /* ==================== DANGER ZONE PREDICTOR (TAMA-5.7) ==================== */
+    function renderDangerZone(data) {
+        const container = document.getElementById('dangerCards');
+        container.innerHTML = '';
+        if (data.antiPatterns.length === 0 && data.entries.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">🛡️ No anti-patterns detected. Great job!</div>';
+            return;
+        }
+        // Category definitions with descriptions and prevention advice
+        const catDefs = {
+            'Deploy/Infra': {
+                keywords: ['deploy', 'docker', 'cloud', 'server', 'infra', 'build', 'ci/cd', 'production', 'desync', 'frontend'],
+                icon: '🚀',
+                desc: 'Deployment pipeline has recurring failures. Deploys may break silently or be incomplete.',
+                prevention: '→ Use unified deploy script. Always verify on production after deploy. Check both frontend and backend.'
+            },
+            'Data/API': {
+                keywords: ['api', 'data', 'json', 'endpoint', 'key', 'credential', 'auth', 'token', 'supabase', 'secret', 'whitespace'],
+                icon: '🔑',
+                desc: 'API keys, credentials, or data contracts are fragile. Mismatches can cause silent failures.',
+                prevention: '→ .strip() all Secret Manager values. Verify artifact_type names match across save/read. Test with real data.'
+            },
+            'Code Quality': {
+                keywords: ['drift', 'naming', 'module', 'leak', 'duplicate', 'stale', 'mismatch', 'interface'],
+                icon: '🧹',
+                desc: 'Module interfaces or naming conventions are inconsistent. One-word type mismatches cause total feature loss.',
+                prevention: '→ Grep saved artifact types and verify read types match. Run interface contract audits between modules.'
+            },
+            'Process': {
+                keywords: ['done', 'status', 'false', 'verification', 'test', 'audit', 'blindness', 'triage', 'dismissive'],
+                icon: '📋',
+                desc: 'Tasks are being closed without proper verification. "Looks correct in code" ≠ "works in production".',
+                prevention: '→ DOD = works on production deployment. Download output, open files, check data. Never trust code-only verification.'
+            },
+            'Shell/Environment': {
+                keywords: ['shell', 'powershell', 'bash', 'env', 'path', 'command', 'variable'],
+                icon: '💻',
+                desc: 'Shell commands fail due to platform differences (PowerShell vs bash).',
+                prevention: '→ Always check OS metadata. Use ; in PowerShell, && in bash. Or use separate commands.'
+            },
+            'Fallback Pollution': {
+                keywords: ['fallback', 'generic', 'keyword', 'template', 'seed', 'pollution', 'addiction'],
+                icon: '🗑️',
+                desc: 'Fallback/default values are being presented as real analysis. Users see template data as if it were computed.',
+                prevention: '→ Mark all fallback data visibly. Never present generic seeds as real analysis. Validate LLM output is non-empty.'
+            },
+        };
+        const catCounts = {};
+        const catAPs = {}; // category -> list of contributing AP names
+        for (const ap of data.antiPatterns) {
+            const name = ap.name.toLowerCase();
+            let matched = false;
+            for (const [cat, def] of Object.entries(catDefs)) {
+                if (def.keywords.some(w => name.includes(w))) {
+                    catCounts[cat] = (catCounts[cat] || 0) + 1;
+                    (catAPs[cat] = catAPs[cat] || []).push(ap.id + ': ' + ap.name);
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                catCounts['Other'] = (catCounts['Other'] || 0) + 1;
+                (catAPs['Other'] = catAPs['Other'] || []).push(ap.id + ': ' + ap.name);
+            }
+        }
+        // Also count reactive entries
+        for (const e of data.entries) {
+            if (e.category !== 'Preventive' && e.type) {
+                for (const [cat, def] of Object.entries(catDefs)) {
+                    if (def.keywords.some(w => e.type.toLowerCase().includes(w))) {
+                        catCounts[cat] = (catCounts[cat] || 0) + 0.5;
+                        break;
+                    }
+                }
+            }
+        }
+        const sorted = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+        const maxCount = sorted[0]?.[1] || 1;
+        for (const [cat, count] of sorted) {
+            const risk = count >= maxCount * 0.7 ? 'high' : count >= maxCount * 0.4 ? 'medium' : 'low';
+            const riskLabel = risk === 'high' ? 'HIGH RISK' : risk === 'medium' ? 'MEDIUM' : 'LOW';
+            const def = catDefs[cat] || { icon: '❓', desc: 'Uncategorized issues.', prevention: '→ Review anti-patterns manually.' };
+            const apList = (catAPs[cat] || []).slice(0, 3).join(' · ');
+            const card = document.createElement('div');
+            card.className = 'danger-card';
+            card.style.flexDirection = 'column';
+            card.style.alignItems = 'stretch';
+            card.innerHTML = `<div style="display:flex;align-items:center;gap:0.75rem"><span class="danger-card__icon">${def.icon}</span><div class="danger-card__body"><div class="danger-card__title">${cat}</div><div class="danger-card__sub">${Math.round(count)} issues · ${def.desc}</div></div><span class="danger-card__risk ${risk}">${riskLabel}</span></div><div style="font-size:0.7rem;color:var(--accent-cyan);margin-top:0.4rem;padding-left:2rem">${def.prevention}</div>${apList ? `<div style="font-size:0.65rem;color:var(--text-muted);margin-top:0.2rem;padding-left:2rem">Contributing: ${apList}</div>` : ''}`;
+            container.appendChild(card);
+        }
+    }
+
+    /* ==================== PATTERN SUGGESTIONS (TAMA-5.1) ==================== */
+    function renderPatternSuggestions(data) {
+        const container = document.getElementById('suggestionsContainer');
+        container.innerHTML = '';
+        const suggestions = [];
+        const existingPatternNames = new Set(data.patterns.map(p => p.name.toLowerCase()));
+
+        // Known pattern templates by keyword
+        const templates = [
+            { keywords: ['auth', 'login', 'credential', 'key', 'token'], name: 'Credential Lifecycle Management', icon: '🔑' },
+            { keywords: ['deploy', 'build', 'docker', 'cloud'], name: 'Deployment Verification Protocol', icon: '🚀' },
+            { keywords: ['css', 'style', 'theme', 'design', 'color'], name: 'Design System Contract', icon: '🎨' },
+            { keywords: ['api', 'endpoint', 'response', 'request'], name: 'API Contract Enforcement', icon: '🔌' },
+            { keywords: ['file', 'path', 'directory', 'folder'], name: 'File System Boundaries', icon: '📁' },
+            { keywords: ['cache', 'stale', 'refresh', 'expired'], name: 'Cache Invalidation Protocol', icon: '♻️' },
+            { keywords: ['test', 'verify', 'check', 'assert'], name: 'Test Coverage Enforcement', icon: '✅' },
+            { keywords: ['error', 'exception', 'crash', 'fail'], name: 'Error Boundary Design', icon: '🛡️' },
+            { keywords: ['config', 'env', 'setting', 'parameter'], name: 'Configuration Source of Truth', icon: '⚙️' },
+            { keywords: ['data', 'database', 'query', 'model'], name: 'Data Access Layer Contract', icon: '💾' },
+        ];
+
+        // Check entries without patterns
+        for (const e of data.entries) {
+            if (e.pattern) continue; // already has a pattern
+            const titleLower = (e.title + ' ' + (e.type || '')).toLowerCase();
+            for (const t of templates) {
+                if (t.keywords.some(k => titleLower.includes(k)) && !existingPatternNames.has(t.name.toLowerCase())) {
+                    suggestions.push({ icon: t.icon, name: t.name, source: e.id, reason: `Detected from: "${e.title}"` });
+                    existingPatternNames.add(t.name.toLowerCase()); // avoid dupes
+                    break;
+                }
+            }
+        }
+
+        // Also check anti-patterns for inverse patterns
+        for (const ap of data.antiPatterns) {
+            const name = ap.name.toLowerCase();
+            for (const t of templates) {
+                if (t.keywords.some(k => name.includes(k)) && !existingPatternNames.has(t.name.toLowerCase())) {
+                    suggestions.push({ icon: '🔄', name: t.name + ' (inverse of AP)', source: ap.id, reason: `Anti-pattern "${ap.name}" suggests need for this pattern` });
+                    existingPatternNames.add(t.name.toLowerCase());
+                    break;
+                }
+            }
+        }
+
+        if (suggestions.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">✨ All entries have patterns assigned. Great coverage!</div>';
+            return;
+        }
+
+        for (const s of suggestions) {
+            const card = document.createElement('div');
+            card.className = 'suggestion-card';
+            card.innerHTML = `<span class="suggestion-card__icon">${s.icon}</span><div class="suggestion-card__body"><div class="suggestion-card__name">${s.name}</div><div class="suggestion-card__reason">${s.reason}</div><div class="suggestion-card__source">Source: ${s.source}</div></div>`;
+            container.appendChild(card);
+        }
+    }
+
+    /* ==================== RECURRENCE DETECTOR (TAMA-5.2) ==================== */
+    function renderRecurrenceDetector(data) {
+        const container = document.getElementById('recurrenceContainer');
+        container.innerHTML = '';
+        if (data.antiPatterns.length === 0 || data.entries.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">🛡️ No recurrence patterns detected.</div>';
+            return;
+        }
+
+        const matches = [];
+        for (const ap of data.antiPatterns) {
+            const apWords = new Set(ap.name.toLowerCase().split(/\W+/).filter(w => w.length > 2));
+            for (const e of data.entries) {
+                const entryWords = new Set((e.title + ' ' + (e.type || '')).toLowerCase().split(/\W+/).filter(w => w.length > 2));
+                const overlap = [...apWords].filter(w => entryWords.has(w)).length;
+                const similarity = apWords.size > 0 ? Math.round((overlap / apWords.size) * 100) : 0;
+                if (similarity >= 30) {
+                    matches.push({ ap: ap.name, apId: ap.id, evo: e.id, title: e.title, similarity });
+                }
+            }
+        }
+
+        // Sort by similarity descending, dedupe
+        const seen = new Set();
+        const unique = matches.sort((a, b) => b.similarity - a.similarity).filter(m => {
+            const key = m.apId + ':' + m.evo;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        }).slice(0, 10);
+
+        if (unique.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">✅ No recurring anti-patterns found in entries.</div>';
+            return;
+        }
+
+        for (const m of unique) {
+            const item = document.createElement('div');
+            item.className = 'recurrence-item';
+            item.innerHTML = `<span class="recurrence-item__match">${m.similarity}%</span><span class="recurrence-item__ap">${m.apId}: ${m.ap}</span><span class="recurrence-item__evo">↔ ${m.evo}: ${m.title}</span>`;
+            container.appendChild(item);
+        }
+    }
+
+    /* ==================== SELF-QUESTIONING ENGINE (TAMA-5.8) ==================== */
+    function renderSelfQuestions(data) {
+        const container = document.getElementById('questionsContainer');
+        container.innerHTML = '';
+        const questions = [];
+
+        // Generate questions from anti-patterns
+        const apTemplates = [
+            (ap) => `What if "${ap.name}" happens again in a different module?`,
+            (ap) => `Could automated testing have prevented "${ap.name}"?`,
+            (ap) => `Is there a pattern that would make "${ap.name}" structurally impossible?`,
+            (ap) => `What's the blast radius if "${ap.name}" recurs in production?`,
+        ];
+        for (const ap of data.antiPatterns.slice(0, 5)) {
+            const template = apTemplates[Math.floor(Math.random() * apTemplates.length)];
+            questions.push({ icon: '🤔', text: template(ap), source: ap.id });
+        }
+
+        // Generate questions from reactive entries (non-preventive)
+        const reactive = data.entries.filter(e => e.category !== 'Preventive');
+        const evoTemplates = [
+            (e) => `What if you had a pre-commit hook that caught "${e.title}"?`,
+            (e) => `Could this issue (${e.id}) have been caught by a linter or static analysis?`,
+            (e) => `What systemic change would make issues like "${e.title}" impossible?`,
+        ];
+        for (const e of reactive.slice(0, 3)) {
+            const template = evoTemplates[Math.floor(Math.random() * evoTemplates.length)];
+            questions.push({ icon: '💡', text: template(e), source: e.id });
+        }
+
+        // Proactive meta-questions based on data
+        if (data.status.streak < 3) {
+            questions.push({ icon: '📅', text: 'Your streak is low. What if you committed to one EVO entry per session?', source: 'META' });
+        }
+        if (data.patterns.length < data.entries.length * 0.5) {
+            questions.push({ icon: '🧠', text: `Only ${data.patterns.length} patterns for ${data.entries.length} entries. Are you extracting enough learnings?`, source: 'META' });
+        }
+
+        if (questions.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;">🧘 No questions right now. Reflect on your recent evolution.</div>';
+            return;
+        }
+
+        for (const q of questions) {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `<span class="question-card__icon">${q.icon}</span><span class="question-card__text">${q.text}</span><span class="question-card__source">${q.source}</span>`;
+            container.appendChild(card);
+        }
+    }
+
+    /* ==================== AI INSIGHTS via Gemini (TAMA-5.6) ==================== */
+    let _lastData = null; // stored after render for AI access
+    async function generateAIInsights() {
+        if (!_lastData) { alert('Load data first!'); return; }
+        const btn = document.getElementById('aiInsightsBtn');
+        const container = document.getElementById('aiInsightsContent');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Analyzing with Gemini...';
+        container.style.display = 'block';
+        container.textContent = 'Sending to AI...';
+
+        const d = _lastData;
+        const genomes = d.genomes || [];
+        const genomeBlock = genomes.length > 0
+            ? `\nFAILURE GENOMES (${genomes.length} total):\n${genomes.map(g => `• Family: "${g.family}" | Invariant: ${g.invariant} | Repair: ${g.repair} | Utility: ${g.utility} | Replay: ${g.replay || 'not_run'} | Source: ${g.source}`).join('\n')}`
+            : '\nFAILURE GENOMES: None yet.';
+
+        const prompt = `Ты — AI Evolution Coach, анализирующий эволюционный журнал и Failure Genome разработчика. Отвечай на русском.
+
+ДАННЫЕ АГЕНТА:
+- Агент: ${d.status.agent_id}, Level ${d.status.level} (${d.status.level_name}), ${d.status.xp_current} XP
+- ${d.entries.length} EVO записей, ${d.patterns.length} паттернов, ${d.antiPatterns.length} анти-паттернов
+- Streak: ${d.status.streak}, Top impact: ${d.status.top_impact}
+
+ПОСЛЕДНИЕ ЗАПИСИ:
+${d.entries.slice(-5).map(e => `${e.id}: "${e.title}" (impact: ${e.impact}, category: ${e.category}, type: ${e.type || 'unknown'})`).join('\n')}
+
+ПАТТЕРНЫ:
+${d.patterns.map(p => `${p.id}: ${p.name}`).join('\n')}
+
+АНТИ-ПАТТЕРНЫ:
+${d.antiPatterns.map(a => `${a.id}: ${a.name}`).join('\n')}
+${genomeBlock}
+
+ЗАДАЧИ АНАЛИЗА:
+
+1. **ПЕРЕСЧЁТ ИМПАКТА**: Для последних 3 записей — предложи пересмотренный impact (1-10) с обоснованием на основе downstream-эффектов и потенциала реюза паттерна.
+
+2. **ПРОГНОЗ РИСКОВ**: На основе кластеров анти-паттернов и failure families — предскажи наиболее вероятную следующую область сбоя (конкретно, не абстрактно).
+
+3. **АНАЛИЗ ГЕНОМОВ**: ${genomes.length > 0 ? `Оцени ${genomes.length} failure families:
+   - Какие семейства наиболее критичны?
+   - Есть ли пересечения между семействами (общий root cause)?
+   - Какие repair operators можно переиспользовать в других контекстах?` : 'Нет геномов — предложи какие инциденты стоит дистиллировать первыми.'}
+
+4. **ГОТОВНОСТЬ К МУТАЦИИ**: Оцени готовность системы к автоматическим мутациям правил:
+   - Достаточно ли данных для replay gate?
+   - Какое правило стоит мутировать первым?
+   - Потенциальные риски мутации
+
+5. **СТРАТЕГИЧЕСКАЯ РЕКОМЕНДАЦИЯ**: Одно конкретное действие для максимального роста.
+
+Отвечай структурированно. Используй **жирный** для ключевых терминов. Макс 500 слов.`;
+
+        try {
+            const resp = await fetch('/api/gemini', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error);
+            container.innerHTML = data.text
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+        } catch (err) {
+            container.textContent = '❌ Error: ' + err.message;
+        }
+        btn.disabled = false;
+        btn.innerHTML = '✨ Generate AI Insights';
+    }
+
+    /* ==================== FAILURE GENOME RENDERER (V4) ==================== */
+    function renderGenomes(data) {
+        const statsEl = document.getElementById('genomeStats');
+        const gridEl = document.getElementById('genomeGrid');
+        statsEl.innerHTML = ''; gridEl.innerHTML = '';
+
+        const genomes = data.genomes || [];
+        if (genomes.length === 0) {
+            gridEl.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem;grid-column:1/-1;">🧬 No failure genomes yet. Genomes are created from Impact ≥ 7 incidents.</div>';
+            return;
+        }
+
+        const families = new Set(genomes.map(g => g.family));
+        const avgUtility = (genomes.reduce((a, g) => a + (g.utility || 0), 0) / genomes.length).toFixed(2);
+        const topFamily = genomes.reduce((best, g) => (g.utility || 0) > (best.utility || 0) ? g : best, genomes[0]);
+        const replayedCount = genomes.filter(g => g.replay && g.replay !== 'not_run').length;
+
+        // Stats row
+        const stats = [
+            { value: genomes.length, label: 'Genomes', color: 'var(--accent-purple)' },
+            { value: families.size, label: 'Families', color: 'var(--accent-cyan)' },
+            { value: avgUtility, label: 'Avg Utility', color: 'var(--accent-amber)' },
+            { value: replayedCount + '/' + genomes.length, label: 'Replayed', color: 'var(--text-primary)' }
+        ];
+        for (const st of stats) {
+            const el = document.createElement('div'); el.className = 'genome-stat';
+            el.innerHTML = `<div class="genome-stat__value" style="color:${st.color}">${st.value}</div><div class="genome-stat__label">${st.label}</div>`;
+            statsEl.appendChild(el);
+        }
+
+        // Genome cards
+        for (const g of genomes) {
+            const card = document.createElement('div'); card.className = 'genome-card';
+            card.innerHTML = `
+                <div class="genome-card__family">${g.family}</div>
+                <div class="genome-card__invariant">⚠ ${g.invariant}</div>
+                <div class="genome-card__repair">🔧 ${g.repair}</div>
+                <div class="genome-card__meta">
+                    <span class="genome-tag utility">⭐ Utility: ${g.utility}</span>
+                    <span class="genome-tag replay">🔄 Replay: ${g.replay || 'not_run'}</span>
+                    <span class="genome-tag">📍 ${g.source}</span>
+                </div>`;
+            gridEl.appendChild(card);
+        }
+    }
+
+    /* ==================== SHARE — CONSENT-BASED FLOW (V4.1) ==================== */
+    let _pendingShareGenomes = [];
+
+    // Drop zone click → file picker
+    document.getElementById('packDropZone')?.addEventListener('click', () => {
+        document.getElementById('packFileInput')?.click();
+    });
+
+    function handlePackDrop(event) {
+        event.preventDefault();
+        event.currentTarget.style.borderColor = 'var(--border-card)';
+        const file = event.dataTransfer.files[0];
+        if (file) handlePackFile(file);
+    }
+
+    function handlePackFile(file) {
+        if (!file || !file.name.endsWith('.json')) {
+            showShareError('⚠️ Нужен JSON файл (output от nve-pack.js)');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                let genomes = [];
+
+                // nve-pack format: { payload: { failure_genomes: [...] } }
+                if (data.payload && data.payload.failure_genomes) {
+                    genomes = data.payload.failure_genomes;
+                }
+                // Direct genomes array
+                else if (Array.isArray(data.failure_genomes)) {
+                    genomes = data.failure_genomes;
+                }
+                // Array of genomes
+                else if (Array.isArray(data) && data[0] && data[0].family) {
+                    genomes = data;
+                }
+                // Single genome
+                else if (data.family && data.violated_invariant) {
+                    genomes = [data];
+                }
+
+                if (genomes.length === 0) {
+                    showShareError('⚠️ В файле не найдены Failure Genomes. Используйте: node cli/nve-pack.js distilled');
+                    return;
+                }
+
+                document.getElementById('packDropZone').innerHTML = 
+                    `<div style="font-size:1.5rem;margin-bottom:0.5rem;">✅</div>
+                     <div style="font-size:0.85rem;font-weight:600;">${file.name}</div>
+                     <div style="font-size:0.75rem;color:var(--accent-cyan);">${genomes.length} genome(s) loaded</div>`;
+
+                showSharePreview(genomes);
+            } catch (err) {
+                showShareError(`❌ Ошибка парсинга JSON: ${err.message}`);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function previewFromLoaded() {
+        if (!_lastData || !_lastData.genomes || _lastData.genomes.length === 0) {
+            showShareError('⚠️ Нет загруженных данных с genomes. Сначала загрузите journal или используйте nve-pack JSON.');
+            return;
+        }
+        showSharePreview(_lastData.genomes);
+    }
+
+    function showSharePreview(genomes) {
+        _pendingShareGenomes = genomes;
+        const tbody = document.getElementById('sharePreviewBody');
+        tbody.innerHTML = '';
+
+        for (const g of genomes) {
+            const family = g.family || '—';
+            const invariant = g.violated_invariant || g.invariant || '—';
+            const repair = g.repair_operator || g.repair || '—';
+            const utility = (g.utility?.score ?? g.utility ?? 0).toFixed(2);
+
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border-card)';
+            tr.innerHTML = `
+                <td style="padding:6px 8px;color:var(--text-primary);font-weight:600;">${family}</td>
+                <td style="padding:6px 8px;color:var(--text-muted);font-size:0.75rem;">${invariant}</td>
+                <td style="padding:6px 8px;color:var(--accent-cyan);font-size:0.75rem;">${repair}</td>
+                <td style="padding:6px 8px;text-align:right;font-family:var(--font-display);color:var(--accent-amber);">${utility}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        document.getElementById('shareCount').textContent = genomes.length;
+        document.getElementById('sharePreview').style.display = 'block';
+        document.getElementById('shareResult').style.display = 'none';
+    }
+
+    function cancelShare() {
+        _pendingShareGenomes = [];
+        document.getElementById('sharePreview').style.display = 'none';
+    }
+
+    async function confirmShare() {
+        if (_pendingShareGenomes.length === 0) return;
+
+        const btn = document.getElementById('confirmShareBtn');
+        const resultEl = document.getElementById('shareResult');
+        btn.disabled = true;
+        btn.textContent = '⏳ Sending...';
+
+        try {
+            const resp = await fetch('/api/pack', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ genomes: _pendingShareGenomes })
+            });
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error);
+
+            resultEl.className = 'share-result success';
+            resultEl.textContent = `✅ Отправлено ${data.shared} genome(s) в Community Pool. Спасибо!`;
+            showToast('🌍', 'Shared!', `${data.shared} failure families`, 'achievement');
+            _pendingShareGenomes = [];
+            document.getElementById('sharePreview').style.display = 'none';
+        } catch (err) {
+            resultEl.className = 'share-result error';
+            resultEl.textContent = `❌ ${err.message}`;
+        }
+
+        btn.disabled = false;
+        btn.textContent = `✅ Confirm & Share (${_pendingShareGenomes.length} genomes)`;
+    }
+
+    function showShareError(msg) {
+        const resultEl = document.getElementById('shareResult');
+        resultEl.className = 'share-result error';
+        resultEl.textContent = msg;
+    }
+
+    /* ==================== LOAD COMMUNITY GENOMES (V4) ==================== */
+    async function loadCommunityGenomes() {
+        const grid = document.getElementById('communityGrid');
+        const btn = document.getElementById('loadCommunityBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Loading...';
+        grid.innerHTML = '<div class="community-empty">Loading community data...</div>';
+
+        try {
+            const resp = await fetch('/api/community/genomes');
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error);
+
+            grid.innerHTML = '';
+            const families = data.data || [];
+
+            if (families.length === 0) {
+                grid.innerHTML = '<div class="community-empty">🌱 No community data yet. Be the first to share!</div>';
+            } else {
+                for (const f of families) {
+                    const card = document.createElement('div'); card.className = 'community-card';
+                    card.innerHTML = `
+                        <div class="community-card__family">${f.family}</div>
+                        <div class="community-card__invariant">⚠ ${f.invariant}</div>
+                        <div class="community-card__meta">
+                            🔧 ${f.repair_operator} · 
+                            📊 ${f.count} genome(s) · 
+                            ⭐ Utility: ${f.avg_utility} · 
+                            ✅ ${f.promoted} promoted
+                        </div>`;
+                    grid.appendChild(card);
+                }
+            }
+        } catch (err) {
+            grid.innerHTML = `<div class="community-empty">❌ ${err.message}</div>`;
+        }
+
+        btn.disabled = false;
+        btn.textContent = '🔄 Load Community Data';
+    }
+
+    /* ==================== RENDER SOLO ==================== */
+    function renderDashboard(data) {
+        if (!data.status) { alert('No STATUS_JSON found!'); return; }
+        _lastData = data; // store for AI Insights
+        const s = data.status;
+        const tier = getAvatarTier(s.level);
+        const avatar = AVATAR_MAP[tier];
+        const lc = LEVEL_COLORS[s.level_emoji] || LEVEL_COLORS['🟣'];
+        document.getElementById('avatarCreature').textContent = avatar.emoji;
+        document.getElementById('avatarName').textContent = s.agent_id || 'Unknown';
+        document.getElementById('avatarProject').textContent = s.project || '';
+        const badge = document.getElementById('levelBadge');
+        badge.style.background = lc.bg; badge.style.borderColor = lc.border; badge.style.color = lc.color;
+        document.getElementById('levelEmoji').textContent = s.level_emoji;
+        document.getElementById('levelNum').textContent = s.level;
+        document.getElementById('levelName').textContent = s.level_name;
+        document.getElementById('xpCurrent').textContent = s.xp_current;
+        document.getElementById('xpNext').textContent = s.xp_next_level;
+        const pct = s.xp_next_level > 0 ? Math.min(100, Math.round((s.xp_current / s.xp_next_level) * 100)) : 100;
+        document.getElementById('xpPercent').textContent = pct + '%';
+        setTimeout(() => { document.getElementById('xpBar').style.width = pct + '%'; }, 100);
+        document.getElementById('metaEntries').textContent = s.total_entries;
+        document.getElementById('metaStreak').textContent = s.streak;
+        document.getElementById('metaTopImpact').textContent = s.top_impact;
+        const entries = data.entries;
+        const avgImpact = entries.length > 0 ? (entries.reduce((a, e) => a + e.impact, 0) / entries.length).toFixed(2) : '—';
+        const prevPct = entries.length > 0 ? Math.round((entries.filter(e => e.category === 'Preventive').length / entries.length) * 100) + '%' : '—';
+        document.getElementById('statAvgImpact').textContent = avgImpact;
+        document.getElementById('statPreventive').textContent = prevPct;
+        document.getElementById('statPatterns').textContent = s.total_patterns;
+        document.getElementById('statAntiPatterns').textContent = s.total_anti_patterns;
+
+        // Achievement Badges (TAMA-2.7)
+        renderBadges(data);
+
+        // Fitness Dashboard (TAMA-5.3)
+        renderFitness(data);
+
+        // 5-Axis Audit Panel (D.2)
+        renderAuditPanel(data);
+
+        // Replay Gate Timeline (D.3)
+        renderReplayTimeline(data);
+
+        // Repo Manifest Panel (D.4)
+        renderManifestPanel(data);
+
+        // XP Timeline Graph (TAMA-2.8)
+        renderXPGraph(data);
+
+        // Timeline
+        const timeline = document.getElementById('evoTimeline'); timeline.innerHTML = '';
+        const sorted = [...entries].sort((a, b) => parseInt(b.id.replace('EVO-','')) - parseInt(a.id.replace('EVO-','')));
+        for (const e of sorted) {
+            const card = document.createElement('div'); card.className = 'evo-card';
+            // Adaptive XP indicator (TAMA-2.11)
+            const mult = getAdaptiveMultiplier(s.level);
+            const adaptiveXP = mult < 1.0 ? ` <span style="color:var(--accent-amber);font-size:0.7rem;" title="Adaptive XP: ×${mult} at level ${s.level}">(×${mult})</span>` : '';
+            card.innerHTML = `<div class="evo-card__header"><span class="evo-card__id">${e.id}</span><span class="evo-card__date">${e.date}</span></div><div class="evo-card__title">${e.title}</div><div class="evo-card__meta"><span class="evo-badge ${impactClass(e.impact)}">⚡ Impact ${e.impact}/10</span><span class="evo-badge xp-badge">+${e.xp} XP${adaptiveXP}</span><span class="evo-badge">${e.category}</span>${e.pattern ? `<span class="evo-badge">${e.pattern}</span>` : ''}</div>`;
+            timeline.appendChild(card);
+        }
+        // Patterns
+        const pg = document.getElementById('patternsGrid'); pg.innerHTML = '';
+        for (const p of data.patterns) {
+            const c = document.createElement('div'); c.className = 'pattern-card';
+            c.innerHTML = `<div class="pattern-card__id">${p.id}</div><div class="pattern-card__name">${p.name}</div><div class="pattern-card__source">Source: ${p.source}</div>`;
+            pg.appendChild(c);
+        }
+        // Anti-Patterns
+        const al = document.getElementById('antiPatternsList'); al.innerHTML = '';
+        for (const ap of data.antiPatterns) {
+            const i = document.createElement('div'); i.className = 'ap-item';
+            i.innerHTML = `<span class="ap-item__id">${ap.id}</span><span class="ap-item__name">${ap.name}</span>`;
+            al.appendChild(i);
+        }
+
+        // DNA Mutation Log (TAMA-3.5)
+        renderDNALog(data);
+
+        // Danger Zone Predictor (TAMA-5.7)
+        renderDangerZone(data);
+
+        // Pattern Suggestions (TAMA-5.1)
+        renderPatternSuggestions(data);
+
+        // Recurrence Detector (TAMA-5.2)
+        renderRecurrenceDetector(data);
+
+        // Self-Questioning Engine (TAMA-5.8)
+        renderSelfQuestions(data);
+
+        // Failure Genome Dashboard (V4)
+        renderGenomes(data);
+
+        // Check for notifications (TAMA-3.4)
+        checkNotifications(data);
+
+        // Save to localStorage (TAMA-2.9)
+        saveToStorage(data, 'solo');
+
+        showView('solo');
+    }
+
+    /* ==================== RENDER MULTI-USER ==================== */
+    function renderMultiUser(usersArr) {
+        const sorted = [...usersArr].sort((a, b) => (b.status.level * 1000 + b.status.xp_current) - (a.status.level * 1000 + a.status.xp_current));
+        // Side-by-side mini cards
+        const sbs = document.getElementById('sideBySide');
+        sbs.innerHTML = '';
+        sbs.className = 'side-by-side cols-' + Math.min(3, sorted.length);
+        for (const d of sorted) {
+            const s = d.status; const tier = getAvatarTier(s.level); const av = AVATAR_MAP[tier];
+            const pct = s.xp_next_level > 0 ? Math.round((s.xp_current / s.xp_next_level) * 100) : 100;
+            const h = calcHealth(d);
+            const mc = document.createElement('div'); mc.className = 'mini-card';
+            mc.innerHTML = `<div class="mini-avatar">${av.emoji}</div><div class="mini-name">${s.agent_id}</div><div class="mini-level">${s.level_emoji} Level ${s.level} — ${s.level_name}</div><div class="mini-xp-bar"><div class="mini-xp-fill" style="width:${pct}%"></div></div><div class="mini-stats"><div class="mini-stat"><span>${s.xp_current}</span>XP</div><div class="mini-stat"><span>${s.total_entries}</span>Entries</div><div class="mini-stat"><span>${s.total_patterns}</span>Patterns</div><div class="mini-stat"><span>${h.score}%</span>Health</div></div>`;
+            sbs.appendChild(mc);
+        }
+        // Leaderboard table
+        const tbody = document.getElementById('lbBody'); tbody.innerHTML = '';
+        const ranks = ['gold', 'silver', 'bronze'];
+        sorted.forEach((d, i) => {
+            const s = d.status; const av = AVATAR_MAP[getAvatarTier(s.level)]; const h = calcHealth(d);
+            const hClass = h.score >= 70 ? 'good' : h.score >= 40 ? 'warn' : 'bad';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="lb-rank ${ranks[i] || ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td><td class="lb-avatar">${av.emoji}</td><td class="lb-name">${s.agent_id}<br><span class="lb-stat">${s.project}</span></td><td>${s.level_emoji} ${s.level}</td><td>${s.xp_current} <div class="lb-xp-bar"><div class="lb-xp-fill" style="width:${s.xp_next_level > 0 ? Math.round(s.xp_current/s.xp_next_level*100) : 100}%"></div></div></td><td>${s.total_entries}</td><td>${s.total_patterns}</td><td><span style="color:var(--accent-${hClass === 'good' ? 'cyan' : hClass === 'warn' ? 'amber' : 'red'})">${h.score}%</span></td>`;
+            tbody.appendChild(tr);
+        });
+        // Health comparison
+        const hg = document.getElementById('healthGrid'); hg.innerHTML = '';
+        for (const d of sorted) {
+            const h = calcHealth(d); const hClass = h.score >= 70 ? 'good' : h.score >= 40 ? 'warn' : 'bad';
+            const card = document.createElement('div'); card.className = 'health-card';
+            card.innerHTML = `<div class="health-card__value" style="color:var(--accent-${hClass === 'good' ? 'cyan' : hClass === 'warn' ? 'amber' : 'red'})">${h.score}%</div><div class="health-card__label">${d.status.agent_id}</div><div class="health-bar"><div class="health-fill ${hClass}" style="width:${h.score}%"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem;margin-top:0.6rem;font-size:0.7rem;color:var(--text-muted)"><div>Preventive: ${h.preventiveRatio}%</div><div>Repeat: ${h.repeatRate}%</div><div>Reuse: ${h.patternReuse}%</div><div>Fresh: ${h.freshness}%</div></div>`;
+            hg.appendChild(card);
+        }
+        // Experience Sharing (GEA)
+        const allPatterns = usersArr.map(d => d.patterns.map(p => p.name));
+        const allNames = new Set(allPatterns.flat());
+        const shared = [...allNames].filter(n => allPatterns.every(arr => arr.includes(n)));
+        const uniqueMap = {}; usersArr.forEach((d, i) => {
+            const others = allPatterns.filter((_, j) => j !== i).flat();
+            const uniq = d.patterns.map(p => p.name).filter(n => !others.includes(n));
+            if (uniq.length) uniqueMap[d.status.agent_id] = uniq;
+        });
+        const allAP = usersArr.map(d => d.antiPatterns.map(a => a.name));
+        const gaps = [...new Set(allAP.flat())].filter(n => !allPatterns.flat().some(p => p.toLowerCase().includes(n.split(' ')[0].toLowerCase())));
+        const eg = document.getElementById('expGrid'); eg.innerHTML = '';
+        // Shared
+        const sc = document.createElement('div'); sc.className = 'exp-card';
+        sc.innerHTML = `<h4 style="color:var(--accent-cyan)">🤝 Shared Patterns (${shared.length})</h4>${shared.length ? shared.map(n => `<div class="exp-item">✓ ${n}</div>`).join('') : '<div class="exp-item" style="color:var(--text-muted)">No shared patterns yet</div>'}`;
+        eg.appendChild(sc);
+        // Unique
+        const uc = document.createElement('div'); uc.className = 'exp-card';
+        const uEntries = Object.entries(uniqueMap);
+        uc.innerHTML = `<h4 style="color:var(--accent-amber)">💡 Unique Discoveries (${uEntries.reduce((a, [,v]) => a + v.length, 0)})</h4>${uEntries.length ? uEntries.map(([agent, pats]) => pats.map(p => `<div class="exp-item">🌟 ${agent}: ${p}</div>`).join('')).join('') : '<div class="exp-item" style="color:var(--text-muted)">Everyone shares the same patterns</div>'}`;
+        eg.appendChild(uc);
+        // Gaps
+        const gc = document.createElement('div'); gc.className = 'exp-card';
+        gc.innerHTML = `<h4 style="color:var(--accent-red)">⚠️ Coverage Gaps (${gaps.length})</h4>${gaps.slice(0, 8).map(n => `<div class="exp-item">🚫 ${n}</div>`).join('') || '<div class="exp-item" style="color:var(--text-muted)">No gaps — great coverage!</div>'}`;
+        eg.appendChild(gc);
+
+        // Cross-Pollination Suggestions (TAMA-5.4 + TAMA-5.9)
+        const xpCard = document.createElement('div'); xpCard.className = 'exp-card';
+        const xpSuggestions = [];
+        // For each user's unique pattern → suggest to others
+        for (const [agent, pats] of uEntries) {
+            for (const p of pats) {
+                const otherAgents = usersArr.filter(d => d.status.agent_id !== agent).map(d => d.status.agent_id);
+                if (otherAgents.length > 0) {
+                    xpSuggestions.push(`🔀 <strong>${agent}</strong> discovered "${p}" → Recommend to: ${otherAgents.join(', ')}`);
+                }
+            }
+        }
+        // GEA-style: common anti-patterns suggest patterns from others
+        for (let i = 0; i < usersArr.length; i++) {
+            const user = usersArr[i];
+            for (const ap of user.antiPatterns) {
+                for (let j = 0; j < usersArr.length; j++) {
+                    if (i === j) continue;
+                    const other = usersArr[j];
+                    const matchPat = other.patterns.find(p => {
+                        const pWords = p.name.toLowerCase().split(/\W+/);
+                        const apWords = ap.name.toLowerCase().split(/\W+/);
+                        return pWords.some(w => w.length > 3 && apWords.includes(w));
+                    });
+                    if (matchPat) {
+                        xpSuggestions.push(`🧬 <strong>${other.status.agent_id}</strong>'s pattern "${matchPat.name}" could prevent <strong>${user.status.agent_id}</strong>'s anti-pattern "${ap.name}"`);
+                    }
+                }
+            }
+        }
+        xpCard.innerHTML = `<h4 style="color:var(--accent-purple)">🔀 Cross-Pollination (${xpSuggestions.length})</h4>${xpSuggestions.length ? xpSuggestions.slice(0, 8).map(s => `<div class="exp-item">${s}</div>`).join('') : '<div class="exp-item" style="color:var(--text-muted)">No cross-pollination opportunities yet — need more diverse patterns.</div>'}`;
+        eg.appendChild(xpCard);
+
+        showView('multi');
+    }
+
+    /* ==================== EVENT HANDLERS ==================== */
+    // Mode tabs
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const isMulti = tab.dataset.mode === 'multi';
+            document.getElementById('soloMode').style.display = isMulti ? 'none' : '';
+            document.getElementById('multiMode').style.display = isMulti ? '' : 'none';
+        });
+    });
+
+    // Solo input tabs (file / paste / gist / jsonpack)
+    document.querySelectorAll('.input-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const t = tab.dataset.tab;
+            document.getElementById('dropZone').style.display = t === 'file' ? 'block' : 'none';
+            document.getElementById('jsonPackZone').style.display = t === 'jsonpack' ? 'block' : 'none';
+            document.getElementById('pasteArea').classList.toggle('active', t === 'paste');
+            document.getElementById('gistArea').classList.toggle('active', t === 'gist');
+        });
+    });
+
+    // JSON Pack file handler
+    function handleJsonPackFiles(files) {
+        const entries = [];
+        const patterns = [];
+        const antiPatterns = [];
+        const genomes = [];
+        let incidentCount = 0;
+        let euCount = 0;
+
+        const promises = Array.from(files).map(file => new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+
+                    // nve-pack batch format
+                    if (json.payload) {
+                        const p = json.payload;
+                        if (p.failure_genomes) {
+                            for (const fg of p.failure_genomes) {
+                                genomes.push({
+                                    family: fg.family,
+                                    invariant: fg.violated_invariant,
+                                    repair: fg.repair_operator,
+                                    utility: fg.utility?.score || fg.utility || 0,
+                                    replay: fg.replay?.status || 'not_run',
+                                    source: fg.incident_id || fg.genome_id
+                                });
+                            }
+                        }
+                        if (p.incidents) {
+                            for (const inc of p.incidents) {
+                                incidentCount++;
+                                const impact = inc.severity || inc.impact || 5;
+                                entries.push({
+                                    id: inc.incident_id || `INC-${incidentCount}`,
+                                    date: (inc.created_at || '').substring(0, 10),
+                                    impact: impact,
+                                    xp: impact >= 9 ? 21 : impact >= 7 ? 13 : impact >= 5 ? 8 : 5,
+                                    category: inc.category || 'Reactive',
+                                    type: inc.type || 'Gap',
+                                    title: inc.title || inc.safe_title || 'Incident'
+                                });
+                                if (inc.pattern_extracted) {
+                                    patterns.push({ id: `PAT-${incidentCount}`, name: inc.pattern_extracted, source: inc.incident_id });
+                                }
+                                if (inc.anti_pattern) {
+                                    antiPatterns.push({ id: `AP-${incidentCount}`, name: inc.anti_pattern });
+                                }
+                            }
+                        }
+                        if (p.experience_units) { euCount += p.experience_units.length; }
+                    }
+                    // Individual FG file
+                    else if (json.genome_id && json.family) {
+                        genomes.push({
+                            family: json.family,
+                            invariant: json.violated_invariant,
+                            repair: json.repair_operator,
+                            utility: json.utility?.score || 0,
+                            replay: json.replay?.status || 'not_run',
+                            source: json.incident_id || json.genome_id
+                        });
+                    }
+                    // Individual incident file
+                    else if (json.incident_id || json.event_id) {
+                        incidentCount++;
+                        const impact = json.severity || json.impact || 5;
+                        entries.push({
+                            id: json.incident_id || json.event_id,
+                            date: (json.created_at || '').substring(0, 10),
+                            impact: impact,
+                            xp: impact >= 9 ? 21 : impact >= 7 ? 13 : impact >= 5 ? 8 : 5,
+                            category: json.category || 'Reactive',
+                            type: json.type || 'Gap',
+                            title: json.title || json.safe_title || 'Incident'
+                        });
+                    }
+                    // Individual EU file
+                    else if (json.eu_id) {
+                        euCount++;
+                        if (json.pattern) {
+                            patterns.push({ id: `PAT-${euCount}`, name: json.pattern, source: json.source_incident });
+                        }
+                        if (json.anti_pattern) {
+                            antiPatterns.push({ id: `AP-${euCount}`, name: json.anti_pattern });
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Skipping file:', file.name, err.message);
+                }
+                resolve();
+            };
+            reader.readAsText(file);
+        }));
+
+        Promise.all(promises).then(() => {
+            if (entries.length === 0 && genomes.length === 0) {
+                alert('No valid JSON data found. Use nve-pack.js output or individual .evolution/ files.');
+                return;
+            }
+
+            const totalXP = entries.reduce((a, e) => a + (e.xp || 0), 0);
+            const level = Math.floor(totalXP / 30) + 1;
+            const levelNames = ['Newborn','Beginner','Intermediate','Advanced','Specialist','Expert','Master','Grandmaster','Legend','Myth'];
+            const levelEmojis = ['🥚','🐣','🟢','🔵','🟠','🔴','🟣','⭐','💎','🧬'];
+            const li = Math.min(Math.floor((level - 1) / 10), 9);
+
+            const data = {
+                status: {
+                    agent_id: 'json-pack-import',
+                    project: `JSON Pack (${files.length} files)`,
+                    level: level,
+                    level_name: levelNames[li],
+                    level_emoji: levelEmojis[li],
+                    xp_current: totalXP,
+                    xp_next_level: level * 30,
+                    total_entries: entries.length,
+                    total_patterns: patterns.length,
+                    total_anti_patterns: antiPatterns.length,
+                    top_impact: entries.length > 0 ? Math.max(...entries.map(e => e.impact)) : 0,
+                    streak: entries.length,
+                    last_updated: new Date().toISOString().substring(0, 10)
+                },
+                entries,
+                patterns,
+                antiPatterns,
+                genomes
+            };
+
+            renderDashboard(data);
+
+            // Update jsonPackZone to show success
+            const zone = document.getElementById('jsonPackZone');
+            zone.innerHTML = `
+                <div class="drop-zone__icon">✅</div>
+                <div class="drop-zone__text">
+                    Loaded: <strong>${entries.length}</strong> incidents, <strong>${genomes.length}</strong> genomes, <strong>${patterns.length}</strong> patterns
+                    <br><span style="font-size:0.8rem;color:var(--text-muted);">${files.length} file(s) processed</span>
+                </div>`;
+        });
+    }
+
+    document.getElementById('jsonPackInput').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleJsonPackFiles(e.target.files);
+    });
+    const jsonPackZone = document.getElementById('jsonPackZone');
+    jsonPackZone.addEventListener('click', () => document.getElementById('jsonPackInput').click());
+    jsonPackZone.addEventListener('dragover', (e) => { e.preventDefault(); jsonPackZone.classList.add('drag-over'); });
+    jsonPackZone.addEventListener('dragleave', () => jsonPackZone.classList.remove('drag-over'));
+    jsonPackZone.addEventListener('drop', (e) => {
+        e.preventDefault(); jsonPackZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) handleJsonPackFiles(e.dataTransfer.files);
+    });
+
+    /* ==================== GIST FETCH (TAMA-2.4) ==================== */
+    function extractGistId(input) {
+        // Accept full URL or raw ID
+        const match = input.trim().match(/(?:gist\.github\.com\/[^\/]+\/)?([a-f0-9]{20,})/i);
+        if (match) return match[1];
+        // Fallback: treat entire input as ID
+        const clean = input.trim().replace(/[^a-f0-9]/gi, '');
+        return clean.length >= 20 ? clean : null;
+    }
+
+    async function fetchGist(gistId) {
+        const resp = await fetch(`https://api.github.com/gists/${gistId}`);
+        if (!resp.ok) throw new Error(`Gist not found (${resp.status})`);
+        const json = await resp.json();
+        // Find the first .md file in the gist
+        const files = Object.values(json.files);
+        const mdFile = files.find(f => f.filename.endsWith('.md')) || files[0];
+        if (!mdFile) throw new Error('No files in this Gist');
+        // Fetch raw content if truncated
+        let content = mdFile.content;
+        if (mdFile.truncated && mdFile.raw_url) {
+            const raw = await fetch(mdFile.raw_url);
+            content = await raw.text();
+        }
+        return content;
+    }
+
+    async function loadGistSolo() {
+        const input = document.getElementById('gistIdInput').value;
+        const gistId = extractGistId(input);
+        if (!gistId) { alert('Invalid Gist ID or URL.'); return; }
+        try {
+            document.getElementById('gistLoadBtn').textContent = '⏳ Loading...';
+            const content = await fetchGist(gistId);
+            const data = parseMarkdown(content);
+            if (data.status) {
+                renderDashboard(data);
+                // Store gist ID for auto-refresh
+                window._lastGistId = gistId;
+            } else {
+                alert('No STATUS_JSON found in Gist.');
+            }
+        } catch (e) {
+            alert('Error loading Gist: ' + e.message);
+        } finally {
+            document.getElementById('gistLoadBtn').textContent = '🔗 Load Gist';
+        }
+    }
+
+    document.getElementById('gistLoadBtn').addEventListener('click', loadGistSolo);
+    document.getElementById('gistIdInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') loadGistSolo();
+    });
+
+    /* ==================== GIST AUTO-REFRESH (TAMA-2.5) ==================== */
+    let gistRefreshTimer = null;
+    let gistCountdownTimer = null;
+
+    document.getElementById('gistAutoRefresh').addEventListener('change', (e) => {
+        const indicator = document.getElementById('gistRefreshIndicator');
+        if (e.target.checked && window._lastGistId) {
+            indicator.classList.add('active');
+            startGistAutoRefresh();
+        } else {
+            indicator.classList.remove('active');
+            stopGistAutoRefresh();
+        }
+    });
+
+    function startGistAutoRefresh() {
+        stopGistAutoRefresh();
+        let countdown = 60;
+        document.getElementById('gistCountdown').textContent = countdown;
+        gistCountdownTimer = setInterval(() => {
+            countdown--;
+            document.getElementById('gistCountdown').textContent = countdown;
+            if (countdown <= 0) countdown = 60;
+        }, 1000);
+        gistRefreshTimer = setInterval(async () => {
+            if (!window._lastGistId) return;
+            try {
+                const content = await fetchGist(window._lastGistId);
+                const data = parseMarkdown(content);
+                if (data.status) renderDashboard(data);
+            } catch(e) { /* silent refresh fail */ }
+        }, 60000);
+    }
+
+    function stopGistAutoRefresh() {
+        if (gistRefreshTimer) { clearInterval(gistRefreshTimer); gistRefreshTimer = null; }
+        if (gistCountdownTimer) { clearInterval(gistCountdownTimer); gistCountdownTimer = null; }
+    }
+
+    // Solo file upload
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = parseMarkdown(e.target.result);
+            if (data.status) renderDashboard(data);
+            else alert('No STATUS_JSON found. Check your file.');
+        };
+        reader.readAsText(file);
+    }
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('drag-over'); });
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]); });
+
+    document.getElementById('parseBtn').addEventListener('click', () => {
+        const text = document.getElementById('jsonInput').value;
+        if (!text.trim()) { alert('Paste content first.'); return; }
+        const data = parseMarkdown(text);
+        if (data.status) renderDashboard(data); else alert('No STATUS_JSON found.');
+    });
+
+    // Multi-user file handlers
+    document.querySelectorAll('.multi-file-input').forEach(input => {
+        input.addEventListener('change', (e) => {
+            const slot = input.dataset.slot;
+            if (e.target.files.length === 0) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = parseMarkdown(ev.target.result);
+                if (!data.status) { alert('No STATUS_JSON in file for slot ' + (parseInt(slot)+1)); return; }
+                multiUsers[slot] = data;
+                const slotEl = input.closest('.user-slot');
+                const tier = getAvatarTier(data.status.level);
+                slotEl.classList.add('loaded');
+                slotEl.querySelector('.user-slot__emoji').textContent = AVATAR_MAP[tier].emoji;
+                slotEl.querySelector('.user-slot__name').textContent = data.status.agent_id;
+                slotEl.querySelector('.user-slot__info').textContent = `Level ${data.status.level} · ${data.status.xp_current} XP`;
+                updateCompareBtn();
+            };
+            reader.readAsText(e.target.files[0]);
+        });
+    });
+
+    // Multi-user drag & drop on slots
+    document.querySelectorAll('.user-slot').forEach(slot => {
+        if (slot.id === 'addSlotBtn') return;
+        slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('drag-over'); });
+        slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+        slot.addEventListener('drop', (e) => {
+            e.preventDefault(); slot.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                const input = slot.querySelector('.multi-file-input');
+                const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+                input.files = dt.files; input.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+
+    function updateCompareBtn() {
+        const count = Object.keys(multiUsers).length;
+        const btn = document.getElementById('compareBtn');
+        btn.classList.toggle('show', count >= 2);
+        btn.textContent = `🏆 Compare ${count} Users`;
+    }
+
+    document.getElementById('compareBtn').addEventListener('click', () => {
+        const arr = Object.values(multiUsers);
+        if (arr.length < 2) { alert('Upload at least 2 journals.'); return; }
+        saveToStorage(arr, 'multi');
+        renderMultiUser(arr);
+    });
+
+    // Demo buttons
+    document.getElementById('demoBtn').addEventListener('click', () => renderDashboard(DEMO_DATA));
+    document.getElementById('demoMultiBtn').addEventListener('click', () => renderMultiUser(DEMO_MULTI));
+
+    // Back buttons
+    document.getElementById('backBtn').addEventListener('click', () => showView('input'));
+    document.getElementById('backBtnLb').addEventListener('click', () => showView('input'));
+
+    // Load saved session button (TAMA-2.9)
+    document.getElementById('loadSavedBtn').addEventListener('click', () => {
+        const saved = loadFromStorage();
+        if (!saved || !saved.data) return;
+        if (saved.mode === 'multi' && Array.isArray(saved.data)) {
+            renderMultiUser(saved.data);
+        } else {
+            renderDashboard(saved.data);
+        }
+    });
+
+    // On page load: check for saved session
+    checkSavedSession();
+    </script>
+    <!-- Offline data (generated by: node cli/nve-export-dashboard.js) -->
+    <script src="data.js" onerror="/* no offline data, that's fine */"></script>
+    <script>
+    // ─── Offline Mode (G.4): auto-load from data.js if available ───
+    window.addEventListener('load', function() {
+        if (!window.__NVE_OFFLINE_DATA__) return;
+        const od = window.__NVE_OFFLINE_DATA__;
+        console.log('🔌 Offline mode: loading embedded data');
+        const offlineFiles = [];
+        (od.incidents || []).forEach(i => offlineFiles.push(new File([JSON.stringify(i)], (i.event_id||'inc')+'.json', {type:'application/json'})));
+        (od.failure_genomes || []).forEach(g => offlineFiles.push(new File([JSON.stringify(g)], (g.genome_id||'fg')+'.json', {type:'application/json'})));
+        (od.experience_units || []).forEach(u => offlineFiles.push(new File([JSON.stringify(u)], (u.experience_id||'eu')+'.json', {type:'application/json'})));
+        if (od.family_index) offlineFiles.push(new File([JSON.stringify(od.family_index)], 'FAMILY_INDEX.json', {type:'application/json'}));
+        (od.audits || []).forEach(a => offlineFiles.push(new File([JSON.stringify(a)], 'AUDIT.json', {type:'application/json'})));
+        if (od.manifest) offlineFiles.push(new File([JSON.stringify(od.manifest)], 'repo-manifest.json', {type:'application/json'}));
+        if (offlineFiles.length > 0) {
+            const dt = new DataTransfer();
+            offlineFiles.forEach(f => dt.items.add(f));
+            handleJsonPackFiles(dt.files);
+        }
+    });
+    </script>
+    <script>
+    // ─── i18n (G.5): Multi-language support ───
+    (function() {
+        const T = {
+            en: {
+                subtitle: 'Harness-First Self-Evolving Agent Tracker — XP, Patterns, Failure Genomes & Growth',
+                loadData: '📂 Load Evolution Data', demoBtn: '🎮 Load Demo Data', demoMulti: '🏆 Demo: Multi-User',
+                tabFile: '📄 File', tabPaste: '📋 Paste', tabGist: '🌐 Gist', tabPack: '📦 JSON Pack',
+                uploadHint: 'Upload evolution journal (.md) or drag & drop here',
+                pasteHint: 'Paste your evolution journal markdown here...',
+                entries: 'entries', patterns: 'patterns', antiPatterns: 'anti-patterns', level: 'Level',
+                streak: 'Streak', xp: 'XP', achievements: 'Achievements', incidents: 'incidents',
+                genomes: 'genomes', promoted: 'promoted', pending: 'pending', families: 'families',
+                auditScore: 'Audit Score', replayGate: 'Replay Gate', manifest: 'Manifest'
+            },
+            ru: {
+                subtitle: 'Харнесс-ориентированный трекер эволюции агента — XP, паттерны, геномы ошибок',
+                loadData: '📂 Загрузить данные', demoBtn: '🎮 Демо данные', demoMulti: '🏆 Демо: Мульти-юзер',
+                tabFile: '📄 Файл', tabPaste: '📋 Вставить', tabGist: '🌐 Gist', tabPack: '📦 JSON-пак',
+                uploadHint: 'Загрузите журнал эволюции (.md) или перетащите сюда',
+                pasteHint: 'Вставьте markdown журнала эволюции...',
+                entries: 'записей', patterns: 'паттернов', antiPatterns: 'антипаттернов', level: 'Уровень',
+                streak: 'Стрик', xp: 'XP', achievements: 'Достижения', incidents: 'инцидентов',
+                genomes: 'геномов', promoted: 'продвинуто', pending: 'на проверке', families: 'семей',
+                auditScore: 'Аудит', replayGate: 'Replay Gate', manifest: 'Манифест'
+            },
+            de: {
+                subtitle: 'Harness-First Selbstentwicklungs-Agent-Tracker — XP, Muster, Fehler-Genome & Wachstum',
+                loadData: '📂 Evolution laden', demoBtn: '🎮 Demo laden', demoMulti: '🏆 Demo: Multi-User',
+                tabFile: '📄 Datei', tabPaste: '📋 Einfügen', tabGist: '🌐 Gist', tabPack: '📦 JSON-Paket',
+                uploadHint: 'Evolution-Journal (.md) hochladen oder hierher ziehen',
+                pasteHint: 'Markdown des Evolution-Journals hier einfügen...',
+                entries: 'Einträge', patterns: 'Muster', antiPatterns: 'Anti-Muster', level: 'Stufe',
+                streak: 'Serie', xp: 'XP', achievements: 'Erfolge', incidents: 'Vorfälle',
+                genomes: 'Genome', promoted: 'befördert', pending: 'ausstehend', families: 'Familien',
+                auditScore: 'Audit-Score', replayGate: 'Replay-Gate', manifest: 'Manifest'
+            },
+            jp: {
+                subtitle: 'ハーネス型自己進化エージェントトラッカー — XP、パターン、失敗ゲノム＆成長',
+                loadData: '📂 進化データ読込', demoBtn: '🎮 デモデータ', demoMulti: '🏆 デモ: マルチユーザー',
+                tabFile: '📄 ファイル', tabPaste: '📋 ペースト', tabGist: '🌐 Gist', tabPack: '📦 JSONパック',
+                uploadHint: '進化ジャーナル(.md)をアップロードまたはドラッグ＆ドロップ',
+                pasteHint: '進化ジャーナルのマークダウンをここに貼り付け...',
+                entries: 'エントリ', patterns: 'パターン', antiPatterns: 'アンチパターン', level: 'レベル',
+                streak: 'ストリーク', xp: 'XP', achievements: '実績', incidents: 'インシデント',
+                genomes: 'ゲノム', promoted: '昇格済', pending: '保留中', families: 'ファミリー',
+                auditScore: '監査スコア', replayGate: 'リプレイゲート', manifest: 'マニフェスト'
+            }
+        };
+
+        // Inject language selector into header
+        const header = document.querySelector('.header');
+        if (header) {
+            const sel = document.createElement('select');
+            sel.id = 'langSelect';
+            sel.title = 'Language';
+            sel.style.cssText = 'background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-card);border-radius:8px;padding:0.3rem 0.6rem;font-size:0.82rem;cursor:pointer;position:absolute;right:1.5rem;top:1rem;z-index:10;';
+            ['en','ru','de','jp'].forEach(code => {
+                const opt = document.createElement('option');
+                opt.value = code;
+                const flags = {en:'🇬🇧',ru:'🇷🇺',de:'🇩🇪',jp:'🇯🇵'};
+                opt.textContent = (flags[code]||'') + ' ' + code.toUpperCase();
+                sel.appendChild(opt);
+            });
+            header.style.position = 'relative';
+            header.appendChild(sel);
+
+            // Detect browser lang
+            const bLang = (navigator.language || 'en').slice(0,2).toLowerCase();
+            const detected = T[bLang] ? bLang : 'en';
+            sel.value = localStorage.getItem('nve_lang') || detected;
+
+            function applyLang(lang) {
+                const t = T[lang] || T.en;
+                // Translate subtitle
+                const sub = header.querySelector('.header__subtitle');
+                if (sub) sub.textContent = t.subtitle;
+                // Translate input card title
+                const title = document.querySelector('.input-card__title');
+                if (title) title.textContent = t.loadData;
+                // Demo button
+                const demo = document.getElementById('demoBtn');
+                if (demo) demo.textContent = t.demoBtn;
+                const demoM = document.getElementById('demoMultiBtn');
+                if (demoM) demoM.textContent = t.demoMulti;
+                localStorage.setItem('nve_lang', lang);
+            }
+
+            sel.addEventListener('change', () => applyLang(sel.value));
+            if (sel.value !== 'en') applyLang(sel.value);
+        }
+    })();
+    </script>
+</body>
+</html>
