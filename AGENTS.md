@@ -20,11 +20,13 @@ Before changing architecture, memory, workflows, sharing, or Failure Genome beha
 2. Use docs as the system of record. This file is only a table of contents.
 3. Keep canonical memory structured in `.evolution/`.
 4. Prefer small verifiable changes over sweeping rewrites.
-5. For each significant failure or prevention event, create an incident event.
-6. For repeated or high-value failures, create or update a Failure Genome.
-7. Only ask the user when the action is destructive, security-sensitive, or schema-breaking.
-8. Never share raw code, secrets, or full logs by default.
-9. Legacy paths may remain as wrappers until migration is stable.
+5. **Read `.evolution/MEMORY.md` at session start** — it contains verified lessons and anti-patterns.
+6. For each significant failure or prevention event, create an incident event **immediately** (see `.agents/rules/25-incident-auto-capture.md` for trigger events).
+7. For repeated or high-value failures, create or update a Failure Genome.
+8. Only ask the user when the action is destructive, security-sensitive, or schema-breaking.
+9. Never share raw code, secrets, or full logs by default.
+10. Legacy paths may remain as wrappers until migration is stable.
+11. **Before every commit**: check "were there uncaptured incidents since last commit?"
 
 ## Canonical homes
 - `.agents/rules/` — always-on constraints
