@@ -1,28 +1,39 @@
 # 🧬 Agent Genome Lab
 
-### Give your AI coding agent a DNA of learned mistakes — so it never repeats them.
+### The missing memory layer for AI. Capture experience → verify it → compound it across sessions, projects, and teams.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js)](https://nodejs.org)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)](#)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-007ACC?logo=visualstudiocode)](#-vs-code-extension)
-[![Agent Agnostic](https://img.shields.io/badge/Works_with-Claude%20%7C%20Gemini%20%7C%20GPT%20%7C%20Codex-blueviolet)](#-works-with-any-ai-coding-agent)
+[![Agent Agnostic](https://img.shields.io/badge/Works_with-Claude%20%7C%20Gemini%20%7C%20GPT%20%7C%20Any_Agent-blueviolet)](#-works-with-any-ai-agent)
 
 ---
 
-> **The problem:** AI coding agents repeat the same mistakes across sessions. They fix a bug, forget about it, and introduce the exact same failure pattern next week. There's no persistent memory, no learning curve, no collective intelligence.
+> **The problem:** AI agents don't accumulate experience. Every session starts from zero — no memory of what worked, what failed, or what your team already learned. Knowledge lives in chat logs and dies there.
 >
-> **The solution:** Agent Genome Lab captures every mistake as structured DNA — incident → distilled lesson → verified genome → **reusable skill**. Your agent reads a compact `MEMORY.md` at the start of each session and **avoids known failure patterns before they happen.**
+> **The solution:** Agent Genome Lab captures operational experience as structured, verified units — incident → lesson → genome → **reusable skill**. Your agent reads a compact `MEMORY.md` at session start and **applies proven patterns before making known mistakes.**
 
 ---
 
 ## 💡 Why this matters
 
-**AI agents are stateless by default.** Every session starts from zero. Your agent doesn't remember that it broke the build last Tuesday by forgetting an import. It doesn't know that 3 other projects in your org hit the exact same config-drift bug.
+**AI agents are stateless by default.** Every session starts from zero. Your agent doesn't remember what went wrong last time. It doesn't know that 3 other projects in your org already solved the exact same problem.
 
 Agent Genome Lab fixes this by giving agents a **persistent, structured, transferable memory** — not in a database, not behind an API — just **JSON files in your repo** that any agent can read.
 
-> 🧪 In internal testing across 7 projects, agents with Genome Lab reduced **repeated failures by 73%** and cut **time-to-fix by 40%** on previously-seen bug classes.
+> 🧪 In internal testing across 7 projects, agents with Genome Lab reduced **repeated failures by 73%** and cut **time-to-fix by 40%** on previously-seen problem classes.
+
+### 📌 In plain words
+
+Agent Genome Lab is three things in one:
+
+1. **A knowledge notebook** — structured record of what happened and what worked
+2. **A quality lab** — every lesson must pass a replay-gate before it becomes a rule
+3. **A skill constructor** — proven patterns are packaged into reusable, searchable actions
+
+It's NOT a database, NOT a prompt library, NOT a vector store, NOT a bug tracker.
+It's a layer where experience becomes **verifiable, transferable, and executable.**
 
 ---
 
@@ -30,10 +41,12 @@ Agent Genome Lab fixes this by giving agents a **persistent, structured, transfe
 
 | If you are...                                                 | This toolkit...                                                      |
 |:--------------------------------------------------------------|:---------------------------------------------------------------------|
-| 🧑‍💻 **Developer using AI agents** (Copilot, Claude, Cursor) | Stops your agent from repeating the same bugs                        |
+| 🧑‍💻 **Developer using AI agents** (Copilot, Claude, Cursor) | Stops agents from repeating known failures; verified skill reuse     |
 | 🏗️ **Team running multiple projects**                        | Shares verified lessons across repos — collective intelligence       |
-| 🔬 **Researcher studying AI agent behavior**                  | Structured failure classification, replay gates, utility scoring     |
-| 🎮 **Curious about agent evolution**                          | Gamified dashboard with XP, levels, achievements, family trees       |
+| 🛡️ **Security / Ops / SRE**                                  | Runbook memory: incident patterns, recovery steps, triage playbooks  |
+| 📞 **Support / Customer Success**                             | Escalation patterns, resolution playbooks, onboarding knowledge      |
+| 🔬 **Researcher**                                             | Structured classification, replay gates, utility scoring, lineage    |
+| 📋 **Compliance / Quality**                                   | Auditable memory: governance, evidence trails, gated admission       |
 | 📦 **Open-source maintainer**                                 | Drop-in quality layer — adds structured memory to any project        |
 
 ---
@@ -88,17 +101,17 @@ If you want to **fully integrate** the genome system into an existing project, f
 
 ---
 
-## 🧠 How It Works: 3-Layer DNA Memory
+## 🧠 How It Works: 5-Layer Experience Pipeline
 
 <p align="center">
-  <img src="docs/images/dna-layers.png" alt="3-Layer DNA Memory Model" width="600">
+  <img src="docs/images/dna-layers.png" alt="5-Layer Experience Pipeline" width="600">
 </p>
 
 **Key concepts:**
 
 | Concept            | What it is                                                              |
 |:-------------------|:------------------------------------------------------------------------|
-| **Incident**       | Raw failure record — what broke, why, how it was fixed                  |
+| **Incident**       | Raw experience record — what happened, why, how it was resolved         |
 | **Experience Unit**| Distilled lesson — anti-pattern + preventive pattern + verifier         |
 | **Failure Genome** | Verified, transferable unit with utility score and family membership    |
 | **Family**         | Cluster of related genomes (e.g., all "import" errors group together)  |
@@ -157,8 +170,6 @@ node cli/nve-skill-search.js "query"             # search skills locally
 ---
 
 ## 📊 5-Axis Audit + SkillGraph Extension
-
-Every project gets a health score across 5 core dimensions plus an optional SkillGraph extension:
 
 ```
 🧬 NVE 5-Axis Audit — 2026-03-22
@@ -239,7 +250,7 @@ node cli/nve-export-dashboard.js    # generates web/data.js
 
 ---
 
-## 🤝 Works with ANY AI Coding Agent
+## 🤝 Works with ANY AI Agent
 
 This toolkit is **agent-agnostic**. No lock-in.
 
@@ -248,15 +259,15 @@ This toolkit is **agent-agnostic**. No lock-in.
 | **GitHub Copilot**           | `.github/copilot-instructions.md`          |
 | **Claude Code**              | `CLAUDE.md`                                |
 | **Google Gemini**            | `AGENTS.md` + `.agents/rules/`             |
-| **OpenAI Codex / ChatGPT**  | System prompt                              |
+| **OpenAI ChatGPT**           | System prompt                              |
 | **Cursor**                   | `.cursorrules`                             |
-| **Any agent**                | Just tell it to read `.evolution/MEMORY.md`|
+| **Any agent**                | Just tell it to read `.evolution/MEMORY.md` |
 
 ### Minimal integration (3 lines in your agent config):
 
 ```
 Before each task: read .evolution/MEMORY.md
-After fixing a bug: node cli/nve-scaffold.js incident --slug <describe-bug>
+After resolving an issue: node cli/nve-scaffold.js incident --slug <describe-issue>
 After scaffolding: node cli/nve-memory.js
 ```
 
@@ -364,7 +375,27 @@ agent-genome-lab/
     └── index.html               3000+ line gamified dashboard
 ```
 
-**80+ files. Zero external dependencies. MIT license.**
+**85+ files. Zero external dependencies. MIT license.**
+
+---
+
+## 🌍 Beyond Bug Prevention — Use Cases
+
+Agent Genome Lab works with any repeatable operational pattern, not just code bugs:
+
+| Domain | What gets captured | What gets reused |
+|:-------|:-------------------|:-----------------|
+| **Software development** | Failed imports, config drift, regression patterns | Verified genomes + repair operators |
+| **DevOps / SRE** | Deploy failures, rollback scenarios, recovery steps | Incident response runbooks as skill packages |
+| **Security operations** | Triage patterns, false positives, remediation flows | Escalation playbooks |
+| **Customer support** | Resolution patterns, escalation triggers, FAQ clusters | Reusable response skills |
+| **Research / Lab ops** | Methodology steps, analysis pipelines, cleaning procedures | Composable skill packages |
+| **Compliance / Audit** | Evidence collection, gap remediation, acceptance criteria | Governed audit memory |
+| **Onboarding** | Common mistakes, setup procedures, tribal knowledge | Compact MEMORY.md for day 1 |
+| **Multi-agent coordination** | Cross-role patterns, handoff protocols | Shared skill packages across agents |
+
+> All use cases are built on the same architecture: incident → experience unit → genome → skill → package.
+> No extra infrastructure needed — just different content in the same JSON schema.
 
 ---
 
@@ -388,13 +419,13 @@ Built on peer-reviewed research (2025–2026):
 
 | Metric                    | Without Genome Lab                     | With Genome Lab                                   |
 |:--------------------------|:---------------------------------------|:--------------------------------------------------|
-| Bug repetition            | Same mistake every 3-5 sessions        | MEMORY.md → class prevented                       |
-| Knowledge persistence     | New session = blank slate              | 3-layer memory survives restarts                   |
+| Knowledge persistence     | New session = blank slate              | 5-layer memory survives restarts                   |
+| Experience reuse          | Lessons stay in chat logs              | Verified skills packaged for any project           |
+| Pattern repetition        | Same mistake every 3-5 sessions        | MEMORY.md → pattern class prevented                |
 | Cross-project learning    | Every project starts from zero         | Shared packs transfer verified lessons             |
-| Team collaboration        | No way to share agent learnings        | 4-tier privacy + redacted exports                  |
-| Quality tracking          | No metrics                             | 5-axis audit with trend data                       |
-| Failure patterns          | Invisible                              | Classified into families with utility scores       |
-| IDE integration           | None                                   | VS Code extension with live sidebar                |
+| Team knowledge            | Tribal, undocumented                   | Structured, version-controlled, auditable          |
+| Quality governance        | No verification process                | Replay-gated admission + utility decay             |
+| IDE integration           | None                                   | VS Code: 6 panels, 9 commands, live refresh        |
 | Visualization             | None                                   | Gamified dashboard — XP, levels, achievements      |
 
 ---
@@ -407,7 +438,7 @@ We'd love your help! Here's how:
 - 🐛 **Report bugs** — open an issue
 - 💡 **Suggest features** — open a discussion
 - 🔧 **Submit PRs** — improvements welcome
-- 📣 **Share** — tell other developers about Agent Genome Lab
+- 📣 **Share** — tell others about Agent Genome Lab
 
 ---
 
@@ -435,7 +466,7 @@ We'd love your help! Here's how:
 ---
 
 <p align="center">
-  <strong>Stop repeating mistakes. Start evolving. 🧬</strong>
+  <strong>Stop losing experience. Start compounding it. 🧬</strong>
   <br><br>
   <a href="https://github.com/creanlab/agent-genome-lab/stargazers">⭐ Star</a> ·
   <a href="https://github.com/creanlab/agent-genome-lab/issues">🐛 Issues</a> ·
