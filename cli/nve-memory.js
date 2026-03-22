@@ -2,29 +2,32 @@
 /**
  * nve-memory.js — Generate compact MEMORY.md from .evolution/ data.
  *
- * Usage:
- *   node cli/nve-memory.js
- *
- * Reads all incidents, experience units, and failure genomes.
- * Generates a compact .evolution/MEMORY.md (~25-40 lines) with:
- *   - Top-K promoted/verified genomes (sorted by utility)
- *   - Recent high-impact incidents (last 5)
- *   - Active anti-patterns
- *   - Quick stats
- *
- * The agent reads MEMORY.md at session start for fast context loading.
+ * Adds a SkillGraph section while preserving the existing Failure Genome summaries.
  */
+
 const fs = require('fs');
 const path = require('path');
-const { loadConfig } = require('./nve-config');
-const cfg = loadConfig();
 
+let loadConfig = () => ({
+  thresholds: {
+    memory_top_k: 8,
+    memory_min_confidence: 0.6,
+  },
+  _loaded: false,
+});
+try {
+  ({ loadConfig } = require('./nve-config'));
+} catch {
+  // Optional dependency; fallback above is enough.
+}
+
+const cfg = loadConfig();
 const ROOT = findProjectRoot();
 const EVO = path.join(ROOT, '.evolution');
 
 function findProjectRoot() {
   let dir = process.cwd();
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i += 1) {
     if (fs.existsSync(path.join(dir, '.evolution'))) return dir;
     const parent = path.dirname(dir);
     if (parent === dir) break;
@@ -37,135 +40,164 @@ function loadJsonDir(subdir) {
   const dir = path.join(EVO, subdir);
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir)
-    .filter(f => f.endsWith('.json') && !f.startsWith('.') && f !== 'FAMILY_INDEX.json')
-    .map(f => {
-      try { return JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')); }
-      catch { return null; }
+    .filter((name) => name.endsWith('.json') && !name.startsWith('.'))
+    .filter((name) => !['FAMILY_INDEX.json', 'INDEX.json', 'RELATIONS.json'].includes(name))
+    .map((name) => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+      } catch {
+        return null;
+      }
     })
     .filter(Boolean);
 }
 
-// ─── Load data ───────────────────────────────────────────────
 const incidents = loadJsonDir('incidents');
 const units = loadJsonDir('experience_units');
 const genomes = loadJsonDir('failure_genomes');
+const skills = loadJsonDir('skills');
+const packages = loadJsonDir('skill_packages');
 
-// ─── Sort & filter ───────────────────────────────────────────
 const promotedGenomes = genomes
-  .filter(g => g.promotion_decision === 'promoted')
-  .sort((a, b) => (b.utility?.score || 0) - (a.utility?.score || 0));
+  .filter((genome) => genome.promotion_decision === 'promoted')
+  .sort((left, right) => (right.utility?.score || 0) - (left.utility?.score || 0));
 
-const pendingGenomes = genomes
-  .filter(g => g.promotion_decision === 'pending' || !g.promotion_decision);
+const pendingGenomes = genomes.filter((genome) => genome.promotion_decision === 'pending' || !genome.promotion_decision);
+
+const admittedSkills = skills
+  .filter((skill) => skill.status === 'admitted')
+  .sort((left, right) => (right.evaluation?.overall || 0) - (left.evaluation?.overall || 0));
+
+const pendingSkills = skills.filter((skill) => skill.status === 'candidate' || skill.status === 'quarantined');
 
 const recentIncidents = [...incidents]
-  .sort((a, b) => (b.occurred_at || '').localeCompare(a.occurred_at || ''))
+  .sort((left, right) => String(right.occurred_at || '').localeCompare(String(left.occurred_at || '')))
   .slice(0, 5);
 
 const topK = cfg.thresholds.memory_top_k || 8;
 const minConf = cfg.thresholds.memory_min_confidence || 0.6;
 
 const highConfidenceUnits = [...units]
-  .filter(u => (u.confidence || 0) >= minConf)
-  .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
+  .filter((unit) => (unit.confidence || 0) >= minConf)
+  .sort((left, right) => (right.confidence || 0) - (left.confidence || 0))
   .slice(0, topK);
 
-// ─── Families ────────────────────────────────────────────────
 const familyIndex = (() => {
-  const p = path.join(EVO, 'failure_genomes', 'FAMILY_INDEX.json');
-  if (!fs.existsSync(p)) return {};
+  const file = path.join(EVO, 'failure_genomes', 'FAMILY_INDEX.json');
+  if (!fs.existsSync(file)) return {};
   try {
-    const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
-    return raw.families || raw; // handle nested or flat
-  } catch { return {}; }
+    const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return raw.families || raw;
+  } catch {
+    return {};
+  }
 })();
-const familyNames = Object.keys(familyIndex);
 
-// ─── Build MEMORY.md ─────────────────────────────────────────
+const packageIndex = (() => {
+  const file = path.join(EVO, 'skill_packages', 'INDEX.json');
+  if (!fs.existsSync(file)) return { packages: [] };
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return { packages: [] };
+  }
+})();
+
+const familyNames = Object.keys(familyIndex);
 const lines = [];
 const now = new Date().toISOString().split('T')[0];
 
-lines.push(`# MEMORY.md — Compact Agent Memory`);
+lines.push('# MEMORY.md — Compact Agent Memory');
 lines.push(`<!-- Auto-generated by nve-memory.js on ${now}. Do NOT hand-edit. -->`);
-lines.push(``);
-
-// Stats
-lines.push(`## Quick Stats`);
+lines.push('');
+lines.push('## Quick Stats');
 lines.push(`- Incidents: ${incidents.length} | Experience Units: ${units.length} | Failure Genomes: ${genomes.length}`);
-lines.push(`- Promoted: ${promotedGenomes.length} | Pending: ${pendingGenomes.length} | Families: ${familyNames.length}`);
-lines.push(``);
+lines.push(`- Skills: ${skills.length} | Admitted Skills: ${admittedSkills.length} | Skill Packages: ${packages.length}`);
+lines.push(`- Promoted Genomes: ${promotedGenomes.length} | Pending Genomes: ${pendingGenomes.length} | Pending Skills: ${pendingSkills.length}`);
+lines.push('');
 
-// Promoted genomes (top-k verified lessons)
 if (promotedGenomes.length > 0) {
-  lines.push(`## ✅ Verified Lessons (Do This)`);
-  for (const g of promotedGenomes.slice(0, topK)) {
-    const score = g.utility?.score ? ` (utility: ${g.utility.score.toFixed(2)})` : '';
-    const repair = g.repair_operator || 'unknown';
-    lines.push(`- **${g.genome_id}** [${g.family}]: ${repair}${score}`);
-    if (g.violated_invariant) {
-      lines.push(`  Invariant: ${g.violated_invariant}`);
+  lines.push('## ✅ Verified Lessons (Do This)');
+  for (const genome of promotedGenomes.slice(0, topK)) {
+    const score = genome.utility?.score ? ` (utility: ${Number(genome.utility.score).toFixed(2)})` : '';
+    const repair = genome.repair_operator || 'unknown';
+    lines.push(`- **${genome.genome_id}** [${genome.family}]: ${repair}${score}`);
+    if (genome.violated_invariant) {
+      lines.push(`  Invariant: ${genome.violated_invariant}`);
     }
   }
-  lines.push(``);
+  lines.push('');
 }
 
-// Anti-patterns from experience units
-const antiPatterns = highConfidenceUnits.filter(u => u.anti_pattern);
+if (admittedSkills.length > 0) {
+  lines.push('## 🧩 Reusable Skills (Admitted)');
+  for (const skill of admittedSkills.slice(0, 6)) {
+    const overall = skill.evaluation?.overall ? ` score=${Number(skill.evaluation.overall).toFixed(2)}` : '';
+    lines.push(`- **${skill.skill_id}** [${skill.category}]: ${skill.title}${overall}`);
+  }
+  lines.push('');
+}
+
+if ((packageIndex.packages || []).length > 0) {
+  lines.push('## 📦 Skill Packages');
+  for (const pkg of (packageIndex.packages || []).slice(0, 5)) {
+    const count = Array.isArray(pkg.skill_ids) ? pkg.skill_ids.length : pkg.skill_count || 0;
+    lines.push(`- **${pkg.package_id}**: ${pkg.title || pkg.name} (${count} skills)`);
+  }
+  lines.push('');
+}
+
+const antiPatterns = highConfidenceUnits.filter((unit) => unit.anti_pattern);
 if (antiPatterns.length > 0) {
-  lines.push(`## 🚫 Anti-Patterns (Don't Do This)`);
-  for (const u of antiPatterns.slice(0, 6)) {
-    lines.push(`- **${u.experience_id}** [${u.canonical_key}]: ${u.anti_pattern}`);
+  lines.push('## 🚫 Anti-Patterns (Don\'t Do This)');
+  for (const unit of antiPatterns.slice(0, 6)) {
+    lines.push(`- **${unit.experience_id || unit.event_id || 'EU'}** [${unit.canonical_key || 'lesson'}]: ${unit.anti_pattern}`);
   }
-  lines.push(``);
+  lines.push('');
 }
 
-// Recent high-impact incidents
-const highImpact = recentIncidents.filter(i => (i.impact_score || 0) >= 7);
+const highImpact = recentIncidents.filter((incident) => (incident.impact_score || incident.severity || incident.impact || 0) >= 7);
 if (highImpact.length > 0) {
-  lines.push(`## ⚡ Recent High-Impact (severity ≥ 7)`);
-  for (const i of highImpact.slice(0, 5)) {
-    const severity = i.impact_score || '?';
-    const status = i.status || 'unknown';
-    lines.push(`- **${i.event_id}** [sev:${severity}|${status}]: ${i.safe_title || i.failure_class}`);
+  lines.push('## ⚡ Recent High-Impact (severity ≥ 7)');
+  for (const incident of highImpact.slice(0, 5)) {
+    const severity = incident.impact_score || incident.severity || incident.impact || '?';
+    const status = incident.status || 'unknown';
+    lines.push(`- **${incident.event_id || incident.incident_id || 'INC'}** [sev:${severity}|${status}]: ${incident.safe_title || incident.title || incident.failure_class || 'incident'}`);
   }
-  lines.push(``);
+  lines.push('');
 }
 
-// Families overview
 if (familyNames.length > 0) {
-  lines.push(`## 🧬 Known Failure Families`);
-  for (const f of familyNames) {
-    const fam = familyIndex[f];
-    const count = fam?.member_count || (fam?.genomes?.length) || '?';
-    const desc = fam?.description || '';
-    lines.push(`- **${f}** (${count} genomes): ${desc}`);
+  lines.push('## 🧬 Known Failure Families');
+  for (const familyName of familyNames) {
+    const family = familyIndex[familyName];
+    const count = family?.member_count || (family?.genomes?.length) || (family?.members?.length) || '?';
+    const desc = family?.description || family?.invariant || '';
+    lines.push(`- **${familyName}** (${count} genomes): ${desc}`);
   }
-  lines.push(``);
+  lines.push('');
 }
 
-// Pending genomes (need attention)
-if (pendingGenomes.length > 0) {
-  lines.push(`## ⏳ Pending Review`);
-  for (const g of pendingGenomes.slice(0, 5)) {
-    lines.push(`- ${g.genome_id} [${g.family}]: awaiting replay gate`);
+if (pendingGenomes.length > 0 || pendingSkills.length > 0) {
+  lines.push('## ⏳ Pending Review');
+  for (const genome of pendingGenomes.slice(0, 3)) {
+    lines.push(`- ${genome.genome_id} [${genome.family}]: awaiting replay gate`);
   }
-  lines.push(``);
+  for (const skill of pendingSkills.slice(0, 3)) {
+    lines.push(`- ${skill.skill_id} [${skill.status || 'candidate'}]: ${skill.title}`);
+  }
+  lines.push('');
 }
 
-lines.push(`---`);
-lines.push(`*Read this file at session start. Run \`node cli/nve-memory.js\` to regenerate.*`);
+lines.push('---');
+lines.push('*Read this file at session start. Run `node cli/nve-memory.js` to regenerate.*');
 
-// ─── Write ───────────────────────────────────────────────────
 const memoryPath = path.join(EVO, 'MEMORY.md');
 fs.writeFileSync(memoryPath, lines.join('\n') + '\n');
 
-const lineCount = lines.length;
-console.log(`
-🧠 MEMORY.md generated
-   Path:   ${memoryPath}
-   Lines:  ${lineCount}
-   Config: top_k=${topK}, min_confidence=${minConf}${cfg._loaded ? ' (from config.toml)' : ' (defaults)'}
-   Data:   ${promotedGenomes.length} promoted, ${antiPatterns.length} anti-patterns, ${highImpact.length} high-impact incidents, ${familyNames.length} families
-
-   The agent should read this file at the start of each session.
-`);
+console.log('\n🧠 MEMORY.md generated');
+console.log(`   Path:   ${memoryPath}`);
+console.log(`   Lines:  ${lines.length}`);
+console.log(`   Config: top_k=${topK}, min_confidence=${minConf}${cfg._loaded ? ' (from config.toml)' : ' (defaults)'}`);
+console.log(`   Data:   ${promotedGenomes.length} promoted genomes, ${admittedSkills.length} admitted skills, ${packages.length} packages`);
+console.log('\n   The agent should read this file at the start of each session.\n');

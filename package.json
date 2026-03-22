@@ -1,7 +1,7 @@
-﻿{
+{
   "name": "agent-genome-lab",
-  "version": "2.2.0",
-  "description": "Self-evolving memory layer for AI coding agents. Captures failure DNA, prevents bug repetition, enables collective intelligence across projects.",
+  "version": "2.3.0",
+  "description": "Self-evolving memory layer for AI coding agents. Adds a SkillGraph-style reusable skill layer on top of Failure Genomes.",
   "author": "CreanLab",
   "license": "MIT",
   "bin": {
@@ -16,7 +16,11 @@
     "nve-utility": "./cli/nve-utility.js",
     "nve-pack": "./cli/nve-pack.js",
     "nve-fg-summary": "./cli/nve-fg-summary.js",
-    "nve-manifest": "./cli/nve-manifest.js"
+    "nve-manifest": "./cli/nve-manifest.js",
+    "nve-skill-extract": "./cli/nve-skill-extract.js",
+    "nve-skill-index": "./cli/nve-skill-index.js",
+    "nve-skill-package": "./cli/nve-skill-package.js",
+    "nve-skill-search": "./cli/nve-skill-search.js"
   },
   "files": [
     "cli/",
@@ -31,12 +35,24 @@
     "README.md"
   ],
   "keywords": [
-    "ai-agent", "failure-genome", "self-evolution",
-    "code-quality", "memory-layer", "replay-gate",
-    "coding-assistant", "collective-intelligence",
-    "agent-memory", "failure-patterns", "bug-prevention",
-    "ai-evolution", "knowledge-sharing", "vscode-extension",
-    "gamified-dashboard", "deterministic-testing"
+    "ai-agent",
+    "failure-genome",
+    "self-evolution",
+    "code-quality",
+    "memory-layer",
+    "replay-gate",
+    "coding-assistant",
+    "collective-intelligence",
+    "agent-memory",
+    "failure-patterns",
+    "bug-prevention",
+    "ai-evolution",
+    "knowledge-sharing",
+    "vscode-extension",
+    "gamified-dashboard",
+    "deterministic-testing",
+    "skillgraph",
+    "skill-registry"
   ],
   "repository": {
     "type": "git",
@@ -46,4 +62,3 @@
     "node": ">=18"
   }
 }
-

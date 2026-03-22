@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Skill Package",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "package_id",
+    "title",
+    "summary",
+    "skill_ids"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "package_id": {
+      "type": "string",
+      "pattern": "^PKG-[a-z0-9-]+$"
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "skill_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "activation_policy": {
+      "type": "object"
+    },
+    "published_agent_skill_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

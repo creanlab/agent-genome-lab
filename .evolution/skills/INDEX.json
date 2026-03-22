@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-03-22T15:46:04.219Z",
+  "total_skills": 0,
+  "by_status": {
+    "candidate": 0,
+    "quarantined": 0,
+    "admitted": 0,
+    "rejected": 0
+  },
+  "skills": []
+}

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This repository uses the **NVE Universal Failure Genome superstructure**.
+This repository uses the **NVE Universal Failure Genome + SkillGraph superstructure** (v2.3.0).
 
 ## Read first
 Before changing architecture, memory, workflows, sharing, or Failure Genome behavior, read:
@@ -14,6 +14,9 @@ Before changing architecture, memory, workflows, sharing, or Failure Genome beha
 - `docs/FAILURE_GENOME_EXPERIMENT_PLAN_V1.md`
 - `docs/OLD_TO_NEW_MAP.md`
 - `docs/ANTIGRAVITY_PROMPT_SEQUENCE.md`
+- `docs/SKILLGRAPH_UPGRADE_ARCHITECTURE.md`
+- `docs/SKILLGRAPH_OPERATING_GUIDE.md`
+- `docs/SKILLNET_GAP_MAP.md`
 
 ## Operating contract
 1. Do not delete valuable existing assets without explicit approval.
@@ -27,6 +30,8 @@ Before changing architecture, memory, workflows, sharing, or Failure Genome beha
 9. Never share raw code, secrets, or full logs by default.
 10. Legacy paths may remain as wrappers until migration is stable.
 11. **Before every commit**: check "were there uncaptured incidents since last commit?"
+12. **Skill layer**: follow `.agents/rules/35-skill-admission-and-quarantine.md` for skill governance.
+13. **Metadata-first**: search skill INDEX before loading full skill content (see `.agents/workflows/35-skill-capture-and-admission.md`).
 
 ## Canonical homes
 - `.agents/rules/` — always-on constraints
@@ -35,6 +40,9 @@ Before changing architecture, memory, workflows, sharing, or Failure Genome beha
 - `.evolution/incidents/` — canonical incident events
 - `.evolution/experience_units/` — distilled reusable knowledge
 - `.evolution/failure_genomes/` — family-level learning units
+- `.evolution/skills/` — canonical skill registry (candidate/admitted/quarantined/rejected)
+- `.evolution/skill_packages/` — task-oriented skill bundles
+- `.evolution/skill_relations/` — semantic and dependency graph
 - `.evolution/audits/` — local audit outputs
 - `.evolution/manifests/` — repo manifests
 - `.evolution/exports/` — shareable research packs

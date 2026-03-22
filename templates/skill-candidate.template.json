@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "SK-000001",
+  "created_at": "2026-03-22T00:00:00.000Z",
+  "updated_at": "2026-03-22T00:00:00.000Z",
+  "title": "Prevent verification-skipped-before-done",
+  "summary": "Reusable prevention workflow extracted from a replay-passed failure genome.",
+  "status": "candidate",
+  "category": "verification",
+  "tags": [
+    "skillgraph",
+    "verification",
+    "replay"
+  ],
+  "source_type": "failure_genome",
+  "source_ids": {
+    "genome_id": "FG-000001",
+    "incident_id": "INC-000001"
+  },
+  "triggers": [
+    "Invariant at risk",
+    "Recurring failure family signal"
+  ],
+  "when_to_use": [
+    "Use when the task resembles the stored failure family."
+  ],
+  "when_not_to_use": [
+    "Do not use for unrelated debugging work."
+  ],
+  "inputs": [
+    "Task summary",
+    "Changed files",
+    "Verification target"
+  ],
+  "steps": [
+    {
+      "title": "Inspect the family",
+      "instruction": "Restate the invariant and confirm the current task matches the family.",
+      "expected_output": "A clear family match statement.",
+      "risk": "low"
+    },
+    {
+      "title": "Apply the repair",
+      "instruction": "Use the stored repair operator in the current context.",
+      "expected_output": "A task-specific remediation plan.",
+      "risk": "medium"
+    }
+  ],
+  "success_signals": [
+    "Invariant explicitly verified."
+  ],
+  "failure_modes": [
+    "Repair copied blindly without adaptation."
+  ],
+  "safety_notes": [
+    "Require explicit approval for destructive changes."
+  ],
+  "maintainability_notes": [
+    "Keep lineage to the source genome."
+  ],
+  "cost_notes": [
+    "Prefer the smallest trustworthy verification surface."
+  ],
+  "relations": [],
+  "evaluation": null,
+  "canonical_hash": null,
+  "semantic_fingerprint": null,
+  "duplicate_of": null,
+  "published_skill_path": null
+}

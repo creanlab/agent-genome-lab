@@ -12,7 +12,7 @@
 
 > **The problem:** AI coding agents repeat the same mistakes across sessions. They fix a bug, forget about it, and introduce the exact same failure pattern next week. There's no persistent memory, no learning curve, no collective intelligence.
 >
-> **The solution:** Agent Genome Lab captures every mistake as structured DNA — incident → distilled lesson → verified genome. Your agent reads a compact `MEMORY.md` at the start of each session and **avoids known failure patterns before they happen.**
+> **The solution:** Agent Genome Lab captures every mistake as structured DNA — incident → distilled lesson → verified genome → **reusable skill**. Your agent reads a compact `MEMORY.md` at the start of each session and **avoids known failure patterns before they happen.**
 
 ---
 
@@ -102,12 +102,16 @@ If you want to **fully integrate** the genome system into an existing project, f
 | **Family**         | Cluster of related genomes (e.g., all "import" errors group together)  |
 | **Replay Gate**    | Deterministic check — does this genome actually prevent failures?       |
 | **Promotion**      | Genome passes replay → promoted. Fails → rejected                      |
+| **Skill**          | Reusable execution pattern derived from promoted genomes/lessons        |
+| **Skill Package**  | Task-oriented bundle of admitted skills published for runtime use       |
 
 ---
 
-## 🛠️ 13 CLI Tools (Zero Dependencies)
+## 🛠️ 17 CLI Tools (Zero Dependencies)
 
 All tools are standalone Node.js scripts. Just `node cli/tool.js`.
+
+### Core Pipeline
 
 | Command                               | Description                                                     |
 |:---------------------------------------|:----------------------------------------------------------------|
@@ -116,7 +120,7 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-scaffold genome --slug name`      | Create Failure Genome scaffold                                  |
 | `nve-scaffold eu --slug name`          | Create Experience Unit scaffold                                 |
 | `nve-memory`                           | Generate `MEMORY.md` — compact top-K memory for agent           |
-| `nve-audit`                            | **5-axis health audit** — Structure, Memory, Verification...    |
+| `nve-audit`                            | **5-axis health audit** + SkillGraph extension score            |
 | `nve-validate`                         | 28 structural checks — files, folders, schema compliance        |
 | `nve-distill`                          | Auto-pipeline — incidents → experience units → failure genomes  |
 | `nve-replay`                           | Replay gate — deterministic pass/fail for genome promotion      |
@@ -126,31 +130,47 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-manifest`                         | Repo manifest snapshot (stack, maturity, metrics)               |
 | `nve-export-dashboard`                 | Export data for offline web dashboard                            |
 
-### Full pipeline in 4 commands:
+### SkillGraph Pipeline (NEW in v2.3.0)
+
+| Command                               | Description                                                     |
+|:---------------------------------------|:----------------------------------------------------------------|
+| `nve-skill-extract`                    | Extract candidate skills from promoted genomes and EUs          |
+| `nve-skill-index`                      | Evaluate, deduplicate, categorize skills; build relation graph  |
+| `nve-skill-package --auto --publish`   | Bundle admitted skills into packages; publish runtime SKILL.md  |
+| `nve-skill-search "query"`             | Metadata-first search over the local skill registry             |
+
+### Full pipeline in 8 commands:
 
 ```bash
-node cli/nve-distill.js       # incidents → EU → FG
-node cli/nve-replay.js        # replay gate (promote/reject)
-node cli/nve-memory.js        # regenerate MEMORY.md
-node cli/nve-audit.js         # 5-axis score → 100%
+node cli/nve-distill.js                          # incidents → EU → FG
+node cli/nve-replay.js                           # replay gate (promote/reject)
+node cli/nve-skill-extract.js                    # genomes → candidate skills
+node cli/nve-skill-index.js                      # evaluate + dedupe + relations
+node cli/nve-skill-package.js --auto --publish   # build packages + publish
+node cli/nve-memory.js                           # regenerate MEMORY.md
+node cli/nve-audit.js                            # 5-axis + SkillGraph score
+node cli/nve-skill-search.js "query"             # search skills locally
 ```
 
 ---
 
-## 📊 5-Axis Audit System
+## 📊 5-Axis Audit + SkillGraph Extension
 
-Every project gets a health score across 5 dimensions:
+Every project gets a health score across 5 core dimensions plus an optional SkillGraph extension:
 
 ```
-🧬 5-Axis Audit — 2026-03-19
+🧬 NVE 5-Axis Audit — 2026-03-22
 
   Overall:        ████████████████████  100%
 
-  Structure:      ████████████████████  100%   rules, workflows, schemas
+  Structure:      ████████████████████  100%   (9R 10W 8S)
   Memory:         ████████████████████  100%   incidents, EUs, genomes
-  Verification:   ████████████████████  100%   replay gate, security
-  Shareability:   ████████████████████  100%   6/6 schemas valid
+  Verification:   ████████████████████  100%   (security: ✅)
+  Shareability:   ████████████████████  99%    (6/6 schemas)
   Evolution:      ████████████████████  100%   genome families growing
+  SkillGraph*:    ████████████████████  100%   (3 skills, 2 packages, 9 relations)
+
+  *SkillGraph is reported as an extension and is not folded into the historical 5-axis overall score.
 ```
 
 Use in CI/CD: `node cli/nve-audit.js --ci` → exit code 1 if score < 70%.
@@ -259,29 +279,33 @@ Auto-redaction strips: code snippets, file paths, API keys, environment variable
 
 ## 📈 Example MEMORY.md
 
-This is what your agent reads at the start of each session (~30 lines, ~5 seconds):
+This is what your agent reads at the start of each session (~35 lines, ~5 seconds):
 
 ```markdown
 # MEMORY.md — Compact Agent Memory
 
 ## Quick Stats
 - Incidents: 11 | Experience Units: 5 | Failure Genomes: 7
-- Promoted: 7 | Pending: 0 | Families: 7
+- Skills: 4 | Admitted Skills: 3 | Skill Packages: 2
+- Promoted Genomes: 7 | Pending Genomes: 0 | Pending Skills: 1
 
 ## ✅ Verified Lessons (Do This)
 - **FG-000003** [build-time-env-var-loss]: always-use-build-args (utility: 0.95)
 - **FG-000001** [partial-import-missing]: add-import-and-verify (utility: 0.92)
 
+## 🧩 Reusable Skills (Admitted)
+- **SK-000001** [security]: Prevent credential-drift-after-refactor score=0.96
+- **SK-000002** [verification]: Prevent verification-skipped-before-done score=0.96
+
+## 📦 Skill Packages
+- **PKG-verification-hardening**: Verification Hardening (3 skills)
+
 ## 🚫 Anti-Patterns (Don't Do This)
 - Adding module.method() without checking if import exists
 - Updating .env but forgetting build config
-
-## 🧬 Known Failure Families
-- partial-import-missing (1 genome): Missing import for calls
-- silent-fallback-introduced (1 genome): Agent adds fallbacks instead of fixing
 ```
 
-That's 7 verified lessons preventing known failures. **Your agent reads this in 5 seconds.**
+Verified lessons + admitted skills preventing known failures. **Your agent reads this in 5 seconds.**
 
 ---
 
@@ -321,22 +345,22 @@ agent-genome-lab/
 ├── README.md                    You are here
 ├── AGENTS.md                    Agent operating contract
 ├── LICENSE                      MIT
-├── package.json                 12 npm bin commands
+├── package.json                 16 npm bin commands
 ├── .agents/
-│   ├── rules/     (7 files)     Behavioral rules for agents
-│   ├── skills/    (6 skills)    Specialized agent capabilities
-│   └── workflows/ (9 files)     Step-by-step procedures
-├── cli/           (13 tools)    Zero-dependency CLI tools
-├── schemas/       (6 schemas)   JSON Schema validation
-├── templates/     (3 examples)  Example JSON files
-├── docs/          (6 docs)      Architecture, research, guides
-├── prompts/       (4 prompts)   Migration prompts for agents
+│   ├── rules/     (9 files)     Behavioral rules for agents
+│   ├── skills/    (8 skills)    Specialized agent capabilities
+│   └── workflows/ (10 files)    Step-by-step procedures
+├── cli/           (17+ tools)   Zero-dependency CLI tools
+├── schemas/       (9 schemas)   JSON Schema validation (incl. skill schemas)
+├── templates/     (5 examples)  Example JSON files
+├── docs/          (10 docs)     Architecture, research, SkillGraph guides
+├── prompts/       (5 prompts)   Migration + SkillGraph prompts for agents
 ├── vscode-extension/            VS Code sidebar extension
 └── web/
     └── index.html               3000+ line gamified dashboard
 ```
 
-**63 files. Zero external dependencies. MIT license.**
+**80+ files. Zero external dependencies. MIT license.**
 
 ---
 
@@ -352,6 +376,7 @@ Built on peer-reviewed research (2025–2026):
 | SEAD                          | GRPO + adaptive curriculum                      | XP system                |
 | SEPGA                         | Constrained MDP + policy penalties              | Replay Gate              |
 | Self-evolving Embodied AI     | 5-component closed-loop                         | Memory self-updating     |
+| **SkillNet** (2603.04448)      | 3-layer skill ontology + reuse graph            | SkillGraph layer (v2.3)  |
 
 ---
 
@@ -391,12 +416,17 @@ We'd love your help! Here's how:
 - [Experiment Plan](docs/FAILURE_GENOME_EXPERIMENT_PLAN_V1.md)
 - [Migration Playbook](docs/SAFE_MIGRATION_PLAYBOOK.md)
 - [User Flow: Audit & Share](docs/USER_FLOW_AUDIT_AND_SHARE.md)
+- [SkillGraph Architecture](docs/SKILLGRAPH_UPGRADE_ARCHITECTURE.md)
+- [SkillGraph Operating Guide](docs/SKILLGRAPH_OPERATING_GUIDE.md)
+- [SkillNet Gap Map](docs/SKILLNET_GAP_MAP.md)
+- [SkillGraph Upgrade Plan](docs/SKILLNET_UPGRADE_PLAN.md)
 
 **Agent Prompts (use in order):**
 1. [Preflight](prompts/01-PREFLIGHT.md) — inspect repo, create migration plan
 2. [Migration](prompts/02-MIGRATION.md) — install structure
 3. [Genome Install](prompts/03-GENOME_INSTALL.md) — add failure genome layer
 4. [Validation](prompts/04-VALIDATION.md) — run all checks
+5. [SkillGraph Install](prompts/05-SKILLGRAPH_INSTALL.md) — add SkillGraph layer
 
 ---
 

@@ -1,0 +1,53 @@
+{
+  "schema_version": "2.1",
+  "audit_date": "2026-03-22",
+  "generated_at": "2026-03-22T15:46:04.247Z",
+  "overall_score": 68,
+  "axes": {
+    "structure": {
+      "score": 100,
+      "rules": 9,
+      "workflows": 10,
+      "skills": 8
+    },
+    "memory": {
+      "score": 10,
+      "incidents": 0,
+      "experience_units": 0,
+      "failure_genomes": 0,
+      "audits": 0,
+      "manifests": 0
+    },
+    "verification": {
+      "score": 50,
+      "security_ok": true
+    },
+    "shareability": {
+      "score": 99,
+      "schemas": 6,
+      "skill_schemas": 3,
+      "has_pack": true
+    },
+    "evolution": {
+      "score": 80,
+      "genomes": 0,
+      "has_replay": true,
+      "has_distill": true
+    }
+  },
+  "skillgraph": {
+    "score": 80,
+    "skills": 0,
+    "admitted": 0,
+    "candidate": 0,
+    "quarantined": 0,
+    "rejected": 0,
+    "packages": 0,
+    "relations": 0,
+    "has_extract": true,
+    "has_index": true,
+    "has_package_builder": true,
+    "has_search": true
+  },
+  "issues": []
+}

@@ -1,0 +1,11 @@
+{
+  "project_name": "agent-genome-lab",
+  "default_tier": "distilled",
+  "created_at": "2026-03-22T15:46:04.220Z",
+  "redaction_rules": {
+    "strip_code": true,
+    "strip_secrets": true,
+    "strip_paths": true,
+    "strip_logs": true
+  }
+}
