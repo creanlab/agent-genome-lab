@@ -65,7 +65,7 @@ node cli/nve-memory.js
 
 ## 📋 Agent Prompt Sequence (for full migration)
 
-If you want to **fully integrate** the genome system into an existing project, feed these 4 prompts to your AI agent **in order**:
+If you want to **fully integrate** the genome system into an existing project, feed these 5 prompts to your AI agent **in order**:
 
 | Step | Prompt File                           | What it does                                                    |
 |:-----|:--------------------------------------|:----------------------------------------------------------------|
@@ -73,6 +73,7 @@ If you want to **fully integrate** the genome system into an existing project, f
 | 2️⃣  | `prompts/02-MIGRATION.md`             | Agent installs the full structure: rules, workflows, `.evolution/`, schemas, CLI |
 | 3️⃣  | `prompts/03-GENOME_INSTALL.md`        | Agent adds the Failure Genome layer on top of canonical incidents |
 | 4️⃣  | `prompts/04-VALIDATION.md`            | Agent validates everything works — runs audit, manifest, validate |
+| 5️⃣  | `prompts/05-SKILLGRAPH_INSTALL.md`    | Agent adds the SkillGraph layer — skills, packages, search      |
 
 **How to use:**
 1. Clone this repo → copy the `prompts/` folder into your project
@@ -81,8 +82,9 @@ If you want to **fully integrate** the genome system into an existing project, f
 4. If the plan looks good, paste `02-MIGRATION.md` → agent installs the structure
 5. Paste `03-GENOME_INSTALL.md` → agent adds the genome layer
 6. Paste `04-VALIDATION.md` → agent runs all checks and reports status
+7. Paste `05-SKILLGRAPH_INSTALL.md` → agent adds skill extraction, indexing, packaging, and search
 
-> 💡 **Tip:** For a quick start without full migration, just use `node cli/nve-init.js --yes` — it creates the basic `.evolution/` structure instantly.
+> 💡 **Tip:** For a quick start without full migration, just use `node cli/nve-init.js --yes` — it creates the full `.evolution/` structure instantly (including SkillGraph dirs).
 
 ---
 
