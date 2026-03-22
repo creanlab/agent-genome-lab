@@ -109,7 +109,7 @@ If you want to **fully integrate** the genome system into an existing project, f
 
 ---
 
-## 🛠️ 17 CLI Tools (Zero Dependencies)
+## 🛠️ 16 CLI Tools (Zero Dependencies)
 
 All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 
@@ -354,7 +354,7 @@ agent-genome-lab/
 │   ├── rules/     (9 files)     Behavioral rules for agents
 │   ├── skills/    (8 skills)    Specialized agent capabilities
 │   └── workflows/ (10 files)    Step-by-step procedures
-├── cli/           (17+ tools)   Zero-dependency CLI tools
+├── cli/           (16 tools)    Zero-dependency CLI tools
 ├── schemas/       (9 schemas)   JSON Schema validation (incl. skill schemas)
 ├── templates/     (5 examples)  Example JSON files
 ├── docs/          (10 docs)     Architecture, research, SkillGraph guides
