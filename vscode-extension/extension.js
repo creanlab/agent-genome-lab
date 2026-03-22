@@ -1,7 +1,6 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 function activate(context) {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -24,42 +23,95 @@ function activate(context) {
     const replayProvider = new ReplayGateProvider(root);
     vscode.window.registerTreeDataProvider('nveReplayGate', replayProvider);
 
-    // 4. Quick Actions
+    // 4. Skill Registry
+    const skillProvider = new SkillRegistryProvider(root);
+    vscode.window.registerTreeDataProvider('nveSkillRegistry', skillProvider);
+
+    // 5. Skill Packages
+    const packageProvider = new SkillPackagesProvider(root);
+    vscode.window.registerTreeDataProvider('nveSkillPackages', packageProvider);
+
+    // 6. Quick Actions
     const actionsProvider = new QuickActionsProvider();
     vscode.window.registerTreeDataProvider('nveQuickActions', actionsProvider);
 
     // ==================== COMMANDS ====================
-    function runCLI(script, label) {
+    function runCLI(script) {
         const terminal = vscode.window.createTerminal('NVE');
         terminal.show();
         terminal.sendText(`node cli/${script}`);
         setTimeout(() => {
-            auditProvider.refresh();
-            genomesProvider.refresh();
-            replayProvider.refresh();
+            refreshAll();
         }, 3000);
     }
 
+    function refreshAll() {
+        auditProvider.refresh();
+        genomesProvider.refresh();
+        replayProvider.refresh();
+        skillProvider.refresh();
+        packageProvider.refresh();
+    }
+
+    // Skill search with input box
+    async function runSkillSearch() {
+        const query = await vscode.window.showInputBox({
+            prompt: 'Search skills by keyword',
+            placeHolder: 'e.g. verification, migration, fallback...',
+        });
+        if (!query) return;
+        const terminal = vscode.window.createTerminal('NVE Skill Search');
+        terminal.show();
+        terminal.sendText(`node cli/nve-skill-search.js "${query}"`);
+    }
+
     context.subscriptions.push(
-        vscode.commands.registerCommand('nve.runAudit', () => runCLI('nve-audit.js', 'Audit')),
-        vscode.commands.registerCommand('nve.runDistill', () => runCLI('nve-distill.js', 'Distill')),
-        vscode.commands.registerCommand('nve.runReplay', () => runCLI('nve-replay.js --dry-run --verbose', 'Replay')),
-        vscode.commands.registerCommand('nve.runPack', () => runCLI('nve-pack.js distilled', 'Pack')),
-        vscode.commands.registerCommand('nve.refreshAll', () => {
-            auditProvider.refresh();
-            genomesProvider.refresh();
-            replayProvider.refresh();
-        })
+        vscode.commands.registerCommand('nve.runAudit', () => runCLI('nve-audit.js')),
+        vscode.commands.registerCommand('nve.runDistill', () => runCLI('nve-distill.js')),
+        vscode.commands.registerCommand('nve.runReplay', () => runCLI('nve-replay.js --dry-run --verbose')),
+        vscode.commands.registerCommand('nve.runPack', () => runCLI('nve-pack.js distilled')),
+        vscode.commands.registerCommand('nve.runSkillExtract', () => runCLI('nve-skill-extract.js')),
+        vscode.commands.registerCommand('nve.runSkillIndex', () => runCLI('nve-skill-index.js')),
+        vscode.commands.registerCommand('nve.runSkillPackage', () => runCLI('nve-skill-package.js --auto --publish')),
+        vscode.commands.registerCommand('nve.runSkillSearch', () => runSkillSearch()),
+        vscode.commands.registerCommand('nve.refreshAll', () => refreshAll())
     );
 
     // Auto-refresh on file changes
     const watcher = vscode.workspace.createFileSystemWatcher('**/.evolution/**/*.json');
-    watcher.onDidChange(() => {
-        auditProvider.refresh();
-        genomesProvider.refresh();
-        replayProvider.refresh();
-    });
+    watcher.onDidChange(() => refreshAll());
+    watcher.onDidCreate(() => refreshAll());
+    watcher.onDidDelete(() => refreshAll());
     context.subscriptions.push(watcher);
+}
+
+// ==================== HELPERS ====================
+function readJsonSafe(filePath, fallback) {
+    try {
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+        return fallback;
+    }
+}
+
+function statusIcon(status) {
+    switch (status) {
+        case 'admitted': return 'pass';
+        case 'candidate': return 'question';
+        case 'quarantined': return 'warning';
+        case 'rejected': return 'error';
+        default: return 'circle';
+    }
+}
+
+function statusEmoji(status) {
+    switch (status) {
+        case 'admitted': return '✅';
+        case 'candidate': return '⏳';
+        case 'quarantined': return '🟡';
+        case 'rejected': return '❌';
+        default: return '•';
+    }
 }
 
 // ==================== AUDIT TREE ====================
@@ -70,10 +122,11 @@ class AuditTreeProvider {
     getTreeItem(el) { return el; }
     getChildren() {
         const auditDir = path.join(this.root, '.evolution/audits');
+        if (!fs.existsSync(auditDir)) return [new vscode.TreeItem('No audit data. Run: NVE: Run 5-Axis Audit')];
         const files = fs.readdirSync(auditDir).filter(f => f.startsWith('AUDIT-')).sort().reverse();
         if (files.length === 0) return [new vscode.TreeItem('No audit data. Run: NVE: Run 5-Axis Audit')];
 
-        const latest = JSON.parse(fs.readFileSync(path.join(auditDir, files[0]), 'utf8'));
+        const latest = readJsonSafe(path.join(auditDir, files[0]), {});
         const items = [];
 
         if (latest.overall_score !== undefined) {
@@ -92,6 +145,17 @@ class AuditTreeProvider {
                 items.push(item);
             }
         }
+
+        // SkillGraph extension score
+        if (latest.skillgraph) {
+            const sg = latest.skillgraph;
+            const sgItem = new vscode.TreeItem(`SkillGraph: ${sg.score}%`);
+            sgItem.iconPath = new vscode.ThemeIcon('extensions');
+            sgItem.description = `${sg.skills || 0} skills, ${sg.packages || 0} pkg`;
+            sgItem.tooltip = `Admitted: ${sg.admitted || 0} | Candidate: ${sg.candidate || 0} | Quarantined: ${sg.quarantined || 0} | Relations: ${sg.relations || 0}`;
+            items.push(sgItem);
+        }
+
         return items;
     }
 }
@@ -109,8 +173,10 @@ class GenomeFamiliesProvider {
         if (!element) {
             // Root level: families
             if (!fs.existsSync(indexFile)) return [new vscode.TreeItem('No FAMILY_INDEX.json')];
-            const index = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
-            return Object.entries(index.families || {}).map(([name, data]) => {
+            const index = readJsonSafe(indexFile, {});
+            const families = Object.entries(index.families || {});
+            if (families.length === 0) return [new vscode.TreeItem('No genome families yet')];
+            return families.map(([name, data]) => {
                 const item = new vscode.TreeItem(name, vscode.TreeItemCollapsibleState.Collapsed);
                 item.description = `${data.members?.length || 0} genomes`;
                 item.iconPath = new vscode.ThemeIcon('symbol-class');
@@ -155,7 +221,7 @@ class ReplayGateProvider {
         const reportFile = path.join(this.root, '.evolution/audits/replay-gate.latest.json');
         if (!fs.existsSync(reportFile)) return [new vscode.TreeItem('No replay data. Run: NVE: Run Replay Gate')];
 
-        const report = JSON.parse(fs.readFileSync(reportFile, 'utf8'));
+        const report = readJsonSafe(reportFile, {});
         const items = [];
 
         const summary = new vscode.TreeItem(`${report.promoted || 0} promoted, ${report.rejected || 0} rejected, ${report.skipped || 0} skipped`);
@@ -178,6 +244,135 @@ class ReplayGateProvider {
     }
 }
 
+// ==================== SKILL REGISTRY TREE ====================
+class SkillRegistryProvider {
+    constructor(root) { this.root = root; this._onDidChange = new vscode.EventEmitter(); this.onDidChangeTreeData = this._onDidChange.event; }
+    refresh() { this._onDidChange.fire(); }
+
+    getTreeItem(el) { return el; }
+    getChildren(element) {
+        const indexFile = path.join(this.root, '.evolution/skills/INDEX.json');
+
+        if (!element) {
+            // Root level: status groups
+            if (!fs.existsSync(indexFile)) return [new vscode.TreeItem('No skills. Run: NVE: Extract Skills')];
+            const index = readJsonSafe(indexFile, {});
+            const skills = index.skills || [];
+            if (skills.length === 0) return [new vscode.TreeItem('No skills. Run: NVE: Extract Skills')];
+
+            const byStatus = index.by_status || {};
+            const groups = [];
+            const statusOrder = ['admitted', 'candidate', 'quarantined', 'rejected'];
+            for (const status of statusOrder) {
+                const count = byStatus[status] || 0;
+                if (count === 0) continue;
+                const item = new vscode.TreeItem(
+                    `${statusEmoji(status)} ${status} (${count})`,
+                    vscode.TreeItemCollapsibleState.Expanded
+                );
+                item.iconPath = new vscode.ThemeIcon(statusIcon(status));
+                item._status = status;
+                item._skills = skills.filter(s => s.status === status);
+                groups.push(item);
+            }
+
+            // Summary line
+            const total = new vscode.TreeItem(`Total: ${skills.length} skills`);
+            total.iconPath = new vscode.ThemeIcon('list-tree');
+            total.description = `${byStatus.admitted || 0} admitted`;
+            groups.unshift(total);
+
+            return groups;
+        }
+
+        // Child level: skills in a status group
+        if (element._skills) {
+            return element._skills.map(skill => {
+                const item = new vscode.TreeItem(skill.skill_id);
+                item.description = skill.title || '';
+                item.iconPath = new vscode.ThemeIcon(statusIcon(skill.status));
+                item.tooltip = [
+                    `Category: ${skill.category || '?'}`,
+                    `Tags: ${(skill.tags || []).join(', ')}`,
+                    `Score: ${skill.overall || '?'}`,
+                    `Source: ${skill.source_type || '?'}`,
+                ].join('\n');
+
+                // Click to open skill JSON
+                const skillFile = path.join(this.root, `.evolution/skills/${skill.skill_id}.json`);
+                if (fs.existsSync(skillFile)) {
+                    item.command = { command: 'vscode.open', arguments: [vscode.Uri.file(skillFile)] };
+                }
+                return item;
+            });
+        }
+        return [];
+    }
+}
+
+// ==================== SKILL PACKAGES TREE ====================
+class SkillPackagesProvider {
+    constructor(root) { this.root = root; this._onDidChange = new vscode.EventEmitter(); this.onDidChangeTreeData = this._onDidChange.event; }
+    refresh() { this._onDidChange.fire(); }
+
+    getTreeItem(el) { return el; }
+    getChildren(element) {
+        const indexFile = path.join(this.root, '.evolution/skill_packages/INDEX.json');
+
+        if (!element) {
+            // Root level: packages
+            if (!fs.existsSync(indexFile)) return [new vscode.TreeItem('No packages. Run: NVE: Package Skills')];
+            const index = readJsonSafe(indexFile, {});
+            const packages = index.packages || [];
+            if (packages.length === 0) return [new vscode.TreeItem('No packages. Run: NVE: Package Skills')];
+
+            // Relations summary
+            const relFile = path.join(this.root, '.evolution/skill_relations/RELATIONS.json');
+            const relData = readJsonSafe(relFile, {});
+            const relCount = (relData.relations || []).length;
+
+            const summary = new vscode.TreeItem(`${packages.length} packages, ${relCount} relations`);
+            summary.iconPath = new vscode.ThemeIcon('package');
+
+            const items = [summary];
+            for (const pkg of packages) {
+                const item = new vscode.TreeItem(
+                    pkg.package_id,
+                    vscode.TreeItemCollapsibleState.Collapsed
+                );
+                item.description = `${pkg.title || ''} (${pkg.skill_count || 0} skills)`;
+                item.iconPath = new vscode.ThemeIcon('archive');
+                item.tooltip = [
+                    `Category: ${pkg.category || '?'}`,
+                    `Tags: ${(pkg.tags || []).join(', ')}`,
+                    `Skills: ${(pkg.skill_ids || []).join(', ')}`,
+                    pkg.published_agent_skill_path ? `Published: ${pkg.published_agent_skill_path}` : 'Not published',
+                ].join('\n');
+                item._pkg = pkg;
+                items.push(item);
+            }
+            return items;
+        }
+
+        // Child level: skills in a package
+        if (element._pkg && element._pkg.skill_ids) {
+            return element._pkg.skill_ids.map(skillId => {
+                const skillFile = path.join(this.root, `.evolution/skills/${skillId}.json`);
+                const skill = readJsonSafe(skillFile, null);
+                const item = new vscode.TreeItem(skillId);
+                item.description = skill ? (skill.title || '') : 'missing';
+                item.iconPath = new vscode.ThemeIcon(skill ? statusIcon(skill.status) : 'error');
+                if (skill && fs.existsSync(skillFile)) {
+                    item.command = { command: 'vscode.open', arguments: [vscode.Uri.file(skillFile)] };
+                }
+                return item;
+            });
+        }
+
+        return [];
+    }
+}
+
 // ==================== QUICK ACTIONS TREE ====================
 class QuickActionsProvider {
     getTreeItem(el) { return el; }
@@ -187,11 +382,19 @@ class QuickActionsProvider {
             { label: '⚗️ Distill Genomes', cmd: 'nve.runDistill' },
             { label: '🔄 Replay Gate', cmd: 'nve.runReplay' },
             { label: '📦 Export Pack', cmd: 'nve.runPack' },
+            { label: '─── SkillGraph ───', cmd: null },
+            { label: '🧩 Extract Skills', cmd: 'nve.runSkillExtract' },
+            { label: '📊 Index Skills', cmd: 'nve.runSkillIndex' },
+            { label: '📦 Package Skills', cmd: 'nve.runSkillPackage' },
+            { label: '🔍 Search Skills', cmd: 'nve.runSkillSearch' },
+            { label: '─────────────────', cmd: null },
             { label: '🔃 Refresh All', cmd: 'nve.refreshAll' },
         ];
         return actions.map(a => {
             const item = new vscode.TreeItem(a.label);
-            item.command = { command: a.cmd, title: a.label };
+            if (a.cmd) {
+                item.command = { command: a.cmd, title: a.label };
+            }
             return item;
         });
     }

@@ -179,7 +179,7 @@ Use in CI/CD: `node cli/nve-audit.js --ci` → exit code 1 if score < 70%.
 
 ## 🖥️ VS Code Extension
 
-Sidebar extension with **4 live panels** — no terminal needed.
+Sidebar extension with **6 live panels** — no terminal needed.
 
 ### Install:
 
@@ -195,15 +195,17 @@ cp -r vscode-extension ~/.vscode/extensions/nve-genome-explorer
 
 ### Panels:
 
-| Panel                | What it shows                                           |
-|:---------------------|:--------------------------------------------------------|
-| 📊 **5-Axis Audit**  | Live scores with colored icons per axis                 |
-| 🧬 **Genome Families** | Expandable tree — click to open JSON in editor        |
-| 🔄 **Replay Gate**   | promoted ✅ / rejected ❌ / pending ⏳ per genome       |
-| ⚡ **Quick Actions**  | One-click: Run Audit, Distill, Replay, Export Pack     |
+| Panel                     | What it shows                                           |
+|:--------------------------|:--------------------------------------------------------|
+| 📊 **5-Axis Audit**       | Live scores per axis + SkillGraph extension score       |
+| 🧬 **Genome Families**    | Expandable tree — click to open JSON in editor          |
+| 🔄 **Replay Gate**        | promoted ✅ / rejected ❌ / pending ⏳ per genome       |
+| 🧩 **Skill Registry**     | Skills grouped by status (admitted/candidate/rejected)  |
+| 📦 **Skill Packages**     | Packages with expandable skill lists                    |
+| ⚡ **Quick Actions**       | One-click buttons for all 9 CLI tools                   |
 
-**Auto-refresh:** panels update when any `.evolution/*.json` changes.
-**Command Palette:** `Ctrl+Shift+P` → type `NVE` → 5 commands available.
+**Auto-refresh:** panels update when any `.evolution/**/*.json` changes.
+**Command Palette:** `Ctrl+Shift+P` → type `NVE` → 9 commands (incl. Skill Search with input box).
 
 ---
 

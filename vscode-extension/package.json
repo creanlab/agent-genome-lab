@@ -1,8 +1,8 @@
 {
   "name": "nve-genome-explorer",
   "displayName": "NVE Genome Explorer",
-  "description": "Sidebar: Failure Genome summary, 5-axis audit score, replay gate status, sharing",
-  "version": "0.1.0",
+  "description": "Sidebar: Failure Genome, SkillGraph, 5-axis audit, replay gate, skill search",
+  "version": "0.2.0",
   "publisher": "creanlab",
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Other"],
@@ -23,6 +23,8 @@
         { "id": "nveAuditScore", "name": "5-Axis Audit" },
         { "id": "nveGenomeFamilies", "name": "Genome Families" },
         { "id": "nveReplayGate", "name": "Replay Gate" },
+        { "id": "nveSkillRegistry", "name": "Skill Registry" },
+        { "id": "nveSkillPackages", "name": "Skill Packages" },
         { "id": "nveQuickActions", "name": "Quick Actions" }
       ]
     },
@@ -31,6 +33,10 @@
       { "command": "nve.runDistill", "title": "NVE: Distill Genomes" },
       { "command": "nve.runReplay", "title": "NVE: Run Replay Gate" },
       { "command": "nve.runPack", "title": "NVE: Export Pack" },
+      { "command": "nve.runSkillExtract", "title": "NVE: Extract Skills" },
+      { "command": "nve.runSkillIndex", "title": "NVE: Index Skills" },
+      { "command": "nve.runSkillPackage", "title": "NVE: Package Skills" },
+      { "command": "nve.runSkillSearch", "title": "NVE: Search Skills" },
       { "command": "nve.refreshAll", "title": "NVE: Refresh All" }
     ]
   }
