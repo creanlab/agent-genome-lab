@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreanLab &mdash; Git Activity Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf6f1;--card:#fff;--border:#e8e0d8;--text:#2a2420;--muted:#8a7e72;
+  --accent1:#2d6a8a;--accent2:#c46d3b;--accent3:#6a5a8a;--accent4:#3a8a5a;--accent5:#8a4a4a;
+  --accent6:#5a7a3a;--accent7:#8a6a2a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding:40px 32px}
+
+/* HEADER */
+.header{margin-bottom:32px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.header h1{font-size:22px;font-weight:700;color:#1a1510}
+.header .sub{font-size:12px;color:var(--muted);margin-top:3px;font-family:'IBM Plex Mono',monospace}
+.header .badge{display:inline-block;background:#eee8e0;color:var(--muted);font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.06em}
+
+/* CARDS GRID */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.card .label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.card .value{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:700;color:var(--text);line-height:1.15;margin-top:4px}
+.card .desc{font-size:10.5px;color:#a89a8e;margin-top:3px}
+
+/* SECTION */
+.section{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:22px 24px;margin-bottom:16px}
+.section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.section-sub{font-size:11px;color:var(--muted);margin-bottom:16px}
+
+/* STACKED BAR CHART */
+.chart-wrap{display:flex;gap:16px}
+.chart-bars{flex:1;min-width:0}
+.chart-legend{width:200px;flex-shrink:0}
+.bar-area{display:flex;align-items:flex-end;gap:1px;height:220px}
+.bar-col{flex:1;display:flex;flex-direction:column-reverse;position:relative;cursor:default;min-width:0}
+.bar-seg{border-radius:1px}
+.bar-col:hover{opacity:.85}
+.bar-col .tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:#1a1510;color:#faf6f1;border-radius:4px;padding:4px 8px;font-size:9px;white-space:nowrap;z-index:10;
+  font-family:'IBM Plex Mono',monospace;pointer-events:none}
+.bar-col:hover .tip{display:block}
+.date-row{display:flex;gap:1px;margin-top:6px}
+.date-row span{flex:1;text-align:center;font-size:7px;color:#b0a498;font-family:'IBM Plex Mono',monospace;overflow:hidden}
+.legend-item{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:11px;color:#5a5048}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.legend-count{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);font-weight:600}
+
+/* HEATMAP */
+.hm-container{display:flex;gap:8px;align-items:flex-start}
+.hm-days{display:flex;flex-direction:column;gap:2px;padding-top:0}
+.hm-days span{height:13px;line-height:13px;font-size:8px;color:var(--muted);text-align:right;width:24px}
+.hm-grid{display:flex;gap:2px;flex:1;overflow-x:auto}
+.hm-week{display:flex;flex-direction:column;gap:2px}
+.hm-cell{width:13px;height:13px;border-radius:2px;background:#f0ebe5;position:relative;cursor:default}
+.hm-cell:hover::after{content:attr(data-info);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);
+  background:#1a1510;color:#faf6f1;border-radius:3px;padding:3px 6px;font-size:8px;white-space:nowrap;z-index:10;
+  font-family:'IBM Plex Mono',monospace}
+.hm-c1{background:#c5d9c3}.hm-c2{background:#8aba85}.hm-c3{background:#52974a}.hm-c4{background:#2d6a28}
+.hm-months{display:flex;gap:2px;margin-left:32px;margin-top:4px}
+.hm-months span{font-size:8px;color:var(--muted)}
+
+/* TIME HEATMAP */
+.time-grid{display:grid;grid-template-columns:auto repeat(24,1fr);gap:2px;align-items:center}
+.time-grid .day-label{font-size:8px;color:var(--muted);text-align:right;padding-right:4px}
+.time-cell{aspect-ratio:1;border-radius:2px;background:#f0ebe5;position:relative;cursor:default;min-width:0}
+.time-cell:hover::after{content:attr(data-info);position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);
+  background:#1a1510;color:#faf6f1;border-radius:3px;padding:3px 6px;font-size:8px;white-space:nowrap;z-index:10;
+  font-family:'IBM Plex Mono',monospace}
+.tc1{background:rgba(45,106,138,.2)}.tc2{background:rgba(45,106,138,.4)}.tc3{background:rgba(45,106,138,.65)}.tc4{background:rgba(45,106,138,.9)}
+.hour-labels{display:grid;grid-template-columns:auto repeat(24,1fr);gap:2px;margin-top:2px}
+.hour-labels span{font-size:7px;color:#c0b8ae;text-align:center}
+
+/* LANGUAGE CHART */
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px}
+.lang-row{display:flex;align-items:center;gap:8px}
+.lang-bar-track{flex:1;height:16px;background:#f0ebe5;border-radius:3px;overflow:hidden}
+.lang-bar-fill{height:100%;border-radius:3px}
+.lang-name{font-size:10.5px;color:#5a5048;font-weight:500;width:80px;text-align:right}
+.lang-pct{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);width:36px}
+
+/* TIMELINE */
+.tl-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0ebe5}
+.tl-row:last-child{border-bottom:none}
+.tl-name{width:160px;font-size:11px;color:#5a5048;font-weight:500;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-track{flex:1;height:18px;position:relative;background:#f8f4ef;border-radius:3px}
+.tl-bar{position:absolute;top:2px;bottom:2px;border-radius:2px;opacity:.8}
+.tl-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);width:45px;text-align:right}
+.tl-lines{font-size:9px;color:#b0a498;width:70px;text-align:right}
+
+/* FUN STATS */
+.fun-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fun-item{background:#faf6f1;border:1px solid #ece5dd;border-radius:8px;padding:14px 16px}
+.fun-item .icon{font-size:20px;margin-bottom:4px}
+.fun-item .title{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--text)}
+.fun-item .body{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* COMMIT LOG */
+.log-row{display:grid;grid-template-columns:60px 75px 140px 1fr 60px;gap:10px;padding:5px 0;border-bottom:1px solid #f5f0eb;font-size:10.5px;align-items:center}
+.log-row:first-child{font-weight:600;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.log-hash{font-family:'IBM Plex Mono',monospace;color:var(--accent1);font-size:10px}
+.log-date{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:10px}
+.log-repo{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:600;color:#fff}
+.log-msg{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-diff{font-family:'IBM Plex Mono',monospace;font-size:9px}
+.log-diff .add{color:#3a8a3a}.log-diff .del{color:#8a3a3a}
+.log-scroll{max-height:300px;overflow-y:auto}
+
+/* TWO-COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* FOOTER */
+.footer{text-align:center;padding:20px 0;font-size:10px;color:#c0b8ae}
+.footer a{color:var(--muted);text-decoration:none}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .chart-wrap{flex-direction:column}.chart-legend{width:100%}
+  .two-col{grid-template-columns:1fr}
+  .fun-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>Git activity for creanlab</h1>
+      <div class="sub">2026-03-19 | 534 commits | 5 repos | scope: all | private repos included: yes</div>
+    </div>
+    <div style="text-align:right">
+      <div class="badge">Local Git + GitHub API</div>
+    </div>
+  </div>
+
+  <!-- HERO STATS -->
+  <div class="cards" id="heroCards"></div>
+
+  <!-- DAILY STACKED ACTIVITY -->
+  <div class="section">
+    <div class="section-title">Daily Stacked Activity</div>
+    <div class="section-sub">Top repositories stay separate in the stack; hover for details</div>
+    <div class="chart-wrap">
+      <div class="chart-bars"><div class="bar-area" id="barArea"></div><div class="date-row" id="dateRow"></div></div>
+      <div class="chart-legend" id="chartLegend"></div>
+    </div>
+  </div>
+
+  <!-- TWO COL: HEATMAP + TIME OF DAY -->
+  <div class="two-col">
+    <div class="section">
+      <div class="section-title">Contribution Heatmap</div>
+      <div class="section-sub">GitHub-style calendar across all repos</div>
+      <div class="hm-container" id="heatmapContainer"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Coding Hours</div>
+      <div class="section-sub">When do you typically code? (hour x day of week)</div>
+      <div id="timeHeatmap"></div>
+    </div>
+  </div>
+
+  <!-- TWO COL: LANGUAGES + TIMELINE -->
+  <div class="two-col">
+    <div class="section">
+      <div class="section-title">Technology Breakdown</div>
+      <div class="section-sub">By number of file changes in commits</div>
+      <div class="lang-grid" id="langGrid"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Project Activity Timeline</div>
+      <div class="section-sub">Active periods with commit density</div>
+      <div id="timeline"></div>
+    </div>
+  </div>
+
+  <!-- FUN STATS -->
+  <div class="section">
+    <div class="section-title">Insights &amp; Fun Stats</div>
+    <div class="section-sub">Automatically generated from your commit history</div>
+    <div class="fun-grid" id="funGrid"></div>
+  </div>
+
+  <!-- RECENT COMMITS -->
+  <div class="section">
+    <div class="section-title">Recent Commits</div>
+    <div class="section-sub">Latest activity across all repositories</div>
+    <div class="log-scroll" id="logScroll"></div>
+  </div>
+
+  <div class="footer">
+    Generated 2026-03-19TIME via git log + GitHub API &middot; <a href="https://github.com/creanlab">github.com/creanlab</a>
+  </div>
+</div>
+
+<script>
+const DATA = {"generated": "2026-03-19T15:40:18.288333", "hero": {"total_commits": 534, "total_repos": 5, "lines_added": 206451, "lines_removed": 53211, "longest_streak": 14, "most_active_weekday": "Wed", "most_active_weekday_count": 118, "date_range": "2026-02-07 → 2026-03-19", "active_days": 29}, "daily": {"2026-02-07": {"NVE-beta": 4}, "2026-02-08": {"NVE-beta": 24}, "2026-02-09": {"NVE-beta": 29}, "2026-02-10": {"NVE-beta": 22}, "2026-02-11": {"NVE-beta": 19}, "2026-02-12": {"NVE-beta": 17}, "2026-02-13": {"NVE-beta": 5}, "2026-02-14": {"NVE-beta": 15}, "2026-02-15": {"NVE-beta": 8}, "2026-02-16": {"NVE-beta": 6}, "2026-02-17": {"NVE-beta": 13}, "2026-02-18": {"NVE-beta": 9}, "2026-02-19": {"NVE-beta": 3}, "2026-02-20": {"NVE-beta": 7}, "2026-02-21": {}, "2026-02-22": {}, "2026-02-23": {}, "2026-02-24": {"NVE-beta": 7}, "2026-02-25": {"NVE-beta": 13}, "2026-02-26": {"NVE-beta": 14}, "2026-02-27": {}, "2026-02-28": {}, "2026-03-01": {}, "2026-03-02": {}, "2026-03-03": {}, "2026-03-04": {"NVE-beta": 17}, "2026-03-05": {"NVE-beta": 30}, "2026-03-06": {"NVE-beta": 2}, "2026-03-07": {}, "2026-03-08": {}, "2026-03-09": {}, "2026-03-10": {}, "2026-03-11": {"NVE-beta": 4}, "2026-03-12": {"NVE-beta": 34}, "2026-03-13": {"NVE-beta": 27}, "2026-03-14": {"NVE-beta": 19}, "2026-03-15": {"NVE-beta": 29}, "2026-03-16": {"NVE-beta": 21, "evolution-tamagotchi": 1}, "2026-03-17": {"NVE-beta": 47, "evolution-tamagotchi": 23}, "2026-03-18": {"NVE-beta": 39, "evolution-tamagotchi": 17}, "2026-03-19": {"evolution-tamagotchi": 8, "NVE-beta": 1}}, "all_dates": ["2026-02-07", "2026-02-08", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-14", "2026-02-15", "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22", "2026-02-23", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-02-28", "2026-03-01", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19"], "repos": ["NVE-beta", "evolution-tamagotchi"], "repo_commits": {"evolution-tamagotchi": 49, "NVE-beta": 485}, "repo_lines": {"evolution-tamagotchi": {"added": 39462, "removed": 5250}, "NVE-beta": {"added": 166989, "removed": 47961}}, "languages": [["Markdown", 1537], ["Python", 743], ["TypeScript", 327], ["JSON", 261], ["JavaScript", 113], ["HTML", 105], ["CSS", 68], ["PowerShell", 67], ["YAML", 22], [".pyc", 20], [".txt", 15], [".example", 12], [".svg", 10], ["SQL", 8], [".png", 6]], "time_heatmap": {"3,13": 6, "3,5": 7, "3,4": 11, "3,3": 10, "3,2": 12, "3,1": 6, "2,22": 11, "2,21": 9, "2,20": 6, "2,19": 8, "2,18": 13, "2,17": 10, "2,16": 14, "2,15": 12, "2,14": 4, "2,4": 5, "2,3": 4, "2,0": 2, "1,23": 4, "1,3": 15, "1,2": 25, "1,1": 30, "1,0": 5, "0,22": 5, "0,21": 10, "0,20": 2, "0,19": 4, "0,18": 2, "0,17": 3, "0,14": 6, "0,13": 4, "0,3": 5, "0,2": 3, "6,23": 3, "6,21": 1, "6,20": 3, "6,18": 3, "6,17": 5, "6,16": 2, "6,15": 6, "6,14": 2, "6,13": 5, "6,2": 7, "6,1": 5, "6,0": 2, "5,21": 6, "5,20": 5, "5,18": 1, "5,16": 4, "5,13": 1, "5,4": 2, "5,3": 3, "5,1": 2, "5,0": 2, "4,21": 1, "4,20": 5, "4,19": 2, "4,18": 3, "4,17": 2, "4,16": 3, "4,15": 3, "4,14": 2, "4,13": 2, "4,5": 1, "4,4": 1, "4,3": 2, "4,2": 3, "4,1": 3, "4,0": 4, "3,23": 4, "3,21": 4, "3,20": 5, "3,18": 6, "3,17": 4, "3,16": 5, "3,15": 4, "3,14": 7, "3,12": 3, "2,23": 1, "2,12": 4, "3,22": 3, "3,0": 8, "2,5": 7, "2,13": 3, "1,22": 4, "1,16": 3, "1,14": 2, "1,13": 2, "4,23": 2, "4,6": 2, "2,6": 1, "1,19": 3, "1,17": 2, "1,15": 2, "1,12": 1, "1,4": 1, "0,16": 4, "5,23": 1, "5,15": 2, "5,14": 4, "5,6": 3, "5,5": 2, "3,19": 2, "2,11": 2, "2,2": 1, "2,1": 1, "1,20": 1, "1,18": 1, "1,11": 2, "1,10": 2, "1,9": 4, "1,8": 2, "1,6": 1, "0,23": 2, "0,15": 4, "0,1": 3, "6,19": 2, "6,12": 4, "6,5": 7, "6,4": 2, "6,3": 2}, "hour_counts": {"13": 23, "5": 24, "4": 22, "3": 41, "2": 51, "1": 50, "22": 23, "21": 31, "20": 27, "19": 21, "18": 29, "17": 26, "16": 35, "15": 33, "14": 27, "0": 23, "23": 17, "12": 12, "6": 7, "11": 4, "10": 2, "9": 4, "8": 2}, "sessions": {"total": 68, "avg_duration_h": 3.04, "durations": [1.7138888888888888, 0.0, 3.4858333333333333, 1.0633333333333332, 2.0844444444444443, 0.0, 2.165, 13.0975, 4.418055555555555, 5.658333333333333, 3.5858333333333334, 4.230833333333333, 8.503055555555555, 5.828611111111111, 1.5794444444444444, 0.0, 0.0, 2.152222222222222, 2.2319444444444443, 0.0, 1.1544444444444444, 5.647222222222222, 2.2527777777777778, 1.6088888888888888, 1.9833333333333334, 4.438888888888889, 0.20083333333333334, 2.2119444444444443, 2.526666666666667, 0.0, 0.0, 1.1388888888888888, 0.0, 0.6127777777777778, 1.2036111111111112, 0.4008333333333333, 2.966388888888889, 0.21055555555555555, 3.6108333333333333, 0.0, 3.0966666666666667, 2.5155555555555558, 1.5733333333333333, 6.7363888888888885, 1.2116666666666667, 1.903888888888889, 8.175, 10.070277777777777, 1.123888888888889, 0.0, 8.054166666666667, 8.407222222222222, 5.8005555555555555, 7.435277777777777, 4.248055555555555, 0.0, 5.2652777777777775, 2.155, 10.344722222222222, 0.3333333333333333, 1.3025, 4.852777777777778, 3.127222222222222, 1.195, 1.0352777777777777, 8.231666666666667, 4.434722222222222, 0.0]}, "fun": {"most_active_hour": 2, "most_active_hour_count": 51, "busiest_day": "2026-03-17", "busiest_day_count": 70, "feat_commits": 107, "fix_commits": 98, "docs_commits": 59, "chore_commits": 19, "weekend_pct": 19, "top_words": [["and", 163], ["fix", 127], ["feat", 107], ["add", 107], ["docs", 86], ["backlog", 62], ["tama", 55], ["update", 50], ["with", 49], ["sprint", 45], ["run", 45], ["auto", 43], ["flow", 38], ["frontend", 37], ["sonar", 35], ["dashboard", 34], ["for", 33], ["phase", 32], ["deploy", 31], ["pipeline", 31]], "unique_authors": 8}, "commits_list": [{"hash": "425364e1", "date": "2026-03-19", "time": "13:14:47", "repo": "evolution-tamagotchi", "msg": "feat: rebrand to Agent Genome Lab, fix Gemini Insights, remove Russian", "added": 83, "removed": 18}, {"hash": "34d0d1e8", "date": "2026-03-19", "time": "05:37:23", "repo": "evolution-tamagotchi", "msg": "feat: sync TAMA_start — images, renamed prompts, live dashboard link", "added": 203, "removed": 266}, {"hash": "c919f8cc", "date": "2026-03-19", "time": "05:06:18", "repo": "evolution-tamagotchi", "msg": "chore: add MARKETING_PLAN.html to gitignore", "added": 3, "removed": 0}, {"hash": "d6cfc4dc", "date": "2026-03-19", "time": "04:42:54", "repo": "evolution-tamagotchi", "msg": "chore: clean TAMA_start + backlog — remove internal files, archive completed tasks", "added": 523, "removed": 575}, {"hash": "3ec84aa2", "date": "2026-03-19", "time": "04:21:54", "repo": "evolution-tamagotchi", "msg": "feat: update TAMA_start (rules/skills/workflows/vscode/web), rename to Agent Genome Lab, update landing page v4 with all G.1-G.6 features", "added": 5411, "removed": 1772}, {"hash": "aba31c5f", "date": "2026-03-19", "time": "03:12:15", "repo": "evolution-tamagotchi", "msg": "feat: Phase G complete (6/6) — config + offline + i18n + TAMA v2.2.0", "added": 2044, "removed": 19}, {"hash": "15a3a466", "date": "2026-03-19", "time": "02:41:51", "repo": "evolution-tamagotchi", "msg": "feat: Phase G (3/6) — nve-scaffold + nve-memory + TAMA_start v2.1.0", "added": 7999, "removed": 41}, {"hash": "a3d8cb76", "date": "2026-03-19", "time": "01:11:18", "repo": "NVE-beta", "msg": "chore: updated audit snapshot", "added": 1, "removed": 1}, {"hash": "a3d8cb76", "date": "2026-03-19", "time": "01:11:18", "repo": "evolution-tamagotchi", "msg": "chore: updated audit snapshot", "added": 1, "removed": 1}, {"hash": "fec49df9", "date": "2026-03-18", "time": "22:14:48", "repo": "NVE-beta", "msg": "feat: Phase E + F complete — 103/104 = 99%", "added": 409, "removed": 10}, {"hash": "fec49df9", "date": "2026-03-18", "time": "22:14:48", "repo": "evolution-tamagotchi", "msg": "feat: Phase E + F complete — 103/104 = 99%", "added": 409, "removed": 10}, {"hash": "9fa55bd5", "date": "2026-03-18", "time": "22:09:08", "repo": "NVE-beta", "msg": "fix: export script writes only inside own repo, never to external projects", "added": 7, "removed": 7}, {"hash": "53dc4ada", "date": "2026-03-18", "time": "21:55:27", "repo": "NVE-beta", "msg": "feat: Audit 100% + Phase E (3/4) — npm pkg, init wizard, GH Action", "added": 1103, "removed": 37}, {"hash": "53dc4ada", "date": "2026-03-18", "time": "21:55:27", "repo": "evolution-tamagotchi", "msg": "feat: Audit 100% + Phase E (3/4) — npm pkg, init wizard, GH Action", "added": 1103, "removed": 37}, {"hash": "dfda8bf3", "date": "2026-03-18", "time": "21:39:55", "repo": "NVE-beta", "msg": "feat: Phase D complete (5/5) — Manifest Panel + backlog 93%", "added": 53, "removed": 3}, {"hash": "dfda8bf3", "date": "2026-03-18", "time": "21:39:55", "repo": "evolution-tamagotchi", "msg": "feat: Phase D complete (5/5) — Manifest Panel + backlog 93%", "added": 53, "removed": 3}, {"hash": "84610870", "date": "2026-03-18", "time": "20:54:47", "repo": "NVE-beta", "msg": "feat: Phase D.2-D.3 — Audit Panel + Replay Gate Viz", "added": 139, "removed": 4}, {"hash": "84610870", "date": "2026-03-18", "time": "20:54:47", "repo": "evolution-tamagotchi", "msg": "feat: Phase D.2-D.3 — Audit Panel + Replay Gate Viz", "added": 139, "removed": 4}, {"hash": "923e197d", "date": "2026-03-18", "time": "20:41:46", "repo": "NVE-beta", "msg": "fix: sync-gist workflow + nve-audit.js v2 (5-axis scores)", "added": 443, "removed": 146}, {"hash": "923e197d", "date": "2026-03-18", "time": "20:41:46", "repo": "evolution-tamagotchi", "msg": "fix: sync-gist workflow + nve-audit.js v2 (5-axis scores)", "added": 443, "removed": 146}, {"hash": "8a807d57", "date": "2026-03-18", "time": "19:50:50", "repo": "NVE-beta", "msg": "deploy: backend rev 00411-hpq — P26-1,2,6 (style pivot + SoW removal + ARENA fix)", "added": 1, "removed": 1}, {"hash": "9164a416", "date": "2026-03-18", "time": "19:41:35", "repo": "NVE-beta", "msg": "feat: Phase C (Replay Gate) + Phase D.1/D.5 (JSON ingest)", "added": 734, "removed": 68}, {"hash": "9164a416", "date": "2026-03-18", "time": "19:41:35", "repo": "evolution-tamagotchi", "msg": "feat: Phase C (Replay Gate) + Phase D.1/D.5 (JSON ingest)", "added": 734, "removed": 68}, {"hash": "f6d8f433", "date": "2026-03-18", "time": "19:38:41", "repo": "NVE-beta", "msg": "docs: update backlog — P26-1,2,6 done, needs deploy", "added": 11, "removed": 10}, {"hash": "e2eadebc", "date": "2026-03-18", "time": "19:32:15", "repo": "NVE-beta", "msg": "fix(P26-6): ARENA 5→3 rounds + non-fatal on crash (prevent OOM)", "added": 11, "removed": 9}, {"hash": "7ce94d8f", "date": "2026-03-18", "time": "19:25:06", "repo": "NVE-beta", "msg": "feat(P26-1,P26-2): style fidelity gate → warning-only + remove SoW from ZIP", "added": 28, "removed": 15}, {"hash": "b372abf6", "date": "2026-03-18", "time": "18:52:49", "repo": "NVE-beta", "msg": "feat: consent-based share flow (V4.1)", "added": 1474, "removed": 177}, {"hash": "b372abf6", "date": "2026-03-18", "time": "18:52:49", "repo": "evolution-tamagotchi", "msg": "feat: consent-based share flow (V4.1)", "added": 1474, "removed": 177}, {"hash": "cd4841b8", "date": "2026-03-18", "time": "18:52:38", "repo": "NVE-beta", "msg": "docs: add Sprint P26 (Style Pivot + Pipeline Cleanup) to backlog", "added": 25, "removed": 5}, {"hash": "20160023", "date": "2026-03-18", "time": "18:51:33", "repo": "NVE-beta", "msg": "audit: 100/100 — full memory layer + style pivot + tamagotchi export", "added": 474, "removed": 16}, {"hash": "62c1bdc2", "date": "2026-03-18", "time": "18:44:49", "repo": "NVE-beta", "msg": "cleanup: remove migration input pack + evolution-tamagotchi copy", "added": 0, "removed": 6923}, {"hash": "5c832549", "date": "2026-03-18", "time": "18:31:04", "repo": "NVE-beta", "msg": "feat: Phase B — Auto Distillation Pipeline (4/4 done)", "added": 613, "removed": 7}, {"hash": "5c832549", "date": "2026-03-18", "time": "18:31:04", "repo": "evolution-tamagotchi", "msg": "feat: Phase B — Auto Distillation Pipeline (4/4 done)", "added": 613, "removed": 7}, {"hash": "854ea390", "date": "2026-03-18", "time": "18:26:44", "repo": "NVE-beta", "msg": "docs: update backlog with P24+P25 completed, current 95/100 audit status", "added": 109, "removed": 105}, {"hash": "c981c126", "date": "2026-03-18", "time": "18:08:16", "repo": "NVE-beta", "msg": "fix: audit score 85→95 — Windows path bug in test detection + rule name mismatch", "added": 18, "removed": 22}, {"hash": "5dd6176c", "date": "2026-03-18", "time": "18:04:30", "repo": "NVE-beta", "msg": "feat: self-migration to v2 compliance + clean vision + backlog", "added": 808, "removed": 291}, {"hash": "5dd6176c", "date": "2026-03-18", "time": "18:04:30", "repo": "evolution-tamagotchi", "msg": "feat: self-migration to v2 compliance + clean vision + backlog", "added": 808, "removed": 291}, {"hash": "a4f26d3b", "date": "2026-03-18", "time": "17:32:50", "repo": "NVE-beta", "msg": "genome-layer: install Failure Genome v2 with 4 real families + replay gate", "added": 673, "removed": 52}, {"hash": "b9a7d0eb", "date": "2026-03-18", "time": "17:21:20", "repo": "NVE-beta", "msg": "feat: Phase A — sync TAMA_start/ with Universal FG Pack v2", "added": 2000, "removed": 76}, {"hash": "b9a7d0eb", "date": "2026-03-18", "time": "17:21:20", "repo": "evolution-tamagotchi", "msg": "feat: Phase A — sync TAMA_start/ with Universal FG Pack v2", "added": 2000, "removed": 76}, {"hash": "01303640", "date": "2026-03-18", "time": "17:11:11", "repo": "NVE-beta", "msg": "chore: exclude migration dirs from Docker builds", "added": 10, "removed": 0}, {"hash": "dc24926f", "date": "2026-03-18", "time": "17:07:50", "repo": "NVE-beta", "msg": "validate: manifest + audit + validate + fg-summary all pass", "added": 192, "removed": 0}, {"hash": "3c39669b", "date": "2026-03-18", "time": "17:07:10", "repo": "NVE-beta", "msg": "evolution: AGENTS.md + seed incidents/genome/experience from AP-023", "added": 214, "removed": 0}, {"hash": "7fac6de8", "date": "2026-03-18", "time": "17:03:30", "repo": "NVE-beta", "msg": "wrappers: convert anti-fallback + auto-evolution to pointers", "added": 50, "removed": 177}, {"hash": "6b17e1ec", "date": "2026-03-18", "time": "17:01:43", "repo": "NVE-beta", "msg": "workflows+skills: install 6 pack workflows", "added": 75, "removed": 0}, {"hash": "69a5e37e", "date": "2026-03-18", "time": "16:59:53", "repo": "NVE-beta", "msg": "feat: vision + backlog rewrite for Universal FG Pack v2", "added": 323, "removed": 405}, {"hash": "69a5e37e", "date": "2026-03-18", "time": "16:59:53", "repo": "evolution-tamagotchi", "msg": "feat: vision + backlog rewrite for Universal FG Pack v2", "added": 323, "removed": 405}, {"hash": "cd2c811b", "date": "2026-03-18", "time": "16:50:35", "repo": "NVE-beta", "msg": "rules: install .agents/rules/ layer (7 pack + 4 NVE-specific)", "added": 183, "removed": 0}, {"hash": "34cf137e", "date": "2026-03-18", "time": "16:46:29", "repo": "NVE-beta", "msg": "scaffold: add .evolution, schemas, templates, cli, docs/architecture, docs/legacy, skills", "added": 9505, "removed": 74}, {"hash": "7b2d52ab", "date": "2026-03-18", "time": "16:28:55", "repo": "NVE-beta", "msg": "feat: V4 vision HTML (academic RU) + AI Insights V4 + backlog 79/109", "added": 513, "removed": 280}, {"hash": "7b2d52ab", "date": "2026-03-18", "time": "16:28:55", "repo": "evolution-tamagotchi", "msg": "feat: V4 vision HTML (academic RU) + AI Insights V4 + backlog 79/109", "added": 513, "removed": 280}, {"hash": "6669c3ed", "date": "2026-03-18", "time": "15:51:57", "repo": "NVE-beta", "msg": "chore: backlog — TAMA-8.2/8.3/8.4 DONE (75/109 = 69%)", "added": 8, "removed": 8}, {"hash": "6669c3ed", "date": "2026-03-18", "time": "15:51:57", "repo": "evolution-tamagotchi", "msg": "chore: backlog — TAMA-8.2/8.3/8.4 DONE (75/109 = 69%)", "added": 8, "removed": 8}, {"hash": "ce91a0a9", "date": "2026-03-18", "time": "15:50:11", "repo": "NVE-beta", "msg": "feat: add genome API endpoints + share/community UI", "added": 489, "removed": 3}, {"hash": "ce91a0a9", "date": "2026-03-18", "time": "15:50:11", "repo": "evolution-tamagotchi", "msg": "feat: add genome API endpoints + share/community UI", "added": 489, "removed": 3}, {"hash": "20b753b1", "date": "2026-03-18", "time": "15:23:25", "repo": "NVE-beta", "msg": "feat: update backlog + vision + frontend for V4 Failure Genome", "added": 409, "removed": 119}, {"hash": "20b753b1", "date": "2026-03-18", "time": "15:23:25", "repo": "evolution-tamagotchi", "msg": "feat: update backlog + vision + frontend for V4 Failure Genome", "added": 409, "removed": 119}, {"hash": "029ef258", "date": "2026-03-18", "time": "15:04:34", "repo": "NVE-beta", "msg": "feat: install Failure Genome layer — family-level mutation system", "added": 1214, "removed": 74}, {"hash": "029ef258", "date": "2026-03-18", "time": "15:04:34", "repo": "evolution-tamagotchi", "msg": "feat: install Failure Genome layer — family-level mutation system", "added": 1214, "removed": 74}, {"hash": "2d9a79d3", "date": "2026-03-18", "time": "14:48:11", "repo": "NVE-beta", "msg": "feat: V4 structural migration — harness-first self-evolving agent repo", "added": 4067, "removed": 372}, {"hash": "2d9a79d3", "date": "2026-03-18", "time": "14:48:11", "repo": "evolution-tamagotchi", "msg": "feat: V4 structural migration — harness-first self-evolving agent repo", "added": 4067, "removed": 372}, {"hash": "e9510f59", "date": "2026-03-18", "time": "14:00:54", "repo": "NVE-beta", "msg": "fix: 5 report quality issues (P25)", "added": 97, "removed": 10}, {"hash": "02624e8a", "date": "2026-03-18", "time": "04:22:55", "repo": "NVE-beta", "msg": "fix: add 'import html' to pdf_gen.py (AP-023 THIRD occurrence)", "added": 1, "removed": 0}, {"hash": "59428897", "date": "2026-03-18", "time": "03:20:48", "repo": "NVE-beta", "msg": "fix: 7 SoW report rendering issues (P24)", "added": 106, "removed": 25}, {"hash": "6371a0b1", "date": "2026-03-18", "time": "00:20:53", "repo": "NVE-beta", "msg": "fix: missing logger import in fabricator_service.py (EVO-014/AP-023)", "added": 60, "removed": 24}, {"hash": "9d6f9ec4", "date": "2026-03-17", "time": "23:34:57", "repo": "NVE-beta", "msg": "refactor: ARENA structural composite scoring + auto-evolution", "added": 330, "removed": 84}, {"hash": "ef394470", "date": "2026-03-17", "time": "23:23:47", "repo": "NVE-beta", "msg": "docs: Sprint P23 complete + backlog updated (rev00406)", "added": 47, "removed": 44}, {"hash": "898d9d8a", "date": "2026-03-17", "time": "23:15:06", "repo": "NVE-beta", "msg": "fix: P23-7 embedding stability shows coherence not determinism", "added": 3, "removed": 1}, {"hash": "e6ea02d6", "date": "2026-03-17", "time": "23:09:11", "repo": "NVE-beta", "msg": "fix: P23-Sprint critical batch", "added": 69, "removed": 22}, {"hash": "2ebc37b5", "date": "2026-03-17", "time": "03:50:01", "repo": "NVE-beta", "msg": "feat: TAMA-5.10 POMDP framework paper, Phase 5 complete (9/10), 5.5 → Phase 7", "added": 308, "removed": 14}, {"hash": "2ebc37b5", "date": "2026-03-17", "time": "03:50:01", "repo": "evolution-tamagotchi", "msg": "feat: TAMA-5.10 POMDP framework paper, Phase 5 complete (9/10), 5.5 → Phase 7", "added": 308, "removed": 14}, {"hash": "061eb7b6", "date": "2026-03-17", "time": "03:44:10", "repo": "NVE-beta", "msg": "docs: update legacy + auto-evolution, TAMA-5.6 done with Gemini 3.1 Pro", "added": 3, "removed": 1}, {"hash": "061eb7b6", "date": "2026-03-17", "time": "03:44:10", "repo": "evolution-tamagotchi", "msg": "docs: update legacy + auto-evolution, TAMA-5.6 done with Gemini 3.1 Pro", "added": 3, "removed": 1}, {"hash": "16d54735", "date": "2026-03-17", "time": "03:36:33", "repo": "NVE-beta", "msg": "fix: use gemini-3.1-pro-preview model", "added": 5, "removed": 5}, {"hash": "16d54735", "date": "2026-03-17", "time": "03:36:33", "repo": "evolution-tamagotchi", "msg": "fix: use gemini-3.1-pro-preview model", "added": 5, "removed": 5}, {"hash": "f1192f88", "date": "2026-03-17", "time": "03:32:30", "repo": "NVE-beta", "msg": "fix: compress auto-evolution.md 17048→5692 chars (limit 12000)", "added": 67, "removed": 159}, {"hash": "90106ae1", "date": "2026-03-17", "time": "03:27:27", "repo": "NVE-beta", "msg": "evo: EVO-010 Default Substitution anti-pattern + AP-019 + PAT-012 — Level 34", "added": 91, "removed": 34}, {"hash": "43db74c5", "date": "2026-03-17", "time": "03:26:16", "repo": "NVE-beta", "msg": "feat: TAMA-5.6 Gemini LLM backend proxy + AI Insights panel", "added": 969, "removed": 4}, {"hash": "43db74c5", "date": "2026-03-17", "time": "03:26:16", "repo": "evolution-tamagotchi", "msg": "feat: TAMA-5.6 Gemini LLM backend proxy + AI Insights panel", "added": 969, "removed": 4}, {"hash": "c97461af", "date": "2026-03-17", "time": "03:20:05", "repo": "NVE-beta", "msg": "deploy: Sprint P21 COMPLETE — backend rev00405, frontend rev00208", "added": 8, "removed": 18}]};
+const COLORS = {'NVE-beta':'#2d6a8a','evolution-tamagotchi':'#c46d3b','agent-genome-lab':'#6a5a8a','documentationai-Docs':'#3a8a5a','zero':'#8a6a2a'};
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// ── HERO CARDS ──
+document.getElementById('heroCards').innerHTML = [
+  {l:'Commits',v:DATA.hero.total_commits,d:'Counted from local git log'},
+  {l:'Active Days',v:DATA.hero.active_days,d:'Days with at least one commit'},
+  {l:'Lines Added',v:DATA.hero.lines_added.toLocaleString(),d:`${DATA.hero.lines_removed.toLocaleString()} removed`},
+  {l:'Busiest Day',v:DATA.fun.busiest_day.slice(5),d:`${DATA.fun.busiest_day_count} commits in one day`},
+  {l:'Longest Streak',v:`${DATA.hero.longest_streak}d`,d:'Consecutive days with commits'},
+  {l:'Repositories',v:DATA.hero.total_repos,d:`${DATA.repos.length} private + 3 public`},
+  {l:'Night Owl Hour',v:`${String(DATA.fun.most_active_hour).padStart(2,'0')}:00`,d:`${DATA.fun.most_active_hour_count} commits at this hour`},
+  {l:'Sessions',v:DATA.sessions.total,d:`avg ${DATA.sessions.avg_duration_h}h per session`},
+].map(c=>`<div class="card"><div class="label">${c.l}</div><div class="value">${c.v}</div><div class="desc">${c.d}</div></div>`).join('');
+
+// ── STACKED BAR CHART ──
+const allDates = DATA.all_dates;
+const maxDay = Math.max(...allDates.map(d => {
+  const dd = DATA.daily[d]||{};
+  return Object.values(dd).reduce((s,v)=>s+v,0);
+}));
+const barArea = document.getElementById('barArea');
+const dateRow = document.getElementById('dateRow');
+
+allDates.forEach((date, i) => {
+  const dd = DATA.daily[date]||{};
+  const total = Object.values(dd).reduce((s,v)=>s+v,0);
+  const col = document.createElement('div');
+  col.className = 'bar-col';
+  col.style.height = '100%';
+  col.style.display = 'flex';
+  col.style.flexDirection = 'column-reverse';
+  col.style.justifyContent = 'flex-start';
+
+  DATA.repos.forEach(repo => {
+    const cnt = dd[repo]||0;
+    if(cnt>0){
+      const seg = document.createElement('div');
+      seg.className = 'bar-seg';
+      seg.style.height = (cnt/maxDay*100)+'%';
+      seg.style.background = COLORS[repo]||'#8a7e72';
+      seg.style.flexShrink = '0';
+      col.appendChild(seg);
+    }
+  });
+  if(total===0){
+    const e=document.createElement('div');e.style.height='1px';e.style.background='#e8e0d8';e.style.flexShrink='0';
+    col.appendChild(e);
+  }
+  if(total>0){
+    const tip=document.createElement('div');tip.className='tip';
+    const parts=DATA.repos.map(r=>(dd[r]||0)>0?`${r}: ${dd[r]}`:null).filter(Boolean);
+    tip.textContent=`${date} (${total})\n${parts.join(', ')}`;
+    col.appendChild(tip);
+  }
+  barArea.appendChild(col);
+
+  const sp=document.createElement('span');
+  if(i%7===0){const dt=new Date(date);sp.textContent=dt.toLocaleDateString('en',{month:'short',day:'numeric'});}
+  dateRow.appendChild(sp);
+});
+
+// LEGEND
+document.getElementById('chartLegend').innerHTML = [...DATA.repos, 'agent-genome-lab','documentationai-Docs','zero']
+  .filter((v,i,a)=>a.indexOf(v)===i)
+  .map(r=>{
+    const cnt = DATA.repo_commits[r]||0;
+    return `<div class="legend-item"><div class="legend-dot" style="background:${COLORS[r]||'#8a7e72'}"></div>${r}<span class="legend-count">${cnt||'---'}</span></div>`;
+  }).join('');
+
+// ── CONTRIBUTION HEATMAP ──
+const hmContainer = document.getElementById('heatmapContainer');
+const daysDiv = document.createElement('div');
+daysDiv.className = 'hm-days';
+DAYS.forEach(d=>{const s=document.createElement('span');s.textContent=d;daysDiv.appendChild(s);});
+hmContainer.appendChild(daysDiv);
+
+const gridWrap = document.createElement('div');
+gridWrap.className = 'hm-grid';
+const hmStart = new Date(allDates[0]);
+hmStart.setDate(hmStart.getDate() - ((hmStart.getDay()+6)%7));
+
+const dailyTotals = {};
+allDates.forEach(d=>{const dd=DATA.daily[d]||{};dailyTotals[d]=Object.values(dd).reduce((s,v)=>s+v,0);});
+const hmEnd = new Date(allDates[allDates.length-1]);
+let cur = new Date(hmStart);
+let weekDiv = null;
+while(cur<=hmEnd){
+  const dow = (cur.getDay()+6)%7;
+  if(dow===0){weekDiv=document.createElement('div');weekDiv.className='hm-week';gridWrap.appendChild(weekDiv);}
+  const ds=cur.toISOString().slice(0,10);
+  const cnt=dailyTotals[ds]||0;
+  const cell=document.createElement('div');
+  cell.className='hm-cell';
+  cell.setAttribute('data-info',`${ds}: ${cnt} commits`);
+  if(cnt>=15) cell.classList.add('hm-c4');
+  else if(cnt>=8) cell.classList.add('hm-c3');
+  else if(cnt>=3) cell.classList.add('hm-c2');
+  else if(cnt>=1) cell.classList.add('hm-c1');
+  if(weekDiv) weekDiv.appendChild(cell);
+  cur.setDate(cur.getDate()+1);
+}
+hmContainer.appendChild(gridWrap);
+
+// ── TIME OF DAY HEATMAP ──
+const timeDiv = document.getElementById('timeHeatmap');
+const tg = document.createElement('div');
+tg.className = 'time-grid';
+const maxTime = Math.max(...Object.values(DATA.time_heatmap).map(Number));
+
+// empty corner
+tg.innerHTML = '<div></div>' + Array.from({length:24},(_, h)=>'').join('');
+
+DAYS.forEach((day, di) => {
+  const lab = document.createElement('div');
+  lab.className = 'day-label';
+  lab.textContent = day;
+  tg.appendChild(lab);
+  for(let h=0;h<24;h++){
+    const key = `${di},${h}`;
+    const cnt = DATA.time_heatmap[key]||0;
+    const cell = document.createElement('div');
+    cell.className = 'time-cell';
+    cell.setAttribute('data-info',`${day} ${h}:00 — ${cnt} commits`);
+    if(cnt>0){
+      const ratio = cnt/maxTime;
+      if(ratio>.75) cell.classList.add('tc4');
+      else if(ratio>.45) cell.classList.add('tc3');
+      else if(ratio>.2) cell.classList.add('tc2');
+      else cell.classList.add('tc1');
+    }
+    tg.appendChild(cell);
+  }
+});
+timeDiv.appendChild(tg);
+
+// hour labels
+const hlDiv = document.createElement('div');
+hlDiv.className = 'hour-labels';
+hlDiv.innerHTML = '<span></span>' + Array.from({length:24},(_, h)=>`<span>${h}</span>`).join('');
+timeDiv.appendChild(hlDiv);
+
+// ── LANGUAGES ──
+const langGrid = document.getElementById('langGrid');
+const LANG_COLORS = ['#2d6a8a','#c46d3b','#6a5a8a','#3a8a5a','#8a4a4a','#5a7a3a','#8a6a2a','#4a6a6a','#7a5a4a','#5a5a7a'];
+const maxLang = DATA.languages[0]?DATA.languages[0][1]:1;
+DATA.languages.slice(0,10).forEach(([name,cnt], i)=>{
+  const pct = Math.round(cnt/DATA.languages.reduce((s,l)=>s+l[1],0)*100);
+  langGrid.innerHTML += `<div class="lang-row">
+    <div class="lang-name">${name}</div>
+    <div class="lang-bar-track"><div class="lang-bar-fill" style="width:${cnt/maxLang*100}%;background:${LANG_COLORS[i%10]}"></div></div>
+    <div class="lang-pct">${pct}%</div>
+  </div>`;
+});
+
+// ── PROJECT TIMELINE ──
+const tlDiv = document.getElementById('timeline');
+const allTime = allDates.length;
+const allRepos = [...DATA.repos, 'agent-genome-lab','documentationai-Docs','zero'].filter((v,i,a)=>a.indexOf(v)===i);
+allRepos.forEach(repo => {
+  const repoDates = Object.entries(DATA.daily).filter(([d,dd])=>(dd[repo]||0)>0).map(([d])=>d).sort();
+  const row = document.createElement('div');
+  row.className = 'tl-row';
+  const cnt = DATA.repo_commits[repo]||0;
+  const rl = DATA.repo_lines[repo]||{added:0,removed:0};
+  let barHtml = '';
+  if(repoDates.length>0){
+    const startIdx = allDates.indexOf(repoDates[0]);
+    const endIdx = allDates.indexOf(repoDates[repoDates.length-1]);
+    const left = (startIdx/allTime*100);
+    const width = Math.max(2,((endIdx-startIdx+1)/allTime*100));
+    barHtml = `<div class="tl-bar" style="left:${left}%;width:${width}%;background:${COLORS[repo]||'#8a7e72'}"></div>`;
+  }
+  row.innerHTML = `<div class="tl-name">${repo}</div>
+    <div class="tl-track">${barHtml}</div>
+    <div class="tl-count">${cnt||'---'}</div>
+    <div class="tl-lines">${cnt>0 ? '+'+rl.added.toLocaleString() : ''}</div>`;
+  tlDiv.appendChild(row);
+});
+
+// ── FUN STATS ──
+const f = DATA.fun;
+const hourLabel = f.most_active_hour >= 22 || f.most_active_hour <= 4 ? 'night owl' : f.most_active_hour <= 11 ? 'early bird' : 'afternoon coder';
+const emoji = f.most_active_hour >= 22 || f.most_active_hour <= 4 ? '\u{1F319}' : f.most_active_hour <= 11 ? '\u{1F305}' : '\u{2615}';
+document.getElementById('funGrid').innerHTML = [
+  {icon:emoji,title:`Your peak hour: ${String(f.most_active_hour).padStart(2,'0')}:00`,body:`${f.most_active_hour_count} commits — you're a ${hourLabel}`},
+  {icon:'\u{1F525}',title:`Marathon day: ${f.busiest_day}`,body:`${f.busiest_day_count} commits in a single day`},
+  {icon:'\u{1F680}',title:`${f.feat_commits} feature commits`,body:`${f.fix_commits} bugfixes, ${f.docs_commits} docs, ${f.chore_commits} chores`},
+  {icon:'\u{1F4C5}',title:`Weekend warrior: ${f.weekend_pct}%`,body:`of your commits happen on Saturday/Sunday`},
+  {icon:'\u{1F4AC}',title:`Most common words in commits`,body:f.top_words.slice(0,8).map(w=>`"${w[0]}" (${w[1]})`).join(', ')},
+  {icon:'\u{1F9F9}',title:`Net code: +${(DATA.hero.lines_added - DATA.hero.lines_removed).toLocaleString()}`,body:`Added ${DATA.hero.lines_added.toLocaleString()}, removed ${DATA.hero.lines_removed.toLocaleString()} lines`},
+].map(s=>`<div class="fun-item"><div class="icon">${s.icon}</div><div class="title">${s.title}</div><div class="body">${s.body}</div></div>`).join('');
+
+// ── COMMIT LOG ──
+const logScroll = document.getElementById('logScroll');
+logScroll.innerHTML = `<div class="log-row"><span>Hash</span><span>Date</span><span>Repository</span><span>Message</span><span>Diff</span></div>`;
+DATA.commits_list.forEach(c => {
+  const color = COLORS[c.repo]||'#8a7e72';
+  logScroll.innerHTML += `<div class="log-row">
+    <span class="log-hash">${c.hash}</span>
+    <span class="log-date">${c.date}</span>
+    <span><span class="log-repo" style="background:${color}">${c.repo}</span></span>
+    <span class="log-msg">${c.msg}</span>
+    <span class="log-diff"><span class="add">+${c.added}</span> <span class="del">-${c.removed}</span></span>
+  </div>`;
+});
+</script>
+</body>
+</html>

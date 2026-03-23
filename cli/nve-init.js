@@ -1,29 +1,24 @@
 #!/usr/bin/env node
 /**
- * nve-init.js — Initialize NVE Failure Genome + SkillGraph structure in a project.
+ * nve-init.js — Initialize NVE Failure Genome Pack in a project.
  *
  * Usage:
- *   node cli/nve-init.js
- *   node cli/nve-init.js --yes
- *   node cli/nve-init.js --tier=distilled
+ *   npx nve-genome                   # Interactive mode
+ *   npx nve-genome --yes             # Accept all defaults
+ *   npx nve-genome --tier distilled  # Set default sharing tier
  *
  * Creates:
  *   .evolution/incidents/
  *   .evolution/experience_units/
  *   .evolution/failure_genomes/
- *   .evolution/skills/
- *   .evolution/skill_packages/
- *   .evolution/skill_relations/
+ *   .evolution/failure_genomes/FAMILY_INDEX.json
  *   .evolution/audits/
  *   .evolution/manifests/
  *   .evolution/exports/
- *   .agents/rules/
- *   .agents/workflows/
- *   .agents/skills/
- *   schemas/
- *   templates/
- *   cli/
- *   AGENTS.md (if missing)
+ *   .agents/rules/   (if not exists)
+ *   .agents/workflows/ (if not exists)
+ *   schemas/ (copies from pack)
+ *   AGENTS.md (if not exists)
  */
 const fs = require('fs');
 const path = require('path');
@@ -33,41 +28,31 @@ const ROOT = process.cwd();
 const PACK_ROOT = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const autoYes = args.includes('--yes') || args.includes('-y');
-const tierArg = (args.find((arg) => arg.startsWith('--tier=')) || '').split('=')[1] || 'distilled';
+const tierArg = (args.find(a => a.startsWith('--tier=')) || '').split('=')[1] || 'distilled';
 
 async function ask(question, defaultVal) {
   if (autoYes) return defaultVal;
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    rl.question(`${question} [${defaultVal}]: `, (answer) => {
+  return new Promise(resolve => {
+    rl.question(`${question} [${defaultVal}]: `, answer => {
       rl.close();
       resolve(answer.trim() || defaultVal);
     });
   });
 }
 
-function ensureDir(relPath) {
-  const full = path.join(ROOT, relPath);
+function ensureDir(p) {
+  const full = path.join(ROOT, p);
   if (!fs.existsSync(full)) {
     fs.mkdirSync(full, { recursive: true });
-    console.log(`  📁 Created ${relPath}/`);
-  }
-}
-
-function writeJsonIfMissing(relPath, data) {
-  const full = path.join(ROOT, relPath);
-  if (!fs.existsSync(full)) {
-    fs.mkdirSync(path.dirname(full), { recursive: true });
-    fs.writeFileSync(full, JSON.stringify(data, null, 2) + '\n');
-    console.log(`  📄 Created ${relPath}`);
+    console.log(`  📁 Created ${p}/`);
   }
 }
 
 function copyIfMissing(src, dest) {
   const srcFull = path.join(PACK_ROOT, src);
   const destFull = path.join(ROOT, dest);
-  if (!fs.existsSync(srcFull)) return false;
-  if (!fs.existsSync(destFull)) {
+  if (!fs.existsSync(destFull) && fs.existsSync(srcFull)) {
     fs.mkdirSync(path.dirname(destFull), { recursive: true });
     fs.copyFileSync(srcFull, destFull);
     console.log(`  📄 Copied ${dest}`);
@@ -80,33 +65,29 @@ function copyDirIfMissing(srcDir, destDir) {
   const srcFull = path.join(PACK_ROOT, srcDir);
   if (!fs.existsSync(srcFull)) return;
   ensureDir(destDir);
-  for (const entry of fs.readdirSync(srcFull, { withFileTypes: true })) {
-    const srcRel = path.join(srcDir, entry.name);
-    const destRel = path.join(destDir, entry.name);
-    if (entry.isDirectory()) {
-      copyDirIfMissing(srcRel, destRel);
-    } else {
-      copyIfMissing(srcRel, destRel);
-    }
+  for (const f of fs.readdirSync(srcFull)) {
+    copyIfMissing(path.join(srcDir, f), path.join(destDir, f));
   }
 }
 
 async function main() {
-  console.log('\n🧬 NVE Failure Genome + SkillGraph Pack — Initializer v2.3.0');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`Target: ${ROOT}\n`);
+  console.log(`
+🧬 NVE Failure Genome Pack — Initializer v2.0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: ${ROOT}
+`);
 
+  // Step 1: Project info
   const projectName = await ask('Project name', path.basename(ROOT));
   const defaultTier = await ask('Default sharing tier (private/manifest/distilled/research)', tierArg);
 
-  console.log('\n📦 Creating .evolution/ and .agents/ structure...');
+  console.log('\n📦 Creating .evolution/ memory structure...');
+
+  // Step 2: Create directories
   const dirs = [
     '.evolution/incidents',
     '.evolution/experience_units',
     '.evolution/failure_genomes',
-    '.evolution/skills',
-    '.evolution/skill_packages',
-    '.evolution/skill_relations',
     '.evolution/audits',
     '.evolution/manifests',
     '.evolution/exports',
@@ -114,89 +95,77 @@ async function main() {
     '.agents/workflows',
     '.agents/skills',
   ];
-  dirs.forEach(ensureDir);
+  for (const d of dirs) ensureDir(d);
 
-  writeJsonIfMissing('.evolution/failure_genomes/FAMILY_INDEX.json', {
-    families: {},
-    updated_at: new Date().toISOString(),
-    total_genomes: 0,
-    total_families: 0,
-  });
+  // Step 3: Create FAMILY_INDEX.json
+  const fiPath = path.join(ROOT, '.evolution/failure_genomes/FAMILY_INDEX.json');
+  if (!fs.existsSync(fiPath)) {
+    fs.writeFileSync(fiPath, JSON.stringify({
+      families: {},
+      updated_at: new Date().toISOString(),
+      total_genomes: 0,
+      total_families: 0
+    }, null, 2));
+    console.log('  📄 Created FAMILY_INDEX.json');
+  }
 
-  writeJsonIfMissing('.evolution/skills/INDEX.json', {
-    schema_version: '1.0',
-    updated_at: new Date().toISOString(),
-    total_skills: 0,
-    by_status: { candidate: 0, quarantined: 0, admitted: 0, rejected: 0 },
-    skills: [],
-  });
+  // Step 4: Create export-meta.json
+  const emPath = path.join(ROOT, '.evolution/export-meta.json');
+  if (!fs.existsSync(emPath)) {
+    fs.writeFileSync(emPath, JSON.stringify({
+      project_name: projectName,
+      default_tier: defaultTier,
+      created_at: new Date().toISOString(),
+      redaction_rules: {
+        strip_code: true,
+        strip_secrets: true,
+        strip_paths: true,
+        strip_logs: true
+      }
+    }, null, 2));
+    console.log('  📄 Created export-meta.json');
+  }
 
-  writeJsonIfMissing('.evolution/skill_packages/INDEX.json', {
-    schema_version: '1.0',
-    updated_at: new Date().toISOString(),
-    total_packages: 0,
-    packages: [],
-  });
-
-  writeJsonIfMissing('.evolution/skill_relations/RELATIONS.json', {
-    schema_version: '1.0',
-    updated_at: new Date().toISOString(),
-    total_relations: 0,
-    relations: [],
-  });
-
-  writeJsonIfMissing('.evolution/export-meta.json', {
-    project_name: projectName,
-    default_tier: defaultTier,
-    created_at: new Date().toISOString(),
-    redaction_rules: {
-      strip_code: true,
-      strip_secrets: true,
-      strip_paths: true,
-      strip_logs: true,
-    },
-  });
-
+  // Step 5: Copy schemas
   console.log('\n📋 Copying schemas...');
   copyDirIfMissing('schemas', 'schemas');
 
+  // Step 6: Copy templates
   console.log('\n📝 Copying templates...');
   copyDirIfMissing('templates', 'templates');
 
+  // Step 7: Copy CLI tools
   console.log('\n🔧 Copying CLI tools...');
   copyDirIfMissing('cli', 'cli');
 
-  console.log('\n📚 Copying docs, prompts, and agent assets...');
-  copyDirIfMissing('docs', 'docs');
-  copyDirIfMissing('prompts', 'prompts');
-  copyDirIfMissing('.agents', '.agents');
-
+  // Step 8: Copy AGENTS.md
   console.log('\n📜 Checking AGENTS.md...');
   copyIfMissing('AGENTS.md', 'AGENTS.md');
 
+  // Step 9: Run initial audit
   console.log('\n🧬 Running initial audit...');
   try {
     require(path.join(ROOT, 'cli/nve-audit.js'));
-  } catch (error) {
+  } catch (e) {
     console.log('  ⚠️ Audit skipped (run manually: node cli/nve-audit.js)');
   }
 
-  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('✅ NVE Failure Genome + SkillGraph Pack installed.');
-  console.log(`  Project: ${projectName}`);
-  console.log(`  Sharing tier: ${defaultTier}`);
-  console.log('\n  Next steps:');
-  console.log('    1. node cli/nve-distill.js');
-  console.log('    2. node cli/nve-skill-extract.js');
-  console.log('    3. node cli/nve-skill-index.js');
-  console.log('    4. node cli/nve-skill-package.js --auto --publish');
-  console.log('    5. node cli/nve-memory.js');
-  console.log('    6. node cli/nve-audit.js');
-  console.log('');
-  console.log('  📖 Docs: docs/SKILLNET_UPGRADE_PLAN.md, docs/SKILLGRAPH_OPERATING_GUIDE.md\n');
+  console.log(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ NVE Failure Genome Pack installed!
+
+  Project: ${projectName}
+  Sharing tier: ${defaultTier}
+
+  Next steps:
+    1. Start coding — incidents are captured automatically
+    2. Run: node cli/nve-distill.js    — auto-create genomes
+    3. Run: node cli/nve-replay.js     — replay gate check
+    4. Run: node cli/nve-pack.js ${defaultTier}  — export for sharing
+    5. Run: node cli/nve-audit.js      — check 5-axis score
+
+  📖 Docs: docs/UNIVERSAL_ARCHITECTURE.md
+`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+main().catch(console.error);

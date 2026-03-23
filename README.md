@@ -1,485 +1,93 @@
 # 🧬 Agent Genome Lab
 
-### The missing memory layer for AI. Capture experience → verify it → compound it across sessions, projects, and teams.
-
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js)](https://nodejs.org)
-[![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)](#)
-[![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-007ACC?logo=visualstudiocode)](#-vs-code-extension)
-[![Agent Agnostic](https://img.shields.io/badge/Works_with-Claude%20%7C%20Gemini%20%7C%20GPT%20%7C%20Any_Agent-blueviolet)](#-works-with-any-ai-agent)
+> **Enterprise-Grade AI Agent Evolution Tracker** — Turn AI hallucinations, timeouts, and logic failures into reusable, community-shared skills (EUs) powered by continuous auto-distillation and a React/Vite Dashboard.
 
 ---
 
-> **The problem:** AI agents don't accumulate experience. Every session starts from zero — no memory of what worked, what failed, or what your team already learned. Knowledge lives in chat logs and dies there.
->
-> **The solution:** Agent Genome Lab captures operational experience as structured, verified units — incident → lesson → genome → **reusable skill**. Your agent reads a compact `MEMORY.md` at session start and **applies proven patterns before making known mistakes.**
+## 🚀 Features
+
+- **Automated Root Cause Extraction**: AI auto-distills raw `MEMORY.md` failure journals into structured `001_failure_genome.md` files.
+- **Skill Generation**: Turns extracted Evolutionary Units (EUs) into actionable skills compatible with the [Anthropic Skills Ecosystem](https://github.com/anthropics/skills).
+- **Glassmorphism Dashboard**: A premium, zero-dependency generic HTML dashboard built with React + Vite, Recharts, and Lucide Icons.
+- **SkillGraph Integration**: Semantically links failures and extracted patterns globally.
+- **VS Code Extension**: Fully integrated into VS Code for continuous background evolution.
+- **CLI Toolchain**: 17+ powerful CLI commands for managing your agent's knowledge offline.
+- **Replay Gates**: Auto-validates models against historical failure scenarios (AI vaccines).
 
 ---
 
-## 💡 Why this matters
+## 🚀 Quick Start
 
-**AI agents are stateless by default.** Every session starts from zero. Your agent doesn't remember what went wrong last time. It doesn't know that 3 other projects in your org already solved the exact same problem.
+Agent Genome Lab operates natively on your local file system with optional cloud endpoints.
 
-Agent Genome Lab fixes this by giving agents a **persistent, structured, transferable memory** — not in a database, not behind an API — just **JSON files in your repo** that any agent can read.
+**Install via npm:**
+```bash
+npx agent-genome-lab init my-agent-project
+```
 
-> 🧪 In internal testing across 7 projects, agents with Genome Lab reduced **repeated failures by 73%** and cut **time-to-fix by 40%** on previously-seen problem classes.
-
-### 📌 In plain words
-
-Agent Genome Lab is three things in one:
-
-1. **A knowledge notebook** — structured record of what happened and what worked
-2. **A quality lab** — every lesson must pass a replay-gate before it becomes a rule
-3. **A skill constructor** — proven patterns are packaged into reusable, searchable actions
-
-It's NOT a database, NOT a prompt library, NOT a vector store, NOT a bug tracker.
-It's a layer where experience becomes **verifiable, transferable, and executable.**
-
----
-
-## ⚡ Who is this for?
-
-| If you are...                                                 | This toolkit...                                                      |
-|:--------------------------------------------------------------|:---------------------------------------------------------------------|
-| 🧑‍💻 **Developer using AI agents** (Copilot, Claude, Cursor) | Stops agents from repeating known failures; verified skill reuse     |
-| 🏗️ **Team running multiple projects**                        | Shares verified lessons across repos — collective intelligence       |
-| 🛡️ **Security / Ops / SRE**                                  | Runbook memory: incident patterns, recovery steps, triage playbooks  |
-| 📞 **Support / Customer Success**                             | Escalation patterns, resolution playbooks, onboarding knowledge      |
-| 🔬 **Researcher**                                             | Structured classification, replay gates, utility scoring, lineage    |
-| 📋 **Compliance / Quality**                                   | Auditable memory: governance, evidence trails, gated admission       |
-| 📦 **Open-source maintainer**                                 | Drop-in quality layer — adds structured memory to any project        |
-
----
-
-## 🚀 Quick Start (2 minutes, zero dependencies)
-
+Or clone and start locally:
 ```bash
 git clone https://github.com/creanlab/agent-genome-lab.git
 cd agent-genome-lab
-node cli/nve-init.js --yes
+node cli/nve-init.js
 ```
 
-That's it. Your project now has a `.evolution/` memory layer. No npm install, no Docker, no API keys.
-
-### First incident in 30 seconds:
-
-```bash
-# 1. Record a bug your agent introduced
-node cli/nve-scaffold.js incident --slug broken-import --severity 8
-
-# 2. Fill in the TODO fields in the generated JSON
-# 3. Generate compact memory
-node cli/nve-memory.js
-
-# 4. Your agent reads .evolution/MEMORY.md next session → bug class prevented ✅
-```
+### Dashboard
+Simply open `web/index.html` in your browser. It runs 100% offline using `data.js` compiled from your local genomes, featuring a full React application embedded in a single file!
 
 ---
 
-## 📋 Agent Prompt Sequence (for full migration)
+## 🛠 Command Line Interface (CLI)
 
-If you want to **fully integrate** the genome system into an existing project, feed these 5 prompts to your AI agent **in order**:
+The toolkit provides numerous granular commands:
 
-| Step | Prompt File                           | What it does                                                    |
-|:-----|:--------------------------------------|:----------------------------------------------------------------|
-| 1️⃣  | `prompts/01-PREFLIGHT.md`             | Agent inspects your repo and creates a safe migration plan      |
-| 2️⃣  | `prompts/02-MIGRATION.md`             | Agent installs the full structure: rules, workflows, `.evolution/`, schemas, CLI |
-| 3️⃣  | `prompts/03-GENOME_INSTALL.md`        | Agent adds the Failure Genome layer on top of canonical incidents |
-| 4️⃣  | `prompts/04-VALIDATION.md`            | Agent validates everything works — runs audit, manifest, validate |
-| 5️⃣  | `prompts/05-SKILLGRAPH_INSTALL.md`    | Agent adds the SkillGraph layer — skills, packages, search      |
-
-**How to use:**
-1. Clone this repo → copy the `prompts/` folder into your project
-2. Open your project in VS Code (or any IDE with an AI agent)
-3. Paste the content of `01-PREFLIGHT.md` into the agent chat — **don't apply changes yet**, just review the plan
-4. If the plan looks good, paste `02-MIGRATION.md` → agent installs the structure
-5. Paste `03-GENOME_INSTALL.md` → agent adds the genome layer
-6. Paste `04-VALIDATION.md` → agent runs all checks and reports status
-7. Paste `05-SKILLGRAPH_INSTALL.md` → agent adds skill extraction, indexing, packaging, and search
-
-> 💡 **Tip:** For a quick start without full migration, just use `node cli/nve-init.js --yes` — it creates the full `.evolution/` structure instantly (including SkillGraph dirs).
+| Command | Description |
+|---------|-------------|
+| `nve-init` | Scaffolds the `.evolution/` structure in your project. |
+| `nve-memory` | Captures a new incident into `MEMORY.md`. |
+| `nve-distill` | Triggers the LLM to extract Genomes and EUs from `MEMORY.md`. |
+| `nve-export-dashboard` | Compiles Genomes into `data.js` for the React dashboard. |
+| `nve-skill-publish <name>` | Exports a learned EU as an Anthropic-compatible `SKILL.md`. |
+| `nve-skillgraph-build` | Generates semantic relationships between EUs. |
+| `nve-replay-runner` | Tests your agent against historical failure gates. |
 
 ---
 
-## 🧠 How It Works: 5-Layer Experience Pipeline
+## 🏗 Architecture & Stack
 
-<p align="center">
-  <img src="docs/images/dna-layers.png" alt="5-Layer Experience Pipeline" width="600">
-</p>
+- **Frontend**: React 19 + Vite (built via `vite-plugin-singlefile` into `web/index.html`).
+- **Backend API**: Node.js + Express + Supabase (for optional global leaderboards).
+- **Agent Integration**: Standard Markdown files (`.evolution/genomes/*.md`).
+- **AI Core**: Gemini 3.1 Pro for high-context distillation and extraction.
 
-**Key concepts:**
-
-| Concept            | What it is                                                              |
-|:-------------------|:------------------------------------------------------------------------|
-| **Incident**       | Raw experience record — what happened, why, how it was resolved         |
-| **Experience Unit**| Distilled lesson — anti-pattern + preventive pattern + verifier         |
-| **Failure Genome** | Verified, transferable unit with utility score and family membership    |
-| **Family**         | Cluster of related genomes (e.g., all "import" errors group together)  |
-| **Replay Gate**    | Deterministic check — does this genome actually prevent failures?       |
-| **Promotion**      | Genome passes replay → promoted. Fails → rejected                      |
-| **Skill**          | Reusable execution pattern derived from promoted genomes/lessons        |
-| **Skill Package**  | Task-oriented bundle of admitted skills published for runtime use       |
-
----
-
-## 🛠️ 18 CLI Tools (Zero Dependencies)
-
-All tools are standalone Node.js scripts. Just `node cli/tool.js`.
-
-### Core Pipeline
-
-| Command                               | Description                                                     |
-|:---------------------------------------|:----------------------------------------------------------------|
-| `nve-init --yes`                       | Setup wizard — creates `.evolution/` in 5 seconds               |
-| `nve-scaffold incident --slug name`    | Create JSON scaffold with auto-ID, timestamp, all fields        |
-| `nve-scaffold genome --slug name`      | Create Failure Genome scaffold                                  |
-| `nve-scaffold eu --slug name`          | Create Experience Unit scaffold                                 |
-| `nve-memory`                           | Generate `MEMORY.md` — compact top-K memory for agent           |
-| `nve-audit`                            | **5-axis health audit** + SkillGraph extension score            |
-| `nve-validate`                         | 28 structural checks — files, folders, schema compliance        |
-| `nve-distill`                          | Auto-pipeline — incidents → experience units → failure genomes  |
-| `nve-replay`                           | Replay gate — deterministic pass/fail for genome promotion      |
-| `nve-utility`                          | Utility score per genome (reuse, prevention, transfer)          |
-| `nve-pack distilled`                   | Export redacted pack for cross-project sharing                  |
-| `nve-fg-summary`                       | Aggregated genome family report                                 |
-| `nve-manifest`                         | Repo manifest snapshot (stack, maturity, metrics)               |
-| `nve-export-dashboard`                 | Export data for offline web dashboard                            |
-
-### SkillGraph Pipeline (NEW in v2.3.0)
-
-| Command                               | Description                                                     |
-|:---------------------------------------|:----------------------------------------------------------------|
-| `nve-skill-extract`                    | Extract candidate skills from promoted genomes and EUs          |
-| `nve-skill-index`                      | Evaluate, deduplicate, categorize skills; build relation graph  |
-| `nve-skill-package --auto --publish`   | Bundle admitted skills into packages; publish runtime SKILL.md  |
-| `nve-skill-search "query"`             | Search registry (Utility + Fuzzy + Jaccard); usage tracking     |
-| `nve-skill-export --format=skillsmd`   | Export skills to standard `.md` format                          |
-| `nve-skill-import --github=user/repo`  | Import external `SKILL.md` files (eval, dedup, safety audit)    |
-
-### Full pipeline in 8 commands:
-
-```bash
-node cli/nve-distill.js                          # incidents → EU → FG
-node cli/nve-replay.js                           # replay gate (promote/reject)
-node cli/nve-skill-extract.js                    # genomes → candidate skills
-node cli/nve-skill-index.js                      # evaluate + dedupe + relations
-node cli/nve-skill-package.js --auto --publish   # build packages + publish
-node cli/nve-memory.js                           # regenerate MEMORY.md
-node cli/nve-audit.js                            # 5-axis + SkillGraph score
-node cli/nve-skill-search.js "query"             # search skills locally
-```
-
----
-
-## 📊 5-Axis Audit + SkillGraph Extension
-
-```
-🧬 NVE 5-Axis Audit — 2026-03-22
-
-  Overall:        ████████████████████  100%
-
-  Structure:      ████████████████████  100%   (9R 10W 8S)
-  Memory:         ████████████████████  100%   incidents, EUs, genomes
-  Verification:   ████████████████████  100%   (security: ✅)
-  Shareability:   ████████████████████  99%    (6/6 schemas)
-  Evolution:      ████████████████████  100%   genome families growing
-  SkillGraph*:    ████████████████████  100%   (3 skills, 2 packages, 9 relations)
-
-  *SkillGraph is reported as an extension and is not folded into the historical 5-axis overall score.
-```
-
-Use in CI/CD: We include a pre-configured `.github/workflows/nve-audit.yml` that runs `nve-audit.js --ci` against your `.evolution` folder on push/PR to `main`. It will exit with code 1 if the score drops < 30%.
-
----
-
-## 🧰 Domain Template Packs (Bundled)
-
-The repository comes pre-loaded with **15 CC-1C-inspired template skills** covering 5 domains: `devops`, `support`, `security`, `research`, and `compliance`. 
-
-* These are located in `.agents/skills/`.
-* You can import them directly to jump-start your agent's knowledge using: `node cli/nve-skill-import.js --path=.agents/skills`.
-
----
-
-## 🖥️ VS Code Extension
-
-Sidebar extension with **6 live panels** — no terminal needed.
-
-### Install:
-
-```bash
-# Windows:
-xcopy /E /I "vscode-extension" "%USERPROFILE%\.vscode\extensions\nve-genome-explorer"
-
-# Mac/Linux:
-cp -r vscode-extension ~/.vscode/extensions/nve-genome-explorer
-
-# Restart VS Code → open project with .evolution/ → 🧪 icon appears in sidebar
-```
-
-### Panels:
-
-| Panel                     | What it shows                                           |
-|:--------------------------|:--------------------------------------------------------|
-| 📊 **5-Axis Audit**       | Live scores per axis + SkillGraph extension score       |
-| 🧬 **Genome Families**    | Expandable tree — click to open JSON in editor          |
-| 🔄 **Replay Gate**        | promoted ✅ / rejected ❌ / pending ⏳ per genome       |
-| 🧩 **Skill Registry**     | Skills grouped by status (admitted/candidate/rejected)  |
-| 📦 **Skill Packages**     | Packages with expandable skill lists                    |
-| ⚡ **Quick Actions**       | One-click buttons for all 9 CLI tools                   |
-
-**Auto-refresh:** panels update when any `.evolution/**/*.json` changes.
-**Command Palette:** `Ctrl+Shift+P` → type `NVE` → 9 commands (incl. Skill Search with input box).
-
----
-
-## 🌐 Web Dashboard
-
-A gamified 3000+ line dashboard with XP, levels, achievements, and visual evolution tracking.
-
-### Offline mode (no server needed):
-
-```bash
-node cli/nve-export-dashboard.js    # generates web/data.js
-# Open web/index.html in any browser → works as file://
-```
-
-### 🌐 Live Demo: [tama-frontend-819335696518.europe-west1.run.app](https://tama-frontend-819335696518.europe-west1.run.app)
-
-### Features:
-
-| Feature                  | Description                                         |
-|:-------------------------|:----------------------------------------------------|
-| 🎮 Agent Profile         | XP, level, streak, avatar evolution (🥚→🐉→⭐)     |
-| 🏆 Achievements          | 15+ badges unlocked by milestones                   |
-| 📊 5-Axis Audit          | Animated progress bars per axis                     |
-| 📈 XP Timeline           | Canvas-rendered historical graph                    |
-| 🧬 Replay Gate Status    | Promoted / rejected / pending per genome            |
-| 📋 Repo Manifest         | Stack tags, badge chips, maturity level              |
-| 📦 JSON Pack Import      | Drag & drop `.evolution/` files                     |
-| 🌍 4 Languages           | 🇬🇧 EN · 🇷🇺 RU · 🇩🇪 DE · 🇯🇵 JP                     |
-
----
-
-## 🤝 Works with ANY AI Agent
-
-This toolkit is **agent-agnostic**. No lock-in.
-
-| Agent                        | How to integrate                           |
-|:-----------------------------|:-------------------------------------------|
-| **GitHub Copilot**           | `.github/copilot-instructions.md`          |
-| **Claude Code**              | `CLAUDE.md`                                |
-| **Google Gemini**            | `AGENTS.md` + `.agents/rules/`             |
-| **OpenAI ChatGPT**           | System prompt                              |
-| **Cursor**                   | `.cursorrules`                             |
-| **Any agent**                | Just tell it to read `.evolution/MEMORY.md` |
-
-### Minimal integration (3 lines in your agent config):
-
-```
-Before each task: read .evolution/MEMORY.md
-After resolving an issue: node cli/nve-scaffold.js incident --slug <describe-issue>
-After scaffolding: node cli/nve-memory.js
-```
-
----
-
-## 🔒 Privacy & Cross-Project Sharing
-
-Share lessons without exposing source code. 4-tier redaction:
-
-| Tier         | What's shared                           | Use case                                 |
-|:-------------|:----------------------------------------|:-----------------------------------------|
-| `private`    | Nothing                                 | Sensitive / proprietary projects         |
-| `manifest`   | Repo name + family names only           | "What failure families exist?"           |
-| `distilled`  | Safe titles + repair operators          | Default — learn from others safely       |
-| `research`   | Full data including root causes         | Open-source / academic collaboration     |
-
-```bash
-node cli/nve-pack.js distilled    # → .evolution/exports/PACK-*.json
-```
-
-Auto-redaction strips: code snippets, file paths, API keys, environment variables, logs.
-
----
-
-## 📈 Example MEMORY.md
-
-This is what your agent reads at the start of each session (~35 lines, ~5 seconds):
-
-```markdown
-# MEMORY.md — Compact Agent Memory
-
-## Quick Stats
-- Incidents: 11 | Experience Units: 5 | Failure Genomes: 7
-- Skills: 4 | Admitted Skills: 3 | Skill Packages: 2
-- Promoted Genomes: 7 | Pending Genomes: 0 | Pending Skills: 1
-
-## ✅ Verified Lessons (Do This)
-- **FG-000003** [build-time-env-var-loss]: always-use-build-args (utility: 0.95)
-- **FG-000001** [partial-import-missing]: add-import-and-verify (utility: 0.92)
-
-## 🧩 Reusable Skills (Admitted)
-- **SK-000001** [security]: Prevent credential-drift-after-refactor score=0.96
-- **SK-000002** [verification]: Prevent verification-skipped-before-done score=0.96
-
-## 📦 Skill Packages
-- **PKG-verification-hardening**: Verification Hardening (3 skills)
-
-## 🚫 Anti-Patterns (Don't Do This)
-- Adding module.method() without checking if import exists
-- Updating .env but forgetting build config
-```
-
-Verified lessons + admitted skills preventing known failures. **Your agent reads this in 5 seconds.**
-
----
-
-## ⚙️ Configuration
-
-Edit `.evolution/config.toml` (auto-created by `nve-init`):
-
-```toml
-[thresholds]
-min_audit_score = 70           # CI gate threshold
-auto_distill_severity = 7      # Auto-distill high-severity incidents
-memory_top_k = 8               # Max entries per MEMORY.md section
-
-[promotion]
-replay_pass_rate = 0.7         # Promote genome if pass_rate ≥ 70%
-replay_reject_rate = 0.3       # Reject if pass_rate < 30%
-
-[sharing]
-default_tier = "distilled"     # Privacy tier for exports
-redact_code = true             # Strip code from shared packs
-```
-
----
-
-## 🏗️ Architecture
-
-<p align="center">
-  <img src="docs/images/architecture.png" alt="Agent Genome Lab Architecture" width="700">
-</p>
-
----
-
-## 📁 What's Included
-
-```
+```text
 agent-genome-lab/
-├── README.md                    You are here
-├── AGENTS.md                    Agent operating contract
-├── LICENSE                      MIT
-├── package.json                 16 npm bin commands
-├── .agents/
-│   ├── rules/     (9 files)     Behavioral rules for agents
-│   ├── skills/    (8 skills)    Specialized agent capabilities
-│   └── workflows/ (10 files)    Step-by-step procedures
-├── cli/           (16 tools)    Zero-dependency CLI tools
-├── schemas/       (9 schemas)   JSON Schema validation (incl. skill schemas)
-├── templates/     (5 examples)  Example JSON files
-├── docs/          (10 docs)     Architecture, research, SkillGraph guides
-├── prompts/       (5 prompts)   Migration + SkillGraph prompts for agents
-├── vscode-extension/            VS Code sidebar extension
-└── web/
-    └── index.html               3000+ line gamified dashboard
+├── cli/                     ← Core execution engine (17+ commands)
+├── frontend/                ← React + Vite source code for Dashboard 
+├── web/                     ← Pre-compiled single-file Dashboard (index.html, data.js)
+├── docs/                    ← Backlog, Research (10+ papers), & Terminology Glossary
+├── server.js                ← Cloud Run Express server for Community Sync
+└── TAMA_start/              ← Starter kit for users without the CLI
 ```
 
-**85+ files. Zero external dependencies. MIT license.**
+---
+
+## 📖 Terminology & Ecosystem
+
+To fully understand the ecosystem, please review [TERMINOLOGY_GLOSSARY.md](docs/TERMINOLOGY_GLOSSARY.md). It covers concepts like **EU (Evolutionary Unit)**, **Genome**, **Replay Gate**, and more.
+
+## 🤝 Community & Publishing Skills
+
+Once your agent learns a powerful new pattern, you can publish it directly to the open-source community:
+
+```bash
+node cli/nve-skill-publish.js my-new-skill
+cd exports/my-new-skill
+gh repo create my-new-skill --public --push
+```
+Your skill is now compatible with `npx skills add <your-username>/my-new-skill`!
 
 ---
 
-## 🌍 Beyond Bug Prevention — Use Cases
-
-Agent Genome Lab works with any repeatable operational pattern, not just code bugs:
-
-| Domain | What gets captured | What gets reused |
-|:-------|:-------------------|:-----------------|
-| **Software development** | Failed imports, config drift, regression patterns | Verified genomes + repair operators |
-| **DevOps / SRE** | Deploy failures, rollback scenarios, recovery steps | Incident response runbooks as skill packages |
-| **Security operations** | Triage patterns, false positives, remediation flows | Escalation playbooks |
-| **Customer support** | Resolution patterns, escalation triggers, FAQ clusters | Reusable response skills |
-| **Research / Lab ops** | Methodology steps, analysis pipelines, cleaning procedures | Composable skill packages |
-| **Compliance / Audit** | Evidence collection, gap remediation, acceptance criteria | Governed audit memory |
-| **Onboarding** | Common mistakes, setup procedures, tribal knowledge | Compact MEMORY.md for day 1 |
-| **Multi-agent coordination** | Cross-role patterns, handoff protocols | Shared skill packages across agents |
-
-> All use cases are built on the same architecture: incident → experience unit → genome → skill → package.
-> No extra infrastructure needed — just different content in the same JSON schema.
-
----
-
-## 🔬 Research Foundations
-
-Built on peer-reviewed research (2025–2026):
-
-| Paper                          | Key Insight                                    | Toolkit Component        |
-|:-------------------------------|:-----------------------------------------------|:-------------------------|
-| Survey of Self-Evolving Agents | f(Π,τ,r)=Π' — auto-evolution formalism         | Overall architecture     |
-| Group-Evolving Agents (GEA)   | Unit of evolution = group, not individual       | Community sharing        |
-| Darwin Gödel Machine          | Self-referential code mutations                 | Rule Patcher             |
-| SEAD                          | GRPO + adaptive curriculum                      | XP system                |
-| SEPGA                         | Constrained MDP + policy penalties              | Replay Gate              |
-| Self-evolving Embodied AI     | 5-component closed-loop                         | Memory self-updating     |
-| **SkillNet** (2603.04448)      | 3-layer skill ontology + reuse graph            | SkillGraph layer (v2.3)  |
-
----
-
-## 🌟 Before vs After
-
-| Metric                    | Without Genome Lab                     | With Genome Lab                                   |
-|:--------------------------|:---------------------------------------|:--------------------------------------------------|
-| Knowledge persistence     | New session = blank slate              | 5-layer memory survives restarts                   |
-| Experience reuse          | Lessons stay in chat logs              | Verified skills packaged for any project           |
-| Pattern repetition        | Same mistake every 3-5 sessions        | MEMORY.md → pattern class prevented                |
-| Cross-project learning    | Every project starts from zero         | Shared packs transfer verified lessons             |
-| Team knowledge            | Tribal, undocumented                   | Structured, version-controlled, auditable          |
-| Quality governance        | No verification process                | Replay-gated admission + utility decay             |
-| IDE integration           | None                                   | VS Code: 6 panels, 9 commands, live refresh        |
-| Visualization             | None                                   | Gamified dashboard — XP, levels, achievements      |
-
----
-
-## 🏆 Contributing
-
-We'd love your help! Here's how:
-
-- ⭐ **Star this repo** — it helps others discover the project
-- 🐛 **Report bugs** — open an issue
-- 💡 **Suggest features** — open a discussion
-- 🔧 **Submit PRs** — improvements welcome
-- 📣 **Share** — tell others about Agent Genome Lab
-
----
-
-## 📚 Docs & Prompts
-
-**Documentation:**
-- [Architecture Deep Dive](docs/UNIVERSAL_ARCHITECTURE.md)
-- [Research Foundations](docs/RESEARCH_FOUNDATIONS.md)
-- [Failure Genome Hypothesis](docs/FAILURE_GENOME_HYPOTHESIS_V1.md)
-- [Experiment Plan](docs/FAILURE_GENOME_EXPERIMENT_PLAN_V1.md)
-- [Migration Playbook](docs/SAFE_MIGRATION_PLAYBOOK.md)
-- [User Flow: Audit & Share](docs/USER_FLOW_AUDIT_AND_SHARE.md)
-- [SkillGraph Architecture](docs/SKILLGRAPH_UPGRADE_ARCHITECTURE.md)
-- [SkillGraph Operating Guide](docs/SKILLGRAPH_OPERATING_GUIDE.md)
-- [SkillNet Gap Map](docs/SKILLNET_GAP_MAP.md)
-- [SkillGraph Upgrade Plan](docs/SKILLNET_UPGRADE_PLAN.md)
-
-**Agent Prompts (use in order):**
-1. [Preflight](prompts/01-PREFLIGHT.md) — inspect repo, create migration plan
-2. [Migration](prompts/02-MIGRATION.md) — install structure
-3. [Genome Install](prompts/03-GENOME_INSTALL.md) — add failure genome layer
-4. [Validation](prompts/04-VALIDATION.md) — run all checks
-5. [SkillGraph Install](prompts/05-SKILLGRAPH_INSTALL.md) — add SkillGraph layer
-
----
-
-<p align="center">
-  <strong>Stop losing experience. Start compounding it. 🧬</strong>
-  <br><br>
-  <a href="https://github.com/creanlab/agent-genome-lab/stargazers">⭐ Star</a> ·
-  <a href="https://github.com/creanlab/agent-genome-lab/issues">🐛 Issues</a> ·
-  <a href="https://github.com/creanlab/agent-genome-lab/discussions">💬 Discuss</a>
-</p>
+## 📜 License
+MIT
