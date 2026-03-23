@@ -13,7 +13,7 @@ description: Auto-evolution protocol — COMPATIBILITY WRAPPER → V4 incident c
 >
 > This file exists so old references still resolve.
 
-## Quick Reference
+## Quick Reference (RULE 8 equivalent)
 
 After EVERY significant fix or error:
 ```
@@ -25,14 +25,18 @@ After EVERY significant fix or error:
 6. PROPOSE patch (rule / workflow / skill / doc)
 ```
 
-## Known Recurring Patterns (examples)
+## Known Recurring Issues (preserved from legacy)
 
 | Pattern | Root Cause | Prevention |
 |---------|-----------|------------|
-| Shell syntax mismatch | bash-style `&&` used in PowerShell | Use `;` in PowerShell, `&&` in bash |
-| Tasks falsely marked done | No e2e verification | DOD = works on production |
-| Environment variable whitespace | `\r\n` in keys | `.trim()` / `.strip()` env vars |
-| Encoding issues | UTF-8 BOM mismatches | Check encoding, use fallback reader |
+| PowerShell `&&` chaining | bash-style in PS | Use `;` in PowerShell |
+| Tasks falsely marked done | No e2e verification | DOD = works on PRODUCTION |
+| Cloud Run ephemeral FS | Disk state lost | Persist to Supabase |
+| Secret Manager whitespace | `\r\n` in keys | `.strip()` env vars |
+| gcloud.ps1 execution policy | PS blocks unsigned | `cmd /c "gcloud ..."` |
+| ripgrep encoding | UTF-8 BOM issues | `Select-String` fallback |
+| Gemini model name mismatch | Suffixes change | Verify against API docs |
 
 ## Full Flow → `.agents/workflows/20-incident-capture.md`
 ## Memory Policy → `.agents/rules/20-evolution-memory-policy.md`
+## Legacy backup → `docs/legacy/workflows/auto-evolution.legacy.md`
