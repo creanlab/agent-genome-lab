@@ -122,7 +122,7 @@ If you want to **fully integrate** the genome system into an existing project, f
 
 ---
 
-## 🛠️ 16 CLI Tools (Zero Dependencies)
+## 🛠️ 18 CLI Tools (Zero Dependencies)
 
 All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 
@@ -152,7 +152,9 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-skill-extract`                    | Extract candidate skills from promoted genomes and EUs          |
 | `nve-skill-index`                      | Evaluate, deduplicate, categorize skills; build relation graph  |
 | `nve-skill-package --auto --publish`   | Bundle admitted skills into packages; publish runtime SKILL.md  |
-| `nve-skill-search "query"`             | Metadata-first search over the local skill registry             |
+| `nve-skill-search "query"`             | Search registry (Utility + Fuzzy + Jaccard); usage tracking     |
+| `nve-skill-export --format=skillsmd`   | Export skills to standard `.md` format                          |
+| `nve-skill-import --github=user/repo`  | Import external `SKILL.md` files (eval, dedup, safety audit)    |
 
 ### Full pipeline in 8 commands:
 
@@ -186,7 +188,16 @@ node cli/nve-skill-search.js "query"             # search skills locally
   *SkillGraph is reported as an extension and is not folded into the historical 5-axis overall score.
 ```
 
-Use in CI/CD: `node cli/nve-audit.js --ci` → exit code 1 if score < 70%.
+Use in CI/CD: We include a pre-configured `.github/workflows/nve-audit.yml` that runs `nve-audit.js --ci` against your `.evolution` folder on push/PR to `main`. It will exit with code 1 if the score drops < 30%.
+
+---
+
+## 🧰 Domain Template Packs (Bundled)
+
+The repository comes pre-loaded with **15 CC-1C-inspired template skills** covering 5 domains: `devops`, `support`, `security`, `research`, and `compliance`. 
+
+* These are located in `.agents/skills/`.
+* You can import them directly to jump-start your agent's knowledge using: `node cli/nve-skill-import.js --path=.agents/skills`.
 
 ---
 
