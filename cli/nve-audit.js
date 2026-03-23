@@ -222,6 +222,20 @@ const audit = {
     has_index: exists('cli/nve-skill-index.js'),
     has_package_builder: exists('cli/nve-skill-package.js'),
     has_search: exists('cli/nve-skill-search.js'),
+    has_export: exists('cli/nve-skill-export.js'),
+    top_skills: skillFiles
+      .map((f) => readJson(`.evolution/skills/${f}`, null))
+      .filter((s) => s && s.status === 'admitted')
+      .sort((a, b) => ((b.evaluation?.overall || 0) - (a.evaluation?.overall || 0)))
+      .slice(0, 5)
+      .map((s) => ({
+        skill_id: s.skill_id,
+        title: s.title,
+        category: s.category || 'quality',
+        tags: (s.tags || []).slice(0, 4),
+        eval_score: s.evaluation?.overall || 0,
+        relations: relations.filter((r) => r.source_skill_id === s.skill_id || r.target === s.skill_id).length,
+      })),
   },
   issues,
 };
@@ -244,6 +258,15 @@ console.log(`  Verification:   ${bar(verifScore)}  (security: ${securityOk ? '�
 console.log(`  Shareability:   ${bar(shareScore)}  (${schemaChecks.filter((schema) => exists(schema)).length}/6 schemas)`);
 console.log(`  Evolution:      ${bar(evoScore)}  (${memCounts.failure_genomes} genomes)`);
 console.log(`  SkillGraph*:    ${bar(skillgraphScore)}  (${skillFiles.length} skills, ${packageFiles.length} packages, ${relations.length} relations)`);
+
+if (audit.skillgraph.top_skills && audit.skillgraph.top_skills.length > 0) {
+  console.log(`\n  🏆 Top Skills:`);
+  for (const ts of audit.skillgraph.top_skills) {
+    const relStr = ts.relations > 0 ? ` 🔗${ts.relations}` : '';
+    const tagStr = ts.tags.length > 0 ? ` [${ts.tags.join(', ')}]` : '';
+    console.log(`    ${ts.skill_id} │ ${ts.eval_score.toFixed(2)} │ ${ts.category} │ ${ts.title}${relStr}${tagStr}`);
+  }
+}
 
 if (issues.length) {
   console.log(`\n  ⚠️ Issues (${issues.length}):`);
