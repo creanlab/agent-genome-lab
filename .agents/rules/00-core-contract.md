@@ -15,12 +15,11 @@ A task is DONE only when:
 1. No secrets in staged files.
 2. No unintended file deletions (check `git status`).
 3. Old compatibility paths still work.
-4. **Were there uncaptured incidents since the last commit?** If yes — create them first.
 
 ## Session Start
 
 At session start, read in this order:
 1. `AGENTS.md`
-2. `.evolution/MEMORY.md` — compact memory with verified lessons and anti-patterns
-3. `.agents/rules/` (all numbered rules)
+2. `.agents/rules/` (all numbered rules)
+3. `docs/backlog_tama.md` (current tasks)
 4. `.evolution/manifests/` (latest manifest if exists)
