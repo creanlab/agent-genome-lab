@@ -42,6 +42,14 @@ const units = loadJsonDir('experience_units');
 const genomes = loadJsonDir('failure_genomes');
 const audits = loadJsonDir('audits');
 
+// SkillGraph data (I.2)
+const skills = loadJsonDir('skills');
+const skillPackages = loadJsonDir('skill_packages');
+const relationsPath = path.join(EVO, 'skill_relations', 'RELATIONS.json');
+const skillRelations = fs.existsSync(relationsPath)
+  ? JSON.parse(fs.readFileSync(relationsPath, 'utf8'))
+  : { relations: [] };
+
 // Load manifest
 const manifestPath = path.join(EVO, 'repo-manifest.json');
 const manifest = fs.existsSync(manifestPath)
@@ -62,6 +70,11 @@ const data = {
   experience_units: units,
   failure_genomes: genomes.filter(g => !g.index_version), // exclude FAMILY_INDEX
   family_index: genomes.find(g => g.index_version) || null,
+  skills: skills.filter(s => !s.schema_version || s.skill_id), // exclude INDEX.json
+  skills_index: skills.find(s => s.total_skills !== undefined) || null,
+  skill_packages: skillPackages.filter(p => !p.schema_version || p.package_id), // exclude INDEX.json
+  skill_packages_index: skillPackages.find(p => p.total_packages !== undefined) || null,
+  skill_relations: skillRelations,
   audits,
   manifest,
   journal,
@@ -78,13 +91,21 @@ window.__NVE_OFFLINE_DATA__ = ${JSON.stringify(data, null, 2)};
 
 fs.writeFileSync(dataPath, content);
 
+const skillCount = data.skills.length;
+const pkgCount = data.skill_packages.length;
+const relCount = Array.isArray(skillRelations.relations) ? skillRelations.relations.length : 0;
+
 console.log(`
 📦 Offline dashboard data exported
    File:      ${dataPath}
    Incidents: ${incidents.length}
    EUs:       ${units.length}
    Genomes:   ${genomes.filter(g => !g.index_version).length}
+   Skills:    ${skillCount}
+   Packages:  ${pkgCount}
+   Relations: ${relCount}
    Audits:    ${audits.length}
 
    Now open web/index.html as file:/// — no server needed.
 `);
+

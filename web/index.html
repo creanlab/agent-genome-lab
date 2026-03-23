@@ -1099,6 +1099,41 @@
         .community-empty { color: var(--text-muted); font-size: 0.85rem; padding: 1rem; text-align: center; }
         .load-community-btn { padding: 0.5rem 1.2rem; background: rgba(6,214,160,0.08); border: 1px solid var(--accent-cyan); border-radius: var(--radius-sm); color: var(--accent-cyan); font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all var(--transition-smooth); margin-bottom: 1rem; }
         .load-community-btn:hover { background: rgba(6,214,160,0.15); }
+
+        /* =================== SKILLGRAPH (K.1) =================== */
+        .skillgraph-section { margin-bottom: 2.5rem; }
+        .skillgraph-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+        @media (max-width: 600px) { .skillgraph-stats { grid-template-columns: 1fr 1fr; } }
+        .sg-stat { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 1rem; text-align: center; transition: all var(--transition-smooth); }
+        .sg-stat:hover { border-color: var(--accent-cyan); transform: translateY(-2px); }
+        .sg-stat__value { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; }
+        .sg-stat__label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.15rem; }
+        .skill-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .skill-card { background: var(--glass-bg); backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 1.25rem; position: relative; overflow: hidden; transition: all var(--transition-smooth); }
+        .skill-card:hover { border-color: var(--accent-cyan); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(6,214,160,0.12); }
+        .skill-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 0 3px 3px 0; }
+        .skill-card.admitted::before { background: var(--accent-cyan); }
+        .skill-card.candidate::before { background: var(--accent-amber); }
+        .skill-card.quarantined::before { background: var(--accent-purple); }
+        .skill-card.rejected::before { background: var(--accent-red); }
+        .skill-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .skill-card__id { font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .skill-card__score { font-family: var(--font-display); font-weight: 800; font-size: 0.95rem; color: var(--accent-cyan); }
+        .skill-card__title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; line-height: 1.3; }
+        .skill-card__summary { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.6rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .skill-card__tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .skill-tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 50px; font-size: 0.65rem; font-weight: 600; background: rgba(139,92,246,0.1); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.2); }
+        .skill-tag.cat { background: rgba(6,214,160,0.1); color: var(--accent-cyan); border-color: rgba(6,214,160,0.2); }
+        .pkg-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .pkg-card { background: rgba(139,92,246,0.04); border: 1px solid rgba(139,92,246,0.15); border-radius: var(--radius-md); padding: 1rem; transition: all var(--transition-smooth); }
+        .pkg-card:hover { border-color: var(--accent-purple); transform: translateX(4px); }
+        .pkg-card__title { font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; color: var(--accent-purple); margin-bottom: 0.3rem; }
+        .pkg-card__meta { font-size: 0.75rem; color: var(--text-muted); }
+        .pkg-card__skills { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.3rem; }
+        .sg-relations { background: var(--glass-bg); border: 1px solid var(--border-card); border-radius: var(--radius-md); padding: 1rem; min-height: 200px; position: relative; }
+        .sg-relations svg { width: 100%; height: 200px; }
+        .sg-empty { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem; }
+        .sg-empty__hint { font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -1343,6 +1378,18 @@
             <section class="fitness-section">
                 <h2 class="section-title">🔄 Replay Gate Status</h2>
                 <div id="replayTimeline" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+            </section>
+
+            <!-- SKILLGRAPH (K.1) -->
+            <section class="skillgraph-section" id="skillgraphSection" style="display:none;">
+                <h2 class="section-title">🧩 SkillGraph</h2>
+                <div class="skillgraph-stats" id="sgStats"></div>
+                <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.75rem;color:var(--text-secondary);">Admitted Skills</h3>
+                <div class="skill-cards" id="sgSkillCards"></div>
+                <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.75rem;color:var(--text-secondary);">📦 Skill Packages</h3>
+                <div class="pkg-cards" id="sgPkgCards"></div>
+                <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:0.75rem;color:var(--text-secondary);">🔗 Relations Graph</h3>
+                <div class="sg-relations" id="sgRelations"></div>
             </section>
 
             <!-- REPO MANIFEST PANEL (D.4) -->
@@ -2044,6 +2091,125 @@
             container.appendChild(row);
         }
     }
+    /* ==================== SKILLGRAPH (K.1) ==================== */
+    function renderSkillGraph(data) {
+        const section = document.getElementById('skillgraphSection');
+        const sg = window.__NVE_SKILLGRAPH__ || null;
+        if (!sg || (sg.skills.length === 0 && sg.packages.length === 0)) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+
+        const skills = sg.skills || [];
+        const packages = sg.packages || [];
+        const relations = (sg.relations && sg.relations.relations) || [];
+        const admitted = skills.filter(s => s.status === 'admitted');
+        const candidate = skills.filter(s => s.status === 'candidate');
+
+        // Stats row
+        const statsEl = document.getElementById('sgStats');
+        statsEl.innerHTML = `
+            <div class="sg-stat"><div class="sg-stat__value" style="color:var(--accent-cyan);">${skills.length}</div><div class="sg-stat__label">Total Skills</div></div>
+            <div class="sg-stat"><div class="sg-stat__value" style="color:var(--accent-cyan);">${admitted.length}</div><div class="sg-stat__label">Admitted</div></div>
+            <div class="sg-stat"><div class="sg-stat__value" style="color:var(--accent-purple);">${packages.length}</div><div class="sg-stat__label">Packages</div></div>
+            <div class="sg-stat"><div class="sg-stat__value" style="color:var(--accent-amber);">${relations.length}</div><div class="sg-stat__label">Relations</div></div>
+        `;
+
+        // Skill cards
+        const cardsEl = document.getElementById('sgSkillCards');
+        cardsEl.innerHTML = '';
+        const sortedSkills = [...skills].sort((a, b) => ((b.evaluation?.overall || 0) - (a.evaluation?.overall || 0)));
+        if (sortedSkills.length === 0) {
+            cardsEl.innerHTML = '<div class="sg-empty">No skills extracted yet.<div class="sg-empty__hint">Run: nve-distill → nve-replay --promote → nve-skill-extract → nve-skill-index</div></div>';
+        }
+        for (const skill of sortedSkills) {
+            const card = document.createElement('div');
+            card.className = 'skill-card ' + (skill.status || '');
+            const evalScore = skill.evaluation ? skill.evaluation.overall : null;
+            const statusIcon = {admitted: '✅', candidate: '🟡', quarantined: '🟣', rejected: '❌'}[skill.status] || '⬜';
+            const tags = (skill.tags || []).slice(0, 5);
+            const relCount = relations.filter(r => r.source_skill_id === skill.skill_id || r.target === skill.skill_id).length;
+            card.innerHTML = `
+                <div class="skill-card__header">
+                    <span class="skill-card__id">${statusIcon} ${skill.skill_id}</span>
+                    ${evalScore !== null ? `<span class="skill-card__score">${evalScore.toFixed(2)}</span>` : ''}
+                </div>
+                <div class="skill-card__title">${skill.title || skill.skill_id}</div>
+                <div class="skill-card__summary">${(skill.summary || '').slice(0, 140)}</div>
+                <div class="skill-card__tags">
+                    ${skill.category ? `<span class="skill-tag cat">${skill.category}</span>` : ''}
+                    ${tags.map(t => `<span class="skill-tag">${t}</span>`).join('')}
+                    ${relCount > 0 ? `<span class="skill-tag" style="background:rgba(245,158,11,0.1);color:var(--accent-amber);border-color:rgba(245,158,11,0.2);">🔗 ${relCount}</span>` : ''}
+                </div>
+            `;
+            cardsEl.appendChild(card);
+        }
+
+        // Package cards
+        const pkgsEl = document.getElementById('sgPkgCards');
+        pkgsEl.innerHTML = '';
+        if (packages.length === 0) {
+            pkgsEl.innerHTML = '<div class="sg-empty">No packages built yet.<div class="sg-empty__hint">Run: nve-skill-package --auto --publish</div></div>';
+        }
+        for (const pkg of packages) {
+            const card = document.createElement('div');
+            card.className = 'pkg-card';
+            const skillIds = pkg.skill_ids || [];
+            card.innerHTML = `
+                <div class="pkg-card__title">📦 ${pkg.title || pkg.package_id}</div>
+                <div class="pkg-card__meta">${pkg.category || ''} · ${skillIds.length} skill(s) · ${pkg.status || 'admitted'}</div>
+                <div class="pkg-card__skills">${(pkg.summary || '').slice(0, 120)}</div>
+                <div style="margin-top:0.4rem;">${skillIds.map(id => `<span class="skill-tag" style="font-size:0.6rem;">${id}</span>`).join(' ')}</div>
+            `;
+            pkgsEl.appendChild(card);
+        }
+
+        // Relations SVG graph
+        const relEl = document.getElementById('sgRelations');
+        if (relations.length === 0) {
+            relEl.innerHTML = '<div class="sg-empty">No relations yet.<div class="sg-empty__hint">Run: nve-skill-index to generate relations</div></div>';
+            return;
+        }
+        // Collect unique nodes
+        const nodes = new Map();
+        for (const r of relations) {
+            if (!nodes.has(r.source_skill_id)) nodes.set(r.source_skill_id, { id: r.source_skill_id, type: 'skill' });
+            const targetType = String(r.target).startsWith('PKG-') ? 'package' : (String(r.target).startsWith('FG-') ? 'genome' : 'skill');
+            if (!nodes.has(r.target)) nodes.set(r.target, { id: r.target, type: targetType });
+        }
+        const nodeArr = [...nodes.values()];
+        const W = 700, H = 200, pad = 60;
+        const cx = W / 2, cy = H / 2;
+        const angleStep = (2 * Math.PI) / nodeArr.length;
+        const rx = (W - pad * 2) / 2, ry = (H - pad * 2) / 2;
+        nodeArr.forEach((n, i) => { n.x = cx + rx * Math.cos(i * angleStep - Math.PI / 2); n.y = cy + ry * Math.sin(i * angleStep - Math.PI / 2); });
+        const posMap = new Map(nodeArr.map(n => [n.id, n]));
+        const nodeColors = { skill: '#06d6a0', package: '#8b5cf6', genome: '#ef4444' };
+        let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+        // Edges
+        for (const r of relations) {
+            const s = posMap.get(r.source_skill_id);
+            const t = posMap.get(r.target);
+            if (s && t) {
+                svg += `<line x1="${s.x}" y1="${s.y}" x2="${t.x}" y2="${t.y}" stroke="rgba(139,92,246,0.25)" stroke-width="1.5" stroke-dasharray="${r.relation_type === 'derived_from_genome' ? '4 3' : 'none'}"/>`;
+            }
+        }
+        // Nodes
+        for (const n of nodeArr) {
+            const col = nodeColors[n.type] || '#8b5cf6';
+            const r = n.type === 'package' ? 10 : (n.type === 'genome' ? 7 : 8);
+            svg += `<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${col}" opacity="0.85" stroke="${col}" stroke-width="2" stroke-opacity="0.3"/>`;
+            const label = n.id.length > 12 ? n.id.slice(0, 12) + '…' : n.id;
+            svg += `<text x="${n.x}" y="${n.y + r + 12}" text-anchor="middle" fill="#9b97b0" font-size="9" font-family="Inter, sans-serif">${label}</text>`;
+        }
+        // Legend
+        svg += `<circle cx="${W - 120}" cy="15" r="5" fill="#06d6a0"/><text x="${W - 112}" y="19" fill="#9b97b0" font-size="9" font-family="Inter">Skill</text>`;
+        svg += `<circle cx="${W - 70}" cy="15" r="5" fill="#8b5cf6"/><text x="${W - 62}" y="19" fill="#9b97b0" font-size="9" font-family="Inter">Package</text>`;
+        svg += `<circle cx="${W - 10}" cy="15" r="5" fill="#ef4444"/><text x="${W - 2}" y="19" fill="#9b97b0" font-size="9" font-family="Inter">Genome</text>`;
+        svg += '</svg>';
+        relEl.innerHTML = svg;
+    }
 
     /* ==================== REPO MANIFEST PANEL (D.4) ==================== */
     function renderManifestPanel(data) {
@@ -2674,6 +2840,9 @@ ${genomeBlock}
         // Replay Gate Timeline (D.3)
         renderReplayTimeline(data);
 
+        // SkillGraph (K.1)
+        renderSkillGraph(data);
+
         // Repo Manifest Panel (D.4)
         renderManifestPanel(data);
 
@@ -3214,6 +3383,10 @@ ${genomeBlock}
         if (od.family_index) offlineFiles.push(new File([JSON.stringify(od.family_index)], 'FAMILY_INDEX.json', {type:'application/json'}));
         (od.audits || []).forEach(a => offlineFiles.push(new File([JSON.stringify(a)], 'AUDIT.json', {type:'application/json'})));
         if (od.manifest) offlineFiles.push(new File([JSON.stringify(od.manifest)], 'repo-manifest.json', {type:'application/json'}));
+        // SkillGraph offline data (K.1)
+        if (od.skills || od.skill_packages || od.skill_relations) {
+            window.__NVE_SKILLGRAPH__ = { skills: od.skills || [], packages: od.skill_packages || [], relations: od.skill_relations || { relations: [] }, index: od.skills_index || null, pkgIndex: od.skill_packages_index || null };
+        }
         if (offlineFiles.length > 0) {
             const dt = new DataTransfer();
             offlineFiles.forEach(f => dt.items.add(f));
