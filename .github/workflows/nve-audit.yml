@@ -1,0 +1,49 @@
+name: 🧬 NVE 5-Axis Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.evolution/**'
+      - 'cli/**'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Run nve-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run 5-Axis Audit
+        run: node cli/nve-audit.js
+
+      - name: Display MEMORY.md
+        run: |
+          if [ -f .evolution/MEMORY.md ]; then
+            cat .evolution/MEMORY.md
+          else
+            echo "No MEMORY.md yet. Run: node cli/nve-memory.js"
+          fi
+
+      - name: Check Audit Score
+        run: |
+          SCORE=$(node -e "
+            const fs = require('fs');
+            const dir = '.evolution/audits';
+            if (!fs.existsSync(dir)) { console.log('0'); process.exit(); }
+            const files = fs.readdirSync(dir).filter(f => f.startsWith('AUDIT-')).sort();
+            if (files.length === 0) { console.log('0'); process.exit(); }
+            const audit = JSON.parse(fs.readFileSync(dir + '/' + files[files.length-1]));
+            console.log(audit.overall_pct || 0);
+          ")
+          echo "📊 Audit Score: ${SCORE}%"
+          if [ "$SCORE" -lt 30 ]; then
+            echo "⚠️ Score below 30% — consider running the full pipeline"
+          fi

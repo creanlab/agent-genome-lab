@@ -281,3 +281,26 @@ for (let i = 0; i < allResults.length; i++) {
 
 console.log(`${C.dim}${'─'.repeat(90)}${C.reset}`);
 console.log(`${C.dim}Tip: Use --json for programmatic output, --packages to include bundles${C.reset}\n`);
+
+// ── Usage tracking (K.8) — update usage_count + last_used_at for matched skills ──
+if (!listMode && query && allResults.length > 0) {
+  const { writeJsonRel } = require('./nve-skill-common');
+  const now = new Date().toISOString();
+  let tracked = 0;
+  for (const r of allResults) {
+    if (r.type !== 'skill') continue;
+    try {
+      const filePath = `.evolution/skills/${r.id}.json`;
+      const full = readJson(resolveRoot(filePath), null);
+      if (!full) continue;
+      full.usage_count = (full.usage_count || 0) + 1;
+      full.last_used_at = now;
+      writeJsonRel(filePath, full);
+      tracked++;
+    } catch { /* skip */ }
+  }
+  if (tracked > 0) {
+    console.log(`${C.dim}📊 Usage tracked for ${tracked} skill(s)${C.reset}\n`);
+  }
+}
+
