@@ -1,112 +1,67 @@
 #!/usr/bin/env node
+/**
+ * nve-pack.js — Create sanitized export pack for research pool
+ * Reads .evolution/ → strips PII → outputs to .evolution/exports/
+ */
+
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
-const root = process.cwd();
-const tier = (process.argv[2] || 'distilled').toLowerCase();
-if (!['manifest','distilled','research'].includes(tier)) {
-  console.error('Usage: node cli/nve-pack.js [manifest|distilled|research]');
-  process.exit(1);
+const ROOT = path.resolve(__dirname, '..');
+
+function readJsonDir(dir) {
+  const fullDir = path.join(ROOT, dir);
+  if (!fs.existsSync(fullDir)) return [];
+  return fs.readdirSync(fullDir)
+    .filter(f => f.endsWith('.json') && f !== '.gitkeep')
+    .map(f => JSON.parse(fs.readFileSync(path.join(fullDir, f), 'utf-8')));
 }
 
-function readJsonIfExists(file) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
-}
-function listJson(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
-    .filter(name => name.endsWith('.json'))
-    .map(name => readJsonIfExists(path.join(dir, name)))
-    .filter(Boolean);
-}
-
-const manifest = readJsonIfExists(path.join(root, '.evolution/manifests/repo-manifest.latest.json'));
-const audit = readJsonIfExists(path.join(root, '.evolution/audits/repo-audit.latest.json'));
-const incidents = listJson(path.join(root, '.evolution/incidents'));
-const experienceUnits = listJson(path.join(root, '.evolution/experience_units'));
-const genomes = listJson(path.join(root, '.evolution/failure_genomes'));
-
-const redactIncident = (i) => ({
-  event_id: i.event_id,
-  occurred_at: i.occurred_at,
-  status: i.status,
-  failure_class: i.failure_class,
-  stage: i.stage,
-  safe_title: i.safe_title,
-  safe_summary: i.safe_summary,
-  safe_root_cause: i.safe_root_cause,
-  repair_class: i.repair_class,
-  impact_score: i.impact_score,
-  verifier_outcome: i.verifier && i.verifier.outcome,
-  repeat_detected: i.repeat_detected,
-  stack_tags: i.stack_tags,
-  patch_suggestions: i.patch_suggestions || {}
-});
-
-const redactExperience = (e) => ({
-  canonical_key: e.canonical_key,
-  title: e.title,
-  anti_pattern: e.anti_pattern,
-  preventive_pattern: e.preventive_pattern,
-  verifier_recipe: e.verifier_recipe,
-  rule_patch: e.rule_patch,
-  workflow_patch: e.workflow_patch,
-  skill_patch: e.skill_patch,
-  verifier_patch: e.verifier_patch,
-  doc_patch: e.doc_patch,
-  applicability_tags: e.applicability_tags,
-  confidence: e.confidence,
-  support_count: e.support_count
-});
-
-const redactGenome = (g) => ({
-  genome_id: g.genome_id,
-  incident_id: g.incident_id,
-  family: g.family,
-  violated_invariant: g.violated_invariant,
-  repair_operator: g.repair_operator,
-  transferability_tags: g.transferability_tags,
-  utility: g.utility,
-  replay: g.replay,
-  proposed_patch_types: g.proposed_patch_types,
-  promotion_decision: g.promotion_decision
-});
-
-let payload = {};
-let included = [];
-let excluded = ['raw source code', 'secrets', 'full prompts', 'full logs', 'complete conversations'];
-
-if (tier === 'manifest') {
-  payload = { manifest, audit };
-  included = ['manifest', 'audit'];
-}
-if (tier === 'distilled') {
-  payload = {
-    manifest,
-    audit,
-    incidents: incidents.map(redactIncident),
-    experience_units: experienceUnits.map(redactExperience),
-    failure_genomes: genomes.map(redactGenome)
-  };
-  included = ['manifest', 'audit', 'safe incidents', 'experience units', 'safe failure genomes'];
-}
-if (tier === 'research') {
-  payload = { manifest, audit, incidents, experience_units: experienceUnits, failure_genomes: genomes };
-  included = ['manifest', 'audit', 'full incident payloads', 'experience units', 'full structured failure genomes'];
+function redact(obj) {
+  const redacted = { ...obj };
+  // Strip PII fields
+  delete redacted.agent_id;
+  delete redacted.project;
+  delete redacted.repo_name;
+  // Coarsen dates
+  if (redacted.created_at) {
+    redacted.created_at = redacted.created_at.slice(0, 7); // YYYY-MM
+  }
+  // Strip code evidence content (keep type)
+  if (redacted.verifier_evidence && Array.isArray(redacted.verifier_evidence)) {
+    redacted.verifier_evidence = redacted.verifier_evidence.map(e => ({
+      kind: e.kind,
+      summary: e.summary || 'redacted'
+    }));
+  }
+  return redacted;
 }
 
-const batch = {
-  schema_version: '1.0',
-  created_at: new Date().toISOString(),
-  sharing_tier: tier,
-  project_name: (manifest && manifest.project_name) || path.basename(root),
-  redaction_report: { included, excluded },
-  payload
+const genomes = readJsonDir('.evolution/failure_genomes').map(redact);
+const eus = readJsonDir('.evolution/experience_units').map(redact);
+
+const now = new Date();
+const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+
+const pack = {
+  pack_id: `PACK-${dateStr}-001`,
+  created_at: now.toISOString().slice(0, 10),
+  source_hash: crypto.randomBytes(16).toString('hex'),
+  redaction_version: 'v1',
+  genomes,
+  experience_units: eus,
+  metadata: {
+    total_incidents: readJsonDir('.evolution/incidents').length,
+    total_genomes: genomes.length,
+    total_eus: eus.length
+  }
 };
 
-const outDir = path.join(root, '.evolution/exports');
-fs.mkdirSync(outDir, { recursive: true });
-const outFile = path.join(outDir, `research-pack-${new Date().toISOString().replace(/[:.]/g, '-')}-${tier}.json`);
-fs.writeFileSync(outFile, JSON.stringify(batch, null, 2));
-console.log(`Wrote ${outFile}`);
-console.log(JSON.stringify(batch.redaction_report, null, 2));
+const outDir = path.join(ROOT, '.evolution', 'exports');
+if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+const outPath = path.join(outDir, `PACK-${dateStr}-001.json`);
+fs.writeFileSync(outPath, JSON.stringify(pack, null, 2));
+console.log(`✅ Pack created: ${outPath}`);
+console.log(`   Genomes: ${genomes.length}, Experience Units: ${eus.length}`);
+console.log(`   ⚠️  Review before sharing!`);
