@@ -20,7 +20,8 @@
     "nve-skill-extract": "./cli/nve-skill-extract.js",
     "nve-skill-index": "./cli/nve-skill-index.js",
     "nve-skill-package": "./cli/nve-skill-package.js",
-    "nve-skill-search": "./cli/nve-skill-search.js"
+    "nve-skill-search": "./cli/nve-skill-search.js",
+    "nve-skill-export": "./cli/nve-skill-export.js"
   },
   "files": [
     "cli/",

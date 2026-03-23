@@ -1,6 +1,34 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-03-22T15:46:04.220Z",
-  "total_relations": 0,
-  "relations": []
+  "updated_at": "2026-03-23T10:03:22.114Z",
+  "total_relations": 3,
+  "relations": [
+    {
+      "source_skill_id": "SK-000001",
+      "relation_type": "belong_to_package",
+      "target": "PKG-anti-fallback-and-contracts",
+      "weight": 1,
+      "evidence": [
+        "package_builder"
+      ]
+    },
+    {
+      "source_skill_id": "SK-000001",
+      "relation_type": "belong_to_package",
+      "target": "PKG-verification-hardening",
+      "weight": 1,
+      "evidence": [
+        "package_builder"
+      ]
+    },
+    {
+      "source_skill_id": "SK-000001",
+      "relation_type": "derived_from_genome",
+      "target": "FG-000001",
+      "weight": 1,
+      "evidence": [
+        "source_type=failure_genome"
+      ]
+    }
+  ]
 }

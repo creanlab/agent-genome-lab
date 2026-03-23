@@ -1,6 +1,53 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-03-22T15:46:04.219Z",
-  "total_packages": 0,
-  "packages": []
+  "updated_at": "2026-03-23T10:03:22.114Z",
+  "total_packages": 2,
+  "packages": [
+    {
+      "package_id": "PKG-anti-fallback-and-contracts",
+      "title": "Anti-Fallback and Contracts",
+      "status": "admitted",
+      "category": "quality",
+      "tags": [
+        "contract",
+        "failure-genome",
+        "fallback",
+        "generated",
+        "quality",
+        "replay",
+        "schema",
+        "skillgraph",
+        "testing",
+        "verification"
+      ],
+      "skill_count": 1,
+      "skill_ids": [
+        "SK-000001"
+      ],
+      "published_agent_skill_path": ".agents/skills/anti-fallback-and-contracts/SKILL.md"
+    },
+    {
+      "package_id": "PKG-verification-hardening",
+      "title": "Verification Hardening",
+      "status": "admitted",
+      "category": "verification",
+      "tags": [
+        "contract",
+        "failure-genome",
+        "generated",
+        "quality",
+        "regression",
+        "replay",
+        "schema",
+        "skillgraph",
+        "testing",
+        "verification"
+      ],
+      "skill_count": 1,
+      "skill_ids": [
+        "SK-000001"
+      ],
+      "published_agent_skill_path": ".agents/skills/verification-hardening/SKILL.md"
+    }
+  ]
 }

@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "event_id": "INC-000001",
+  "project_id": "agent-genome-lab",
+  "occurred_at": "2026-03-23T01:00:00Z",
+  "status": "resolved",
+  "stage": "runtime",
+  "failure_class": "diagram-text-mismatch",
+  "safe_title": "Generated diagram labels don't match actual project state",
+  "safe_summary": "AI image generation produced architecture diagrams with wrong layer count (3 instead of 5), incorrect component names, and misplaced arrows. Required 3 regenerations to match reality.",
+  "safe_root_cause": "Prompt for image generation did not include explicit checklist of labels and counts. Generator hallucinated plausible but incorrect text.",
+  "repair_class": "verification-before-visual-output",
+  "impact_score": 7,
+  "stack_tags": ["image-generation", "documentation", "verification"],
+  "repeat_detected": false,
+  "files_touched_count": 2,
+  "patch_suggestions": {
+    "workflow_patch": "Always include explicit text checklist in image generation prompts. Verify generated image labels against source of truth before committing."
+  },
+  "verifier": {
+    "type": "manual",
+    "name": "visual-inspection-against-readme",
+    "outcome": "pass",
+    "details": "Compared diagram labels to README.md counts — all 5 layers, 16 CLI, 9 rules matched"
+  },
+  "privacy": {
+    "sharing_tier": "distilled",
+    "contains_code": false,
+    "contains_secrets": false
+  }
+}
