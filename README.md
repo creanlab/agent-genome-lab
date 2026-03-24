@@ -6,6 +6,8 @@
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js)](https://nodejs.org)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)](#)
 [![CLI Tools](https://img.shields.io/badge/CLI_Tools-19-blue.svg)](#-19-cli-tools-zero-dependencies)
+[![Community Hub](https://img.shields.io/badge/Community-Hub-34d399)](#-community-hub--collective-intelligence)
+[![Agent Constructor](https://img.shields.io/badge/Agent_Constructor-Beta-fbbf24)](#-agent-constructor-beta)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-007ACC?logo=visualstudiocode)](#-vs-code-extension)
 [![React Dashboard](https://img.shields.io/badge/React-Dashboard-61DAFB?logo=react)](#-react-dashboard--web-ui)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Native-blueviolet)](#-antigravity-integration-google-ai-agent)
@@ -157,7 +159,8 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-skill-index`                      | Evaluate, deduplicate, categorize skills; build relation graph  |
 | `nve-skill-package --auto --publish`   | Bundle admitted skills into packages; publish runtime SKILL.md  |
 | `nve-skill-search "query"`             | Metadata-first search over the local skill registry             |
-| `nve-skill-publish <name>`             | **NEW** — Export as Anthropic-compatible `SKILL.md` package     |
+| `nve-skill-publish <name>`             | **Export as Anthropic-compatible `SKILL.md` with real genome data** |
+| `nve-skill-publish --all --install`    | **Publish ALL promoted families + install to `.agents/skills/`** |
 
 ### Full pipeline in 8 commands:
 
@@ -299,11 +302,16 @@ A premium React + Vite dashboard with glassmorphism design, interactive SkillGra
 
 | Tab | Description |
 |:----|:------------|
-| 📊 **Overview** | XP progression chart, genome/skill counters, level system, streak |
+| 📊 **Overview** | XP progression chart (dual-axis), genome/skill counters, level system |
+| ⚠️ **Risk Prediction** | Most likely failure family to recur + frequency ranking |
+| ✨ **AI Insights** | **Gemini-powered** analysis of genomes, blind spots, recommendations |
 | 🧬 **Failure Genomes** | Card grid with family, invariant, utility score, replay status |
-| 🏆 **Skills Leaderboard** | Ranked skills by Utility Score with category badges |
-| 🔗 **Skill Graph** | **Interactive SVG force-directed graph** — nodes (skills ⚡ + genomes 🧬), edges (shared tags), hover tooltips |
+| 🏆 **Knowledge Leaderboard** | Unified skills + genomes ranked by Utility Score with type badges |
+| 🔗 **Skill Graph** | **Interactive SVG force-directed graph** — 4-color nodes, hover tooltips |
+| 🌐 **Community Hub** | Push/pull genomes, 4-tier privacy selector, semantic search |
 | 📤 **Upload Data** | Drag & drop `data.js` import + multi-user team sharing guide |
+| 🧠 **Agent Constructor** | *BETA* — Describe task → Gemini builds ZIP with matched skills |
+| 🏆 **Profile Popup** | Click level badge → achievements, stats, unlock progress |
 
 ### Multi-User Sharing Flow:
 
@@ -318,7 +326,39 @@ node cli/nve-export-dashboard.js    # generates web/data.js
 # Open web/index.html in any browser → works as file://
 ```
 
-**Tech stack:** React 19 + Vite → single HTML file via `vite-plugin-singlefile`. Recharts for charts, Lucide for icons, custom SVG force simulation for SkillGraph.
+**Tech stack:** React 19 + Vite → single HTML file via `vite-plugin-singlefile`. Recharts for charts, Lucide for icons, JSZip for agent kit packaging, custom SVG force simulation for SkillGraph.
+
+---
+
+## 🌐 Community Hub — Collective Intelligence
+
+Share verified knowledge across teams with built-in privacy controls.
+
+### 4-Tier Privacy Selector (choose before every push):
+
+| Tier | What's shared | What's hidden |
+|:-----|:-------------|:--------------|
+| 🟢 **Full** | Everything: family, invariant, repair, evidence, context | Only notes stripped |
+| 🔵 **Distilled** *(default)* | Lessons + stack/surface tags | No code, no paths, no evidence |
+| 🟡 **Anonymized** | Same as Distilled but no project names | Surface tags, reuse counts stripped |
+| 🔴 **Metadata** | Only utility score + replay status + stack tags | Family/invariant = "redacted" |
+
+**Key point:** Colleagues don't need any API keys. The server acts as intermediary.
+
+---
+
+## 🧠 Agent Constructor (Beta)
+
+Describe your task → get a ready-to-use agent kit with matched skills as a ZIP:
+
+1. **Enter your task** — "I'm building a Vite+React app deployed on Cloud Run..."
+2. **Gemini 2.5 Pro** analyzes and matches skills from your genome library
+3. **Download ZIP** — complete `.agents/` folder with SKILL.md files, MEMORY.md, config.toml
+4. **Extract into project** — your agent is instantly equipped with verified skills
+
+```
+Prompt → Gemini Analysis → Skill Matching → ZIP Generation → Download
+```
 
 ---
 
@@ -348,7 +388,7 @@ After scaffolding: node cli/nve-memory.js
 
 ## 🔒 Privacy & Cross-Project Sharing
 
-Share lessons without exposing source code. 4-tier redaction:
+Share lessons without exposing source code. 4-tier redaction with **interactive UI selector**:
 
 | Tier         | What's shared                           | Use case                                 |
 |:-------------|:----------------------------------------|:-----------------------------------------|
@@ -446,8 +486,8 @@ agent-genome-lab/
 ├── frontend/                    React + Vite source code for Dashboard
 ├── vscode-extension/            VS Code sidebar extension (6 panels, 9 commands)
 └── web/
-    ├── index.html               React Dashboard (single-file build)
-    └── data.js                  Real data (11 incidents, 5 EUs, 7 genomes)
+    ├── index.html               React Dashboard (single-file build, ~700KB)
+    └── data.js                  Example data (Anthropic skill examples)
 ```
 
 **100+ files. Zero external dependencies. MIT license.**
