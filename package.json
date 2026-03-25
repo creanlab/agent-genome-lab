@@ -1,6 +1,6 @@
 {
   "name": "agent-genome-lab",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Self-evolving memory layer for AI coding agents. Adds a SkillGraph-style reusable skill layer on top of Failure Genomes.",
   "author": "CreanLab",
   "license": "MIT",
@@ -22,7 +22,12 @@
     "nve-skill-package": "./cli/nve-skill-package.js",
     "nve-skill-search": "./cli/nve-skill-search.js",
     "nve-skill-export": "./cli/nve-skill-export.js",
-    "nve-skill-import": "./cli/nve-skill-import.js"
+    "nve-skill-import": "./cli/nve-skill-import.js",
+    "nve-handoff": "./cli/nve-handoff.js",
+    "nve-contract": "./cli/nve-contract.js",
+    "nve-auto-capture": "./cli/nve-auto-capture.js",
+    "nve-plan": "./cli/nve-plan.js",
+    "nve-analytics": "./cli/nve-analytics.js"
   },
   "files": [
     "cli/",
