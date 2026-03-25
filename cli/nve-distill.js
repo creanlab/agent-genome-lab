@@ -206,7 +206,7 @@ for (const g of newGenomes) {
   familyIndex.families[g.family].members.push(g.genome_id);
 }
 familyIndex.updated_at = new Date().toISOString();
-familyIndex.total_genomes = Object.values(familyIndex.families).reduce((a, f) => a + f.members.length, 0);
+familyIndex.total_genomes = Object.values(familyIndex.families).reduce((a, f) => a + (Array.isArray(f?.members) ? f.members.length : 0), 0);
 familyIndex.total_families = Object.keys(familyIndex.families).length;
 
 fs.writeFileSync(familyIndexFile, JSON.stringify(familyIndex, null, 2));
