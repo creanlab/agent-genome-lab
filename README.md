@@ -1,11 +1,11 @@
 # 🧬 Agent Genome Lab
 
-### The missing memory layer for AI. Capture experience → verify it → compound it across sessions, projects, and teams.
+### Plan → Build → Verify → Learn — the execution harness that remembers and improves.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js)](https://nodejs.org)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)](#)
-[![CLI Tools](https://img.shields.io/badge/CLI_Tools-19-blue.svg)](#-19-cli-tools-zero-dependencies)
+[![CLI Tools](https://img.shields.io/badge/CLI_Tools-22-blue.svg)](#-22-cli-tools-zero-dependencies)
 [![Community Hub](https://img.shields.io/badge/Community-Hub-34d399)](#-community-hub--collective-intelligence)
 [![Agent Constructor](https://img.shields.io/badge/Agent_Constructor-Beta-fbbf24)](#-agent-constructor-beta)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-007ACC?logo=visualstudiocode)](#-vs-code-extension)
@@ -162,17 +162,32 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-skill-publish <name>`             | **Export as Anthropic-compatible `SKILL.md` with real genome data** |
 | `nve-skill-publish --all --install`    | **Publish ALL promoted families + install to `.agents/skills/`** |
 
-### Full pipeline in 8 commands:
+### Harness Tools (NEW — inspired by [Anthropic Harness Design](https://www.anthropic.com/engineering/harness-design-long-running-apps))
+
+| Command                               | Description                                                     |
+|:---------------------------------------|:----------------------------------------------------------------|
+| `nve-handoff`                          | **Generate/update `HANDOFF.md`** — structured run state for multi-session work |
+| `nve-contract --task "..."`            | **Sprint contract with auto-injected Known Risks** from genomes |
+| `nve-auto-capture --title "..." `      | **Full pipeline in one command** — incident → distill → promote → memory |
+
+### Full pipeline in 11 commands:
 
 ```bash
-node cli/nve-distill.js                          # incidents → EU → FG
-node cli/nve-replay.js                           # replay gate (promote/reject)
-node cli/nve-skill-extract.js                    # genomes → candidate skills
-node cli/nve-skill-index.js                      # evaluate + dedupe + relations
-node cli/nve-skill-package.js --auto --publish   # build packages + publish
-node cli/nve-memory.js                           # regenerate MEMORY.md
-node cli/nve-audit.js                            # 5-axis + SkillGraph score
-node cli/nve-skill-publish.js my-skill           # export to Anthropic Skills
+# Plan & Contract
+node cli/nve-handoff.js --task "your task"         # create structured handoff
+node cli/nve-contract.js --task "your task"         # contract + auto-risks
+
+# Build (any agent does the work)
+
+# Verify & Learn
+node cli/nve-auto-capture.js --title "bug found"   # auto-capture → full pipeline
+node cli/nve-distill.js                            # incidents → EU → FG
+node cli/nve-replay.js --promote                   # replay gate (promote/reject)
+node cli/nve-skill-extract.js                      # genomes → candidate skills
+node cli/nve-skill-index.js                        # evaluate + dedupe + relations
+node cli/nve-skill-package.js --auto --publish      # build packages + publish
+node cli/nve-memory.js                             # regenerate MEMORY.md
+node cli/nve-audit.js                              # 5-axis + SkillGraph score
 ```
 
 ---
