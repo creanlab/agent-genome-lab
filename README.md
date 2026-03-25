@@ -5,7 +5,7 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js)](https://nodejs.org)
 [![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)](#)
-[![CLI Tools](https://img.shields.io/badge/CLI_Tools-22-blue.svg)](#-22-cli-tools-zero-dependencies)
+[![CLI Tools](https://img.shields.io/badge/CLI_Tools-24-blue.svg)](#-24-cli-tools-zero-dependencies)
 [![Community Hub](https://img.shields.io/badge/Community-Hub-34d399)](#-community-hub--collective-intelligence)
 [![Agent Constructor](https://img.shields.io/badge/Agent_Constructor-Beta-fbbf24)](#-agent-constructor-beta)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-007ACC?logo=visualstudiocode)](#-vs-code-extension)
@@ -128,7 +128,7 @@ If you want to **fully integrate** the genome system into an existing project, f
 
 ---
 
-## 🛠️ 19 CLI Tools (Zero Dependencies)
+## 🛠️ 24 CLI Tools (Zero Dependencies)
 
 All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 
@@ -162,32 +162,36 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-skill-publish <name>`             | **Export as Anthropic-compatible `SKILL.md` with real genome data** |
 | `nve-skill-publish --all --install`    | **Publish ALL promoted families + install to `.agents/skills/`** |
 
-### Harness Tools (NEW — inspired by [Anthropic Harness Design](https://www.anthropic.com/engineering/harness-design-long-running-apps))
+### Harness & Planning Tools (inspired by [Anthropic Harness Design](https://www.anthropic.com/engineering/harness-design-long-running-apps))
 
 | Command                               | Description                                                     |
 |:---------------------------------------|:----------------------------------------------------------------|
 | `nve-handoff`                          | **Generate/update `HANDOFF.md`** — structured run state for multi-session work |
 | `nve-contract --task "..."`            | **Sprint contract with auto-injected Known Risks** from genomes |
 | `nve-auto-capture --title "..." `      | **Full pipeline in one command** — incident → distill → promote → memory |
+| `nve-plan "task description"`          | **Lightweight planner** — 1-line prompt → detailed SPEC.md via Gemini (offline fallback) |
+| `nve-analytics`                        | **Run analytics** — session tracking, prevention attribution, health score |
 
-### Full pipeline in 11 commands:
+### Full pipeline in 13 commands:
 
 ```bash
 # Plan & Contract
-node cli/nve-handoff.js --task "your task"         # create structured handoff
-node cli/nve-contract.js --task "your task"         # contract + auto-risks
+node cli/nve-plan.js "Add payment integration"      # 1-liner → detailed SPEC.md
+node cli/nve-handoff.js --task "your task"           # create structured handoff
+node cli/nve-contract.js --task "your task"          # contract + auto-risks
 
 # Build (any agent does the work)
 
 # Verify & Learn
-node cli/nve-auto-capture.js --title "bug found"   # auto-capture → full pipeline
-node cli/nve-distill.js                            # incidents → EU → FG
-node cli/nve-replay.js --promote                   # replay gate (promote/reject)
-node cli/nve-skill-extract.js                      # genomes → candidate skills
-node cli/nve-skill-index.js                        # evaluate + dedupe + relations
-node cli/nve-skill-package.js --auto --publish      # build packages + publish
-node cli/nve-memory.js                             # regenerate MEMORY.md
-node cli/nve-audit.js                              # 5-axis + SkillGraph score
+node cli/nve-auto-capture.js --title "bug found"    # auto-capture → full pipeline
+node cli/nve-distill.js                             # incidents → EU → FG
+node cli/nve-replay.js --promote                    # replay gate (promote/reject)
+node cli/nve-skill-extract.js                       # genomes → candidate skills
+node cli/nve-skill-index.js                         # evaluate + dedupe + relations
+node cli/nve-skill-package.js --auto --publish       # build packages + publish
+node cli/nve-memory.js                              # regenerate MEMORY.md
+node cli/nve-audit.js                               # 5-axis + SkillGraph score
+node cli/nve-analytics.js                           # session & prevention report
 ```
 
 ---
@@ -488,17 +492,16 @@ agent-genome-lab/
 ├── README.md                    You are here
 ├── AGENTS.md                    Agent operating contract
 ├── LICENSE                      MIT
-├── package.json                 19 npm bin commands
+├── package.json                 24 npm bin commands
 ├── .agents/
-│   ├── rules/     (7 files)     Behavioral rules for agents
-│   ├── skills/    (7 skills)    Specialized agent capabilities (incl. NVE Genome Explorer)
+│   ├── rules/     (9 files)     Behavioral rules for agents
+│   ├── skills/    (23 skills)   15+ domain templates + core skills (incl. NVE Genome Explorer)
 │   └── workflows/ (12 files)    Step-by-step procedures + slash commands
-├── cli/           (19 tools)    Zero-dependency CLI tools
+├── cli/           (24 tools)    Zero-dependency CLI tools (core + SkillGraph + harness + planning)
 ├── schemas/       (9 schemas)   JSON Schema validation (incl. skill schemas)
 ├── templates/     (5 examples)  Example JSON files
-├── docs/          (12 docs)     Architecture, research, SkillGraph guides, presentations
+├── docs/                        Architecture, SkillGraph guides, terminology
 ├── prompts/       (5 prompts)   Migration + SkillGraph prompts for agents
-├── frontend/                    React + Vite source code for Dashboard
 ├── vscode-extension/            VS Code sidebar extension (6 panels, 9 commands)
 └── web/
     ├── index.html               React Dashboard (single-file build, ~700KB)
@@ -575,17 +578,12 @@ We'd love your help! Here's how:
 ## 📚 Docs & Prompts
 
 **Documentation:**
-- [Architecture Deep Dive](docs/UNIVERSAL_ARCHITECTURE.md)
-- [Research Foundations](docs/RESEARCH_FOUNDATIONS.md)
-- [Failure Genome Hypothesis](docs/FAILURE_GENOME_HYPOTHESIS_V1.md)
-- [Experiment Plan](docs/FAILURE_GENOME_EXPERIMENT_PLAN_V1.md)
-- [Migration Playbook](docs/SAFE_MIGRATION_PLAYBOOK.md)
-- [User Flow: Audit & Share](docs/USER_FLOW_AUDIT_AND_SHARE.md)
+- [Architecture Overview](docs/UNIVERSAL_ARCHITECTURE.md)
+- [Terminology Glossary](docs/TERMINOLOGY_GLOSSARY.md)
 - [SkillGraph Architecture](docs/SKILLGRAPH_UPGRADE_ARCHITECTURE.md)
 - [SkillGraph Operating Guide](docs/SKILLGRAPH_OPERATING_GUIDE.md)
 - [SkillNet Gap Map](docs/SKILLNET_GAP_MAP.md)
-- [SkillGraph Upgrade Plan](docs/SKILLNET_UPGRADE_PLAN.md)
-- [Terminology Glossary](docs/TERMINOLOGY_GLOSSARY.md)
+- [Migration Playbook](docs/SAFE_MIGRATION_PLAYBOOK.md)
 
 **Agent Prompts (use in order):**
 1. [Preflight](prompts/01-PREFLIGHT.md) — inspect repo, create migration plan
