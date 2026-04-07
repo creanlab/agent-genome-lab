@@ -114,57 +114,19 @@ If you want to **fully integrate** the genome system into an existing project, f
 
 ### Experience Pipeline
 
-```mermaid
-graph LR
-    INC["Incidents<br/><small>Raw records</small>"]
-    EU["Experience Units<br/><small>Distilled lessons</small>"]
-    FG["Failure Genomes<br/><small>Verified DNA</small>"]
-    SK["Skills<br/><small>Reusable actions</small>"]
-    MEM["MEMORY.md<br/><small>Compact memory</small>"]
-
-    INC -->|distill| EU -->|verify| FG -->|extract| SK -->|compile| MEM
-
-    style INC fill:#ef4444,color:#fff
-    style EU fill:#f59e0b,color:#000
-    style FG fill:#22c55e,color:#000
-    style SK fill:#6366f1,color:#fff
-    style MEM fill:#fff,color:#000
-```
+<p align="center">
+  <img src="docs/images/pipeline.svg" alt="Experience Pipeline" width="800">
+</p>
 
 ```
-scaffold → distill → replay → extract → index → package → memory → audit
+scaffold → distill → replay → extract → index → package → palace → compress → memory → audit
 ```
 
 ### Memory Architecture
 
-```mermaid
-graph TB
-    subgraph Palace["Memory Palace"]
-        KG["Knowledge Graph<br/><small>Temporal triples</small>"]
-        DR["Drawers<br/><small>Verbatim chunks</small>"]
-        ED["Entity Detection<br/><small>2-pass enrichment</small>"]
-        DI["Agent Diary<br/><small>Session journal</small>"]
-    end
-
-    subgraph Core["Core Pipeline"]
-        INC["Incidents"] --> EU["Experience Units"]
-        EU --> FG["Failure Genomes"]
-        FG --> SK["SkillGraph"]
-    end
-
-    subgraph Compression["AAAK Compression"]
-        AA["Symbolic lossless<br/>compression layer"]
-    end
-
-    Core --> Palace
-    Palace --> Compression
-    Compression --> MEM["MEMORY.md"]
-    MEM --> AGENT["Your AI Agent"]
-
-    style Palace fill:#1e1b4b,color:#e0e7ff
-    style Core fill:#1a2e05,color:#d9f99d
-    style Compression fill:#431407,color:#fed7aa
-```
+<p align="center">
+  <img src="docs/images/architecture.svg" alt="Agent Genome Lab Architecture" width="750">
+</p>
 
 **Key concepts:**
 

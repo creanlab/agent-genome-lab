@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 140" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+    </filter>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#dc2626"/></linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#d97706"/></linearGradient>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#22c55e"/><stop offset="100%" stop-color="#16a34a"/></linearGradient>
+    <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#4f46e5"/></linearGradient>
+    <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+    <linearGradient id="g6" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#0284c7"/></linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="140" rx="12" fill="#0f172a"/>
+
+  <!-- Step 1: Incidents -->
+  <rect x="20" y="25" width="120" height="90" rx="10" fill="url(#g1)" filter="url(#shadow)"/>
+  <text x="80" y="60" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Incidents</text>
+  <text x="80" y="80" text-anchor="middle" fill="#fecaca" font-size="11">Raw records</text>
+  <text x="80" y="95" text-anchor="middle" fill="#fecaca" font-size="10">INC-000001</text>
+
+  <!-- Arrow 1 -->
+  <path d="M145 70 L165 70" stroke="#475569" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="155" y="62" text-anchor="middle" fill="#64748b" font-size="9">distill</text>
+
+  <!-- Step 2: Experience Units -->
+  <rect x="170" y="25" width="120" height="90" rx="10" fill="url(#g2)" filter="url(#shadow)"/>
+  <text x="230" y="55" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Experience</text>
+  <text x="230" y="72" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Units</text>
+  <text x="230" y="92" text-anchor="middle" fill="#fef3c7" font-size="11">Distilled lessons</text>
+
+  <!-- Arrow 2 -->
+  <path d="M295 70 L315 70" stroke="#475569" stroke-width="2"/>
+  <text x="305" y="62" text-anchor="middle" fill="#64748b" font-size="9">verify</text>
+
+  <!-- Step 3: Failure Genomes -->
+  <rect x="320" y="25" width="120" height="90" rx="10" fill="url(#g3)" filter="url(#shadow)"/>
+  <text x="380" y="55" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Failure</text>
+  <text x="380" y="72" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Genomes</text>
+  <text x="380" y="92" text-anchor="middle" fill="#dcfce7" font-size="11">Verified DNA</text>
+
+  <!-- Arrow 3 -->
+  <path d="M445 70 L465 70" stroke="#475569" stroke-width="2"/>
+  <text x="455" y="62" text-anchor="middle" fill="#64748b" font-size="9">extract</text>
+
+  <!-- Step 4: Skills -->
+  <rect x="470" y="25" width="120" height="90" rx="10" fill="url(#g4)" filter="url(#shadow)"/>
+  <text x="530" y="60" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">SkillGraph</text>
+  <text x="530" y="80" text-anchor="middle" fill="#e0e7ff" font-size="11">Reusable skills</text>
+  <text x="530" y="95" text-anchor="middle" fill="#e0e7ff" font-size="10">SK-000001</text>
+
+  <!-- Arrow 4 -->
+  <path d="M595 70 L615 70" stroke="#475569" stroke-width="2"/>
+  <text x="605" y="62" text-anchor="middle" fill="#64748b" font-size="9">palace</text>
+
+  <!-- Step 5: Memory Palace -->
+  <rect x="620" y="25" width="120" height="90" rx="10" fill="url(#g5)" filter="url(#shadow)"/>
+  <text x="680" y="55" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Memory</text>
+  <text x="680" y="72" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Palace</text>
+  <text x="680" y="92" text-anchor="middle" fill="#ede9fe" font-size="11">Navigate + compress</text>
+
+  <!-- Arrow 5 -->
+  <path d="M745 70 L765 70" stroke="#475569" stroke-width="2"/>
+  <text x="755" y="62" text-anchor="middle" fill="#64748b" font-size="9">compile</text>
+
+  <!-- Step 6: MEMORY.md -->
+  <rect x="770" y="25" width="110" height="90" rx="10" fill="url(#g6)" filter="url(#shadow)"/>
+  <text x="825" y="55" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">MEMORY.md</text>
+  <text x="825" y="75" text-anchor="middle" fill="#e0f2fe" font-size="11">Compact memory</text>
+  <text x="825" y="92" text-anchor="middle" fill="#e0f2fe" font-size="10">~35 lines</text>
+
+  <!-- Arrowhead marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+    </marker>
+  </defs>
+</svg>
