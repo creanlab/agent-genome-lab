@@ -150,6 +150,23 @@ Target: ${ROOT}
     console.log('  ⚠️ Audit skipped (run manually: node cli/nve-audit.js)');
   }
 
+  // C.14: Run doctor at end of init
+  console.log('\n🩺 Running health check...');
+  try {
+    const doctorPath = path.join(PACK_ROOT, 'cli', 'nve-doctor.js');
+    if (fs.existsSync(doctorPath)) {
+      const { execSync } = require('child_process');
+      const result = execSync(`node "${doctorPath}" --quiet`, { cwd: ROOT, timeout: 15000 }).toString().trim();
+      if (result === 'OK') {
+        console.log('  ✅ Doctor: all checks passed');
+      } else {
+        console.log(`  ⚠️ Doctor: ${result}`);
+      }
+    }
+  } catch (e) {
+    console.log('  ⚠️ Doctor check skipped (run manually: nve-doctor)');
+  }
+
   console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ NVE Failure Genome Pack installed!
@@ -159,12 +176,12 @@ Target: ${ROOT}
 
   Next steps:
     1. Start coding — incidents are captured automatically
-    2. Run: node cli/nve-distill.js    — auto-create genomes
-    3. Run: node cli/nve-replay.js     — replay gate check
-    4. Run: node cli/nve-pack.js ${defaultTier}  — export for sharing
-    5. Run: node cli/nve-audit.js      — check 5-axis score
+    2. Run: nve-distill    — auto-create genomes
+    3. Run: nve-replay     — replay gate check
+    4. Run: nve-doctor     — full health check
+    5. Run: nve-self-check — structural validation
 
-  📖 Docs: docs/UNIVERSAL_ARCHITECTURE.md
+  📖 Docs: docs/OPERATOR_GUIDE.md
 `);
 }
 

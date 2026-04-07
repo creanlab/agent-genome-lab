@@ -1,7 +1,7 @@
 {
   "name": "agent-genome-lab",
-  "version": "2.4.0",
-  "description": "Self-evolving memory layer for AI coding agents. Adds a SkillGraph-style reusable skill layer on top of Failure Genomes.",
+  "version": "3.1.0",
+  "description": "Genome Graph Agent OS — dual-loop self-evolving memory layer with runtime shell, event bus, memory hierarchy, subagent registry, and verified learning pipeline for AI coding agents.",
   "author": "CreanLab",
   "license": "MIT",
   "bin": {
@@ -27,7 +27,29 @@
     "nve-contract": "./cli/nve-contract.js",
     "nve-auto-capture": "./cli/nve-auto-capture.js",
     "nve-plan": "./cli/nve-plan.js",
-    "nve-analytics": "./cli/nve-analytics.js"
+    "nve-analytics": "./cli/nve-analytics.js",
+    "nve-provider": "./cli/nve-provider.js",
+    "nve-doctor": "./cli/nve-doctor.js",
+    "nve-profile": "./cli/nve-profile.js",
+    "nve-hooks": "./cli/nve-hooks.js",
+    "nve-memory-tree": "./cli/nve-memory-tree.js",
+    "nve-subagent": "./cli/nve-subagent.js",
+    "nve-bridge": "./cli/nve-bridge.js",
+    "nve-worktree": "./cli/nve-worktree.js",
+    "nve-compact": "./cli/nve-compact.js",
+    "nve-serve": "./cli/nve-serve.js",
+    "nve-self-check": "./cli/nve-self-check.js",
+    "nve-report": "./cli/nve-report.js",
+    "nve-skill-enrich": "./cli/nve-skill-enrich.js",
+    "nve-search": "./cli/nve-search.js",
+    "nve-aaak": "./cli/nve-aaak.js",
+    "nve-mcp": "./cli/nve-mcp.js",
+    "nve-knowledge-graph": "./cli/nve-knowledge-graph.js",
+    "nve-palace": "./cli/nve-palace.js",
+    "nve-benchmark": "./cli/nve-benchmark.js",
+    "nve-drawers": "./cli/nve-drawers.js",
+    "nve-entity-detect": "./cli/nve-entity-detect.js",
+    "nve-diary": "./cli/nve-diary.js"
   },
   "files": [
     "cli/",
@@ -59,7 +81,15 @@
     "gamified-dashboard",
     "deterministic-testing",
     "skillgraph",
-    "skill-registry"
+    "skill-registry",
+    "event-bus",
+    "policy-hooks",
+    "memory-hierarchy",
+    "subagent-registry",
+    "provider-abstraction",
+    "runtime-doctor",
+    "context-compaction",
+    "worktree-isolation"
   ],
   "repository": {
     "type": "git",

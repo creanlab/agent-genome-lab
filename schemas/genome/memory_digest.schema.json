@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creanlab.com/schemas/genome/memory_digest.schema.json",
+  "title": "MemoryDigest",
+  "description": "Compact verified context block (~35 lines) prepended to agent system prompt at session start. Compiled from the cold verified genome tier. The structured form of MEMORY.md.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "digest_id",
+    "project_id",
+    "compiled_at",
+    "memory_layers",
+    "sections"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "digest_id": {
+      "type": "string",
+      "pattern": "^md-[a-zA-Z0-9_-]+$"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "compiled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "profile": {
+      "type": ["string", "null"],
+      "enum": ["competition-safe", "local-fast", "local-code", "research-web", "offline-eval", null],
+      "default": null,
+      "description": "Provider profile active when this digest was compiled"
+    },
+    "memory_layers": {
+      "type": "object",
+      "description": "Source counts by memory layer",
+      "required": ["cold_genomes", "promoted_skills", "anti_patterns"],
+      "properties": {
+        "cold_genomes": { "type": "integer", "minimum": 0 },
+        "promoted_skills": { "type": "integer", "minimum": 0 },
+        "anti_patterns": { "type": "integer", "minimum": 0 },
+        "warm_episodes_sampled": { "type": "integer", "minimum": 0, "default": 0 }
+      },
+      "additionalProperties": false
+    },
+    "sections": {
+      "type": "object",
+      "description": "The actual content blocks that form the digest",
+      "required": ["project_context", "top_lessons", "anti_patterns"],
+      "properties": {
+        "project_context": {
+          "type": "string",
+          "description": "1-3 sentence project description and active goals (from root MEMORY.md or project config)"
+        },
+        "top_lessons": {
+          "type": "array",
+          "maxItems": 8,
+          "description": "Top verified lessons ranked by utility score, formatted as actionable rules",
+          "items": {
+            "type": "object",
+            "required": ["lesson_key", "rule", "family"],
+            "properties": {
+              "lesson_key": { "type": "string", "description": "Stable key, e.g. FG-001234" },
+              "rule": { "type": "string", "description": "One-line actionable rule: 'Always X when Y'" },
+              "family": { "type": "string" },
+              "utility_score": { "type": "number", "minimum": 0, "maximum": 1 },
+              "reuse_count": { "type": "integer", "minimum": 0, "default": 0 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "anti_patterns": {
+          "type": "array",
+          "maxItems": 6,
+          "description": "Anti-patterns to suppress — things the agent must NOT do in this project",
+          "items": {
+            "type": "object",
+            "required": ["pattern_key", "description"],
+            "properties": {
+              "pattern_key": { "type": "string" },
+              "description": { "type": "string" },
+              "source_genome_id": { "type": ["string", "null"], "default": null }
+            },
+            "additionalProperties": false
+          }
+        },
+        "skill_recommendations": {
+          "type": "array",
+          "maxItems": 5,
+          "description": "Top promoted skills available for this session",
+          "items": {
+            "type": "object",
+            "required": ["skill_id", "name", "trigger_hint"],
+            "properties": {
+              "skill_id": { "type": "string" },
+              "name": { "type": "string" },
+              "trigger_hint": { "type": "string", "description": "When to apply this skill" }
+            },
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "open_threads": {
+          "type": "array",
+          "maxItems": 3,
+          "description": "Unresolved items from previous sessions that require follow-up",
+          "items": {
+            "type": "object",
+            "required": ["thread_id", "summary"],
+            "properties": {
+              "thread_id": { "type": "string" },
+              "summary": { "type": "string" },
+              "created_at": { "type": "string", "format": "date-time" }
+            },
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "rendered_markdown": {
+      "type": ["string", "null"],
+      "description": "Pre-rendered MEMORY.md content (~35 lines). If present, used directly as system context injection.",
+      "default": null
+    },
+    "precedence_notes": {
+      "type": "array",
+      "description": "Conflict resolution notes when multiple memory layers had contradicting rules",
+      "items": {
+        "type": "object",
+        "required": ["conflict_key", "resolution"],
+        "properties": {
+          "conflict_key": { "type": "string" },
+          "resolution": { "type": "string" },
+          "sources": { "type": "array", "items": { "type": "string" }, "default": [] }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "ttl_seconds": {
+      "type": "integer",
+      "minimum": 60,
+      "default": 3600,
+      "description": "How long this digest is valid before recompilation is recommended"
+    }
+  },
+  "additionalProperties": false
+}

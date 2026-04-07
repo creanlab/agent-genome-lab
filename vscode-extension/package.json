@@ -1,8 +1,8 @@
 {
   "name": "nve-genome-explorer",
   "displayName": "NVE Genome Explorer",
-  "description": "Sidebar: Failure Genome, SkillGraph, 5-axis audit, replay gate, skill search",
-  "version": "0.2.0",
+  "description": "Sidebar: Failure Genome, SkillGraph, 5-axis audit, replay gate, skill search, nve-serve bridge",
+  "version": "0.3.0",
   "publisher": "creanlab",
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Other"],
@@ -25,7 +25,9 @@
         { "id": "nveReplayGate", "name": "Replay Gate" },
         { "id": "nveSkillRegistry", "name": "Skill Registry" },
         { "id": "nveSkillPackages", "name": "Skill Packages" },
-        { "id": "nveQuickActions", "name": "Quick Actions" }
+        { "id": "nveQuickActions", "name": "Quick Actions" },
+        { "id": "nveBridgeStatus", "name": "Bridge Status" },
+        { "id": "nveMemoryTree", "name": "Memory Layers" }
       ]
     },
     "commands": [
@@ -37,7 +39,12 @@
       { "command": "nve.runSkillIndex", "title": "NVE: Index Skills" },
       { "command": "nve.runSkillPackage", "title": "NVE: Package Skills" },
       { "command": "nve.runSkillSearch", "title": "NVE: Search Skills" },
-      { "command": "nve.refreshAll", "title": "NVE: Refresh All" }
+      { "command": "nve.refreshAll", "title": "NVE: Refresh All" },
+      { "command": "nve.startServer", "title": "NVE: Start Server (nve-serve)" },
+      { "command": "nve.bridgeStatus", "title": "NVE: Show Bridge Status" },
+      { "command": "nve.runDoctor", "title": "NVE: Run Doctor" },
+      { "command": "nve.runSelfCheck", "title": "NVE: Run Self-Check" },
+      { "command": "nve.runReport", "title": "NVE: Generate Report" }
     ]
   }
 }

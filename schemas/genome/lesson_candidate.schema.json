@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creanlab.com/schemas/genome/lesson_candidate.schema.json",
+  "title": "LessonCandidate",
+  "description": "An unverified learning extracted from a completed task (success or failure). Sits between warm episodic memory and cold verified genome. Must pass the replay gate to be promoted to a FailureGenome or SuccessGenome.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "task_id",
+    "extracted_at",
+    "lesson_type",
+    "raw_observation",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^lc-[a-zA-Z0-9_-]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "QueryTask.task_id or RankedDecision.decision_id that generated this lesson"
+    },
+    "decision_id": {
+      "type": ["string", "null"],
+      "description": "RankedDecision.decision_id if this came from a ranked execution",
+      "default": null
+    },
+    "extracted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lesson_type": {
+      "type": "string",
+      "enum": ["failure", "success", "strategy", "anti_pattern", "edge_case"],
+      "description": "failure=something went wrong; success=approach worked well; strategy=general tactic; anti_pattern=pattern to avoid; edge_case=unusual but valid situation"
+    },
+    "raw_observation": {
+      "type": "string",
+      "description": "Unprocessed observation: what happened, what the model did, what the outcome was"
+    },
+    "distilled": {
+      "type": ["object", "null"],
+      "description": "Structured distillation (populated after nve-distill runs)",
+      "properties": {
+        "family_hint": {
+          "type": "string",
+          "description": "Suggested failure/skill family"
+        },
+        "violated_invariant": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "For failures: what invariant was broken"
+        },
+        "repair_operator": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "For failures: how to fix it next time"
+        },
+        "success_pattern": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "For successes/strategies: the generalized pattern that worked"
+        },
+        "context_fingerprint": {
+          "type": "object",
+          "properties": {
+            "stack_tags": { "type": "array", "items": { "type": "string" }, "default": [] },
+            "surface_tags": { "type": "array", "items": { "type": "string" }, "default": [] },
+            "environment_tags": { "type": "array", "items": { "type": "string" }, "default": [] }
+          },
+          "additionalProperties": false
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Distillation confidence (0=low, 1=high)"
+        }
+      },
+      "additionalProperties": false,
+      "default": null
+    },
+    "replay_gate_result": {
+      "type": ["object", "null"],
+      "description": "Result from replay gate Γ(g) evaluation",
+      "properties": {
+        "p_replay": { "type": "number", "minimum": 0, "maximum": 1 },
+        "p_transfer": { "type": "number", "minimum": 0, "maximum": 1 },
+        "q_verifier": { "type": "number", "minimum": 0, "maximum": 1 },
+        "h_risk": { "type": "number", "minimum": 0, "maximum": 1 },
+        "l_leak": { "type": "number", "minimum": 0, "maximum": 1 },
+        "gamma_score": {
+          "type": "number",
+          "description": "Γ(g) composite score"
+        },
+        "passed": {
+          "type": "boolean",
+          "description": "true if p_replay >= θ_r AND Γ(g) >= θ_Γ"
+        },
+        "evaluated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "default": null
+    },
+    "promotion_status": {
+      "type": "string",
+      "enum": ["pending_distill", "pending_replay", "promoted", "rejected", "deferred"],
+      "default": "pending_distill"
+    },
+    "promoted_genome_id": {
+      "type": ["string", "null"],
+      "description": "FailureGenome.genome_id or SuccessGenome ID if promoted",
+      "default": null
+    },
+    "adversarial_review": {
+      "type": ["object", "null"],
+      "description": "Critic agent review before promotion (adversarial check)",
+      "properties": {
+        "reviewer": { "type": "string" },
+        "verdict": {
+          "type": "string",
+          "enum": ["approve", "reject", "revise"]
+        },
+        "critique": { "type": "string" },
+        "reviewed_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false,
+      "default": null
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["sharing_tier", "contains_secrets"],
+      "properties": {
+        "sharing_tier": {
+          "type": "string",
+          "enum": ["private", "manifest", "distilled", "research"]
+        },
+        "contains_secrets": { "type": "boolean" },
+        "redaction_notes": { "type": ["string", "null"], "default": null }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "string",
+      "enum": ["runtime_auto", "runtime_manual", "user_reported", "replay_failure", "adversarial_probe"],
+      "default": "runtime_auto",
+      "description": "How this lesson candidate was generated"
+    }
+  },
+  "additionalProperties": false
+}

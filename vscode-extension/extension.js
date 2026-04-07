@@ -1,6 +1,23 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+
+// ==================== HTTP HELPER ====================
+function httpGetJson(url) {
+    return new Promise((resolve, reject) => {
+        const req = http.get(url, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+                try { resolve(JSON.parse(data)); }
+                catch (e) { reject(new Error('Invalid JSON from ' + url)); }
+            });
+        });
+        req.on('error', (e) => reject(e));
+        req.setTimeout(5000, () => { req.destroy(); reject(new Error('Timeout')); });
+    });
+}
 
 function activate(context) {
     const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
@@ -35,6 +52,14 @@ function activate(context) {
     const actionsProvider = new QuickActionsProvider();
     vscode.window.registerTreeDataProvider('nveQuickActions', actionsProvider);
 
+    // 7. Bridge Status
+    const bridgeProvider = new BridgeStatusProvider();
+    vscode.window.registerTreeDataProvider('nveBridgeStatus', bridgeProvider);
+
+    // 8. Memory Layers
+    const memoryProvider = new MemoryTreeProvider();
+    vscode.window.registerTreeDataProvider('nveMemoryTree', memoryProvider);
+
     // ==================== COMMANDS ====================
     function runCLI(script) {
         const terminal = vscode.window.createTerminal('NVE');
@@ -51,6 +76,8 @@ function activate(context) {
         replayProvider.refresh();
         skillProvider.refresh();
         packageProvider.refresh();
+        bridgeProvider.refresh();
+        memoryProvider.refresh();
     }
 
     // Skill search with input box
@@ -74,7 +101,32 @@ function activate(context) {
         vscode.commands.registerCommand('nve.runSkillIndex', () => runCLI('nve-skill-index.js')),
         vscode.commands.registerCommand('nve.runSkillPackage', () => runCLI('nve-skill-package.js --auto --publish')),
         vscode.commands.registerCommand('nve.runSkillSearch', () => runSkillSearch()),
-        vscode.commands.registerCommand('nve.refreshAll', () => refreshAll())
+        vscode.commands.registerCommand('nve.refreshAll', () => refreshAll()),
+
+        // Bridge commands
+        vscode.commands.registerCommand('nve.startServer', () => {
+            const terminal = vscode.window.createTerminal('NVE Server');
+            terminal.show();
+            terminal.sendText('node cli/nve-serve.js');
+        }),
+        vscode.commands.registerCommand('nve.bridgeStatus', async () => {
+            const outputChannel = vscode.window.createOutputChannel('NVE Bridge Status');
+            outputChannel.show();
+            try {
+                const status = await httpGetJson('http://localhost:8099/status');
+                outputChannel.appendLine('=== NVE Bridge Status ===');
+                outputChannel.appendLine(`Project:  ${status.project || 'unknown'}`);
+                outputChannel.appendLine(`Profile:  ${status.profile || 'unknown'}`);
+                outputChannel.appendLine(`Provider: ${status.provider || 'unknown'}`);
+                outputChannel.appendLine(`Model:    ${status.model || 'unknown'}`);
+                outputChannel.appendLine(JSON.stringify(status, null, 2));
+            } catch (e) {
+                outputChannel.appendLine('Server not running or unreachable: ' + e.message);
+            }
+        }),
+        vscode.commands.registerCommand('nve.runDoctor', () => runCLI('nve-doctor.js')),
+        vscode.commands.registerCommand('nve.runSelfCheck', () => runCLI('nve-self-check.js smoke')),
+        vscode.commands.registerCommand('nve.runReport', () => runCLI('nve-report.js generate'))
     );
 
     // Auto-refresh on file changes
@@ -83,6 +135,74 @@ function activate(context) {
     watcher.onDidCreate(() => refreshAll());
     watcher.onDidDelete(() => refreshAll());
     context.subscriptions.push(watcher);
+
+    // ==================== SSE SUBSCRIPTION ====================
+    const sseOutputChannel = vscode.window.createOutputChannel('NVE Events');
+    let sseReq = null;
+
+    function connectSSE() {
+        if (sseReq) { try { sseReq.destroy(); } catch {} }
+        sseReq = http.get('http://localhost:8099/sse', (res) => {
+            if (res.statusCode !== 200) return;
+            sseOutputChannel.appendLine('[SSE] Connected to nve-serve');
+            let buffer = '';
+            res.on('data', (chunk) => {
+                buffer += chunk.toString();
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                        const payload = line.slice(5).trim();
+                        sseOutputChannel.appendLine('[SSE] ' + payload);
+                        try {
+                            const evt = JSON.parse(payload);
+                            if (['audit', 'genome', 'skill', 'replay', 'status', 'memory'].includes(evt.type)) {
+                                refreshAll();
+                            }
+                        } catch {}
+                    }
+                }
+            });
+            res.on('end', () => {
+                sseOutputChannel.appendLine('[SSE] Connection closed, reconnecting in 10s...');
+                setTimeout(connectSSE, 10000);
+            });
+        });
+        sseReq.on('error', () => { setTimeout(connectSSE, 30000); });
+        sseReq.setTimeout(0);
+    }
+
+    const sseTimer = setTimeout(connectSSE, 5000);
+    context.subscriptions.push({ dispose: () => {
+        clearTimeout(sseTimer);
+        if (sseReq) { try { sseReq.destroy(); } catch {} }
+    }});
+
+    // ==================== STATUS BAR ====================
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
+    statusBarItem.command = 'nve.bridgeStatus';
+    statusBarItem.text = '$(beaker) NVE: ...';
+    statusBarItem.tooltip = 'Click to show NVE bridge status';
+    statusBarItem.show();
+    context.subscriptions.push(statusBarItem);
+
+    async function updateStatusBar() {
+        try {
+            const status = await httpGetJson('http://localhost:8099/status');
+            const profile = status.profile || 'default';
+            const health = status.health || 'ok';
+            const icon = health === 'ok' ? '$(check)' : '$(warning)';
+            statusBarItem.text = `$(beaker) NVE: ${profile} ${icon}`;
+            statusBarItem.tooltip = `Profile: ${profile} | Provider: ${status.provider || '?'} | Model: ${status.model || '?'}`;
+        } catch {
+            statusBarItem.text = '$(beaker) NVE: offline';
+            statusBarItem.tooltip = 'nve-serve not running';
+        }
+    }
+
+    updateStatusBar();
+    const statusInterval = setInterval(updateStatusBar, 30000);
+    context.subscriptions.push({ dispose: () => clearInterval(statusInterval) });
 }
 
 // ==================== HELPERS ====================
@@ -387,6 +507,12 @@ class QuickActionsProvider {
             { label: '📊 Index Skills', cmd: 'nve.runSkillIndex' },
             { label: '📦 Package Skills', cmd: 'nve.runSkillPackage' },
             { label: '🔍 Search Skills', cmd: 'nve.runSkillSearch' },
+            { label: '─── Bridge ───', cmd: null },
+            { label: '🌐 Start Server', cmd: 'nve.startServer' },
+            { label: '📡 Bridge Status', cmd: 'nve.bridgeStatus' },
+            { label: '🩺 Run Doctor', cmd: 'nve.runDoctor' },
+            { label: '✔️ Self-Check', cmd: 'nve.runSelfCheck' },
+            { label: '📋 Generate Report', cmd: 'nve.runReport' },
             { label: '─────────────────', cmd: null },
             { label: '🔃 Refresh All', cmd: 'nve.refreshAll' },
         ];
@@ -397,6 +523,87 @@ class QuickActionsProvider {
             }
             return item;
         });
+    }
+}
+
+// ==================== BRIDGE STATUS TREE ====================
+class BridgeStatusProvider {
+    constructor() { this._onDidChange = new vscode.EventEmitter(); this.onDidChangeTreeData = this._onDidChange.event; }
+    refresh() { this._onDidChange.fire(); }
+
+    getTreeItem(el) { return el; }
+    async getChildren() {
+        try {
+            const status = await httpGetJson('http://localhost:8099/status');
+            const items = [];
+            const header = new vscode.TreeItem('nve-serve connected');
+            header.iconPath = new vscode.ThemeIcon('pass');
+            items.push(header);
+
+            for (const [label, value, icon] of [
+                ['Project', status.project, 'folder'],
+                ['Profile', status.profile, 'account'],
+                ['Provider', status.provider, 'cloud'],
+                ['Model', status.model, 'symbol-misc'],
+            ]) {
+                const item = new vscode.TreeItem(`${label}: ${value || 'unknown'}`);
+                item.iconPath = new vscode.ThemeIcon(icon);
+                items.push(item);
+            }
+            return items;
+        } catch {
+            const item = new vscode.TreeItem('Server not running');
+            item.iconPath = new vscode.ThemeIcon('error');
+            item.description = 'Start with: NVE: Start Server';
+            return [item];
+        }
+    }
+}
+
+// ==================== MEMORY TREE ====================
+class MemoryTreeProvider {
+    constructor() { this._onDidChange = new vscode.EventEmitter(); this.onDidChangeTreeData = this._onDidChange.event; }
+    refresh() { this._onDidChange.fire(); }
+
+    getTreeItem(el) { return el; }
+    async getChildren(element) {
+        if (element && element._rules) {
+            return element._rules.map(rule => {
+                const text = typeof rule === 'string' ? rule : (rule.content || rule.rule || JSON.stringify(rule));
+                const item = new vscode.TreeItem(text);
+                item.iconPath = new vscode.ThemeIcon('symbol-string');
+                return item;
+            });
+        }
+
+        try {
+            const data = await httpGetJson('http://localhost:8099/memory');
+            const layers = data.layers || data;
+            const items = [];
+
+            const entries = Array.isArray(layers) ? layers.map(l => [l.name || l.layer || 'unnamed', l]) : Object.entries(layers);
+            const header = new vscode.TreeItem(`${entries.length} memory layers`);
+            header.iconPath = new vscode.ThemeIcon('database');
+            items.push(header);
+
+            for (const [name, layer] of entries) {
+                const rules = Array.isArray(layer) ? layer : (layer.rules || []);
+                const item = new vscode.TreeItem(
+                    `${name} (${rules.length} rules)`,
+                    rules.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
+                );
+                item.iconPath = new vscode.ThemeIcon('layers');
+                item.description = layer.source || '';
+                item._rules = rules;
+                items.push(item);
+            }
+            return items;
+        } catch {
+            const item = new vscode.TreeItem('Server not running');
+            item.iconPath = new vscode.ThemeIcon('error');
+            item.description = 'Start with: NVE: Start Server';
+            return [item];
+        }
     }
 }
 
