@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creanlab.com/schemas/genome/replay_result.schema.json",
+  "title": "ReplayResult",
+  "description": "The outcome of running the replay gate Γ(g) on a LessonCandidate or FailureGenome. Records the full gate evaluation including all five components and the promotion decision.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "result_id",
+    "candidate_id",
+    "evaluated_at",
+    "gate_inputs",
+    "gate_score",
+    "thresholds",
+    "passed",
+    "decision"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "result_id": {
+      "type": "string",
+      "pattern": "^rr-[a-zA-Z0-9_-]+$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "description": "LessonCandidate.candidate_id or FailureGenome.genome_id being evaluated"
+    },
+    "candidate_type": {
+      "type": "string",
+      "enum": ["lesson_candidate", "failure_genome", "success_genome"],
+      "default": "lesson_candidate"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evaluator": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["automated", "llm_judge", "human", "hybrid"],
+          "default": "automated"
+        },
+        "model_id": { "type": ["string", "null"], "default": null },
+        "evaluator_ref": { "type": ["string", "null"], "default": null }
+      },
+      "additionalProperties": false
+    },
+    "gate_inputs": {
+      "type": "object",
+      "description": "The five weighted inputs to Γ(g) = w_r·p̂_replay + w_t·p̂_transfer + w_v·q̂_verifier − w_h·ĥ_risk − w_l·l̂_leak",
+      "required": ["p_replay", "p_transfer", "q_verifier", "h_risk", "l_leak"],
+      "properties": {
+        "p_replay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "p̂_replay — estimated replay success rate on family sample"
+        },
+        "p_transfer": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "p̂_transfer — estimated transferability to other contexts"
+        },
+        "q_verifier": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "q̂_verifier — verifier quality/reliability score"
+        },
+        "h_risk": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "ĥ_risk — hallucination or harm risk (penalty term)"
+        },
+        "l_leak": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "l̂_leak — privacy leakage risk (penalty term)"
+        },
+        "evidence": {
+          "type": "object",
+          "description": "Raw evidence used to estimate each input",
+          "properties": {
+            "family_sample_size": { "type": "integer", "minimum": 0, "default": 0 },
+            "replay_pass_count": { "type": "integer", "minimum": 0, "default": 0 },
+            "replay_fail_count": { "type": "integer", "minimum": 0, "default": 0 },
+            "holdout_pass_count": { "type": "integer", "minimum": 0, "default": 0 },
+            "verifier_type": { "type": "string", "default": "unknown" },
+            "privacy_tier": {
+              "type": "string",
+              "enum": ["private", "manifest", "distilled", "research"],
+              "default": "private"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "weights": {
+      "type": "object",
+      "description": "w_r, w_t, w_v, w_h, w_l — configurable per-project or per-profile",
+      "properties": {
+        "w_replay": { "type": "number", "minimum": 0, "default": 0.35 },
+        "w_transfer": { "type": "number", "minimum": 0, "default": 0.20 },
+        "w_verifier": { "type": "number", "minimum": 0, "default": 0.25 },
+        "w_risk": { "type": "number", "minimum": 0, "default": 0.10 },
+        "w_leak": { "type": "number", "minimum": 0, "default": 0.10 }
+      },
+      "additionalProperties": false
+    },
+    "gate_score": {
+      "type": "number",
+      "description": "Γ(g) — final composite score"
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["theta_replay", "theta_gamma"],
+      "properties": {
+        "theta_replay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "θ_r — minimum p_replay required for promotion"
+        },
+        "theta_gamma": {
+          "type": "number",
+          "description": "θ_Γ — minimum Γ(g) required for promotion"
+        }
+      },
+      "additionalProperties": false
+    },
+    "passed": {
+      "type": "boolean",
+      "description": "true iff p_replay >= θ_r AND Γ(g) >= θ_Γ"
+    },
+    "failure_reason": {
+      "type": ["string", "null"],
+      "description": "If passed=false: which condition failed and why",
+      "default": null
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["promote", "reject", "defer", "revise_and_retry"],
+      "description": "Resulting action: promote=add to cold verified tier; defer=wait for more evidence; revise_and_retry=send back to distillation"
+    },
+    "promoted_artifact": {
+      "type": ["object", "null"],
+      "description": "Reference to the artifact created upon promotion",
+      "properties": {
+        "artifact_type": {
+          "type": "string",
+          "enum": ["failure_genome", "success_genome", "skill", "memory_entry"]
+        },
+        "artifact_id": { "type": "string" },
+        "artifact_path": { "type": ["string", "null"], "default": null }
+      },
+      "additionalProperties": false,
+      "default": null
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "default": null
+    }
+  },
+  "additionalProperties": false
+}

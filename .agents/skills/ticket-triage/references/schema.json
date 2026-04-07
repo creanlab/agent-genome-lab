@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ticket-triage Reference",
+  "type": "object",
+  "properties": {
+    "skill_name": {
+      "type": "string"
+    },
+    "scenario": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        },
+        "applied_repair": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "related_genomes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "skill_name",
+    "scenario"
+  ]
+}

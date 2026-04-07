@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creanlab.com/schemas/runtime/ranked_decision.schema.json",
+  "title": "RankedDecision",
+  "description": "The output of the ranking step in the fast loop. Selects the best Hypothesis from the multi-sample set and records why alternatives were rejected. This becomes the execution plan.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "decision_id",
+    "task_id",
+    "decided_at",
+    "selected_hypothesis_id",
+    "ranking"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^rd-[a-zA-Z0-9_-]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "QueryTask.task_id this decision resolves"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "selected_hypothesis_id": {
+      "type": "string",
+      "description": "Hypothesis.hypothesis_id that was chosen for execution"
+    },
+    "ranking": {
+      "type": "array",
+      "minItems": 1,
+      "description": "All evaluated hypotheses, sorted by final_score descending",
+      "items": {
+        "type": "object",
+        "required": ["hypothesis_id", "final_score", "rank"],
+        "properties": {
+          "hypothesis_id": { "type": "string" },
+          "rank": { "type": "integer", "minimum": 1 },
+          "final_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Composite score: weighted combination of confidence, genome alignment, risk penalty"
+          },
+          "score_breakdown": {
+            "type": "object",
+            "properties": {
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "genome_alignment": { "type": "number", "minimum": 0, "maximum": 1 },
+              "risk_penalty": { "type": "number", "minimum": 0, "maximum": 1 },
+              "diversity_bonus": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "additionalProperties": false
+          },
+          "rejection_reason": {
+            "type": ["string", "null"],
+            "description": "Why this hypothesis was not selected (null if it was selected)",
+            "default": null
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "execution_plan": {
+      "type": "object",
+      "description": "Concrete execution plan derived from the selected hypothesis",
+      "required": ["action_type", "summary"],
+      "properties": {
+        "action_type": {
+          "type": "string",
+          "enum": ["code_edit", "explanation", "plan", "search", "tool_call", "multi_step", "clarification_request"]
+        },
+        "summary": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step_index", "description"],
+            "properties": {
+              "step_index": { "type": "integer", "minimum": 0 },
+              "description": { "type": "string" },
+              "tool_name": { "type": ["string", "null"], "default": null },
+              "requires_confirmation": { "type": "boolean", "default": false }
+            },
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "estimated_risk": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "default": "low"
+        },
+        "requires_worktree": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "incident_candidate": {
+      "type": "object",
+      "description": "Pre-populated incident candidate in case execution fails (feeds slow loop)",
+      "properties": {
+        "failure_class_hint": { "type": "string" },
+        "family_hint": { "type": "string" },
+        "auto_capture": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, Runtime→Genome adapter will submit an incident on execution failure"
+        }
+      },
+      "additionalProperties": false
+    },
+    "policy_overrides": {
+      "type": "array",
+      "description": "Hook outcomes that modified this decision (e.g. a block that forced hypothesis re-ranking)",
+      "items": {
+        "type": "object",
+        "required": ["event_type", "hook_id", "outcome"],
+        "properties": {
+          "event_type": { "type": "string" },
+          "hook_id": { "type": "string" },
+          "outcome": {
+            "type": "string",
+            "enum": ["block", "allow", "annotate", "append_context"]
+          },
+          "note": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false
+}

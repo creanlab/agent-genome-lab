@@ -1,22 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/schemas/failure-genome.schema.json",
+  "$id": "https://creanlab.com/schemas/failure-genome.schema.json",
   "title": "FailureGenome",
+  "description": "A verified genome unit. kind=failure (default, backward-compatible), success, or strategy.",
   "type": "object",
   "required": [
     "genome_id",
     "created_at",
     "incident_id",
     "family",
-    "violated_invariant",
-    "repair_operator",
     "utility",
     "replay"
   ],
   "properties": {
     "genome_id": {
       "type": "string",
-      "pattern": "^FG-[0-9]{6}$"
+      "pattern": "^(FG|SG|TG)-[0-9]{6}$",
+      "description": "FG=failure, SG=success, TG=strategy genome"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["failure", "success", "strategy"],
+      "default": "failure",
+      "description": "Genome kind. failure=what went wrong; success=what works stably; strategy=general reusable tactic"
     },
     "created_at": {
       "type": "string",
@@ -69,11 +75,36 @@
     },
     "violated_invariant": {
       "type": "string",
-      "minLength": 3
+      "minLength": 3,
+      "description": "For failure genomes: which invariant was violated"
     },
     "repair_operator": {
       "type": "string",
-      "minLength": 3
+      "minLength": 3,
+      "description": "For failure genomes: how to repair the violation"
+    },
+    "success_pattern": {
+      "type": ["string", "null"],
+      "description": "For success/strategy genomes: the generalized pattern that works stably",
+      "default": null
+    },
+    "applicability": {
+      "type": ["string", "null"],
+      "description": "For success/strategy genomes: when/where this pattern applies",
+      "default": null
+    },
+    "adversarial_review": {
+      "type": ["object", "null"],
+      "description": "Critic agent review before promotion (M.2)",
+      "properties": {
+        "reviewer": { "type": "string" },
+        "verdict": { "type": "string", "enum": ["approve", "reject", "revise"] },
+        "critique": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reviewed_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false,
+      "default": null
     },
     "verifier_evidence": {
       "type": "array",

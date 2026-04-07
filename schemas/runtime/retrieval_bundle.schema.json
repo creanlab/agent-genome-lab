@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creanlab.com/schemas/runtime/retrieval_bundle.schema.json",
+  "title": "RetrievalBundle",
+  "description": "Output of the fast-loop retrieval step: ranked chunks, graph neighbors, and metadata used to assemble the generation context.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "task_id",
+    "retrieved_at",
+    "chunks"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^rb-[a-zA-Z0-9_-]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "QueryTask.task_id this bundle was assembled for"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "chunks": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "required": ["chunk_id", "source_type", "content", "score"],
+        "properties": {
+          "chunk_id": { "type": "string" },
+          "source_type": {
+            "type": "string",
+            "enum": ["genome", "skill", "memory_digest", "episode", "document", "code", "external"],
+            "description": "Origin of this chunk in the memory trust hierarchy"
+          },
+          "trust_tier": {
+            "type": "string",
+            "enum": ["hot", "warm", "cold"],
+            "description": "hot=retrieved context (low trust), warm=episodic (medium), cold=verified genome (high)"
+          },
+          "content": {
+            "type": "string",
+            "description": "The actual text/code chunk"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Relevance score from vector retrieval"
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "source_ref": { "type": "string" },
+              "genome_id": { "type": ["string", "null"], "default": null },
+              "skill_id": { "type": ["string", "null"], "default": null },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+              },
+              "created_at": {
+                "type": ["string", "null"],
+                "format": "date-time",
+                "default": null
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "graph_neighbors": {
+      "type": "array",
+      "description": "Additional nodes surfaced by graph expansion (related genomes, skill families)",
+      "items": {
+        "type": "object",
+        "required": ["node_id", "node_type", "relation"],
+        "properties": {
+          "node_id": { "type": "string" },
+          "node_type": {
+            "type": "string",
+            "enum": ["genome", "skill", "skill_family", "anti_pattern", "episode"]
+          },
+          "relation": {
+            "type": "string",
+            "description": "Edge label: e.g. 'same_family', 'repair_dependency', 'transferable_to'"
+          },
+          "summary": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "default": []
+    },
+    "retrieval_stats": {
+      "type": "object",
+      "properties": {
+        "total_candidates": { "type": "integer", "minimum": 0 },
+        "chunks_returned": { "type": "integer", "minimum": 0 },
+        "graph_hops": { "type": "integer", "minimum": 0 },
+        "latency_ms": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

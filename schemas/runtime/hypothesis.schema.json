@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creanlab.com/schemas/runtime/hypothesis.schema.json",
+  "title": "Hypothesis",
+  "description": "One candidate reasoning path generated during multi-sampling (N=3-5 samples). Multiple Hypotheses are produced per QueryTask and then ranked into a RankedDecision.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "hypothesis_id",
+    "task_id",
+    "bundle_id",
+    "generated_at",
+    "reasoning",
+    "proposed_action"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "hypothesis_id": {
+      "type": "string",
+      "pattern": "^hyp-[a-zA-Z0-9_-]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "QueryTask.task_id this hypothesis addresses"
+    },
+    "bundle_id": {
+      "type": "string",
+      "description": "RetrievalBundle.bundle_id used to generate this hypothesis"
+    },
+    "sample_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Position in the multi-sample set (0-based). Used for diversity tracking."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reasoning": {
+      "type": "object",
+      "required": ["chain_of_thought", "confidence"],
+      "properties": {
+        "chain_of_thought": {
+          "type": "string",
+          "description": "Explicit reasoning trace: why this approach, what evidence was used"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Self-assessed confidence score"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "chunk_id or genome_id values from RetrievalBundle that support this hypothesis",
+          "default": []
+        },
+        "anti_pattern_flags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Anti-pattern keys this hypothesis explicitly avoids",
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "proposed_action": {
+      "type": "object",
+      "required": ["action_type", "summary"],
+      "properties": {
+        "action_type": {
+          "type": "string",
+          "enum": ["code_edit", "explanation", "plan", "search", "tool_call", "multi_step", "clarification_request"],
+          "description": "High-level category of proposed action"
+        },
+        "summary": {
+          "type": "string",
+          "description": "One-sentence summary of what this hypothesis proposes to do"
+        },
+        "tool_calls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tool_name"],
+            "properties": {
+              "tool_name": { "type": "string" },
+              "args_preview": { "type": "object" }
+            },
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "Planned tool invocations (preview only, not yet executed)"
+        },
+        "estimated_risk": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"],
+          "default": "low",
+          "description": "Blast radius estimate: low=reversible local, critical=shared-state destructive"
+        },
+        "requires_worktree": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "genome_alignment": {
+      "type": "object",
+      "description": "How well this hypothesis aligns with the genome layer's verified knowledge",
+      "properties": {
+        "supporting_genomes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "genome_id values that support or were applied in this hypothesis",
+          "default": []
+        },
+        "conflicting_genomes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "genome_id values that contradict or warn against this approach",
+          "default": []
+        },
+        "alignment_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1,
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "string",
+      "enum": ["candidate", "selected", "rejected", "partial"],
+      "default": "candidate"
+    }
+  },
+  "additionalProperties": false
+}

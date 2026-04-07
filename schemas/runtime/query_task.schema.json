@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://creanlab.com/schemas/runtime/query_task.schema.json",
+  "title": "QueryTask",
+  "description": "A single user-originated task submitted to the runtime for reasoning and execution. Entry point for the fast loop.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "submitted_at",
+    "input",
+    "context"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "Unique identifier for this task, e.g. 'task-<uuid>'",
+      "pattern": "^task-[a-zA-Z0-9_-]+$"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input": {
+      "type": "object",
+      "required": ["raw_prompt"],
+      "properties": {
+        "raw_prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Original user prompt, unmodified"
+        },
+        "intent_tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Pre-classified intent labels, e.g. ['code_edit', 'explain', 'debug']"
+        },
+        "language": {
+          "type": "string",
+          "default": "en",
+          "description": "ISO 639-1 language code of the prompt"
+        }
+      },
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "required": ["project_id", "profile"],
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "description": "Identifier for the project/workspace this task belongs to"
+        },
+        "profile": {
+          "type": "string",
+          "enum": ["competition-safe", "local-fast", "local-code", "research-web", "offline-eval"],
+          "description": "Active provider profile at the time of task submission"
+        },
+        "session_id": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "file_paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Files open/selected in IDE at task submission time"
+        },
+        "cursor_position": {
+          "type": ["object", "null"],
+          "properties": {
+            "file": { "type": "string" },
+            "line": { "type": "integer", "minimum": 0 },
+            "column": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false,
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    },
+    "genome_package": {
+      "type": ["object", "null"],
+      "description": "Pre-assembled genome package injected at session start (from Genome→Runtime adapter)",
+      "properties": {
+        "package_id": { "type": "string" },
+        "top_skills": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Skill IDs ranked by relevance to this task"
+        },
+        "active_anti_patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Anti-pattern keys to suppress in this task context"
+        },
+        "memory_digest_ref": {
+          "type": ["string", "null"],
+          "description": "Path or ID of the MemoryDigest to prepend to system context"
+        }
+      },
+      "additionalProperties": false,
+      "default": null
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "max_tokens": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "default": null
+        },
+        "timeout_ms": {
+          "type": ["integer", "null"],
+          "minimum": 100,
+          "default": null
+        },
+        "allowed_tools": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "If set, only these tool names may be invoked for this task"
+        },
+        "require_worktree": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, task must execute in an isolated git worktree"
+        }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "running", "completed", "failed", "cancelled"],
+      "default": "pending"
+    }
+  },
+  "additionalProperties": false
+}

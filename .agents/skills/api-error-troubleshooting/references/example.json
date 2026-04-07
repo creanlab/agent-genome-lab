@@ -1,0 +1,13 @@
+{
+  "skill_name": "api-error-troubleshooting",
+  "description": "",
+  "example_scenario": {
+    "trigger": "Detected invariant violation: unknown",
+    "context": "In a project using: general stack",
+    "applied_repair": "manual investigation",
+    "outcome": "Issue resolved after applying repair operator and running verifier"
+  },
+  "related_genomes": [],
+  "related_skills": [],
+  "notes": "This is an auto-generated example. Replace with real cases as they occur."
+}

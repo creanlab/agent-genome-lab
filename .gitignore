@@ -2,4 +2,10 @@ node_modules/
 .env
 *.log
 .evolution/exports/
+.evolution/benchmarks/
+.evolution/knowledge_graph.json
+.evolution/palace_graph.json
+.evolution/diary/
+.evolution/drawers/
 web/data.js
+package-lock.json
