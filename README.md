@@ -1,6 +1,6 @@
-# Agent Genome Lab
+# 🧬 Agent Genome Lab
 
-### Plan, Build, Verify, Learn — the execution harness that remembers and improves.
+### Plan → Build → Verify → Learn — the execution harness that remembers and improves.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js)](https://nodejs.org)
@@ -24,15 +24,15 @@
 
 ---
 
-## Why this matters
+## 💡 Why this matters
 
 **AI agents are stateless by default.** Every session starts from zero. Your agent doesn't remember what went wrong last time. It doesn't know that 3 other projects in your org already solved the exact same problem.
 
 Agent Genome Lab fixes this by giving agents a **persistent, structured, transferable memory** — not in a database, not behind an API — just **JSON files in your repo** that any agent can read.
 
-> In internal testing across 7 projects, agents with Genome Lab reduced **repeated failures by 73%** and cut **time-to-fix by 40%** on previously-seen problem classes.
+> 🧪 In internal testing across 7 projects, agents with Genome Lab reduced **repeated failures by 73%** and cut **time-to-fix by 40%** on previously-seen problem classes.
 
-### In plain words
+### 📌 In plain words
 
 Agent Genome Lab is four things in one:
 
@@ -46,21 +46,21 @@ It's a layer where experience becomes **verifiable, transferable, and executable
 
 ---
 
-## Who is this for?
+## ⚡ Who is this for?
 
 | If you are...                                                 | This toolkit...                                                      |
 |:--------------------------------------------------------------|:---------------------------------------------------------------------|
-| **Developer using AI agents** (Copilot, Claude, Cursor)       | Stops agents from repeating known failures; verified skill reuse     |
-| **Team running multiple projects**                            | Shares verified lessons across repos — collective intelligence       |
-| **Security / Ops / SRE**                                      | Runbook memory: incident patterns, recovery steps, triage playbooks  |
-| **Support / Customer Success**                                | Escalation patterns, resolution playbooks, onboarding knowledge      |
-| **Researcher**                                                | Structured classification, replay gates, utility scoring, lineage    |
-| **Compliance / Quality**                                      | Auditable memory: governance, evidence trails, gated admission       |
-| **Open-source maintainer**                                    | Drop-in quality layer — adds structured memory to any project        |
+| 🧑‍💻 **Developer using AI agents** (Copilot, Claude, Cursor) | Stops agents from repeating known failures; verified skill reuse     |
+| 🏗️ **Team running multiple projects**                        | Shares verified lessons across repos — collective intelligence       |
+| 🛡️ **Security / Ops / SRE**                                  | Runbook memory: incident patterns, recovery steps, triage playbooks  |
+| 📞 **Support / Customer Success**                             | Escalation patterns, resolution playbooks, onboarding knowledge      |
+| 🔬 **Researcher**                                             | Structured classification, replay gates, utility scoring, lineage    |
+| 📋 **Compliance / Quality**                                   | Auditable memory: governance, evidence trails, gated admission       |
+| 📦 **Open-source maintainer**                                 | Drop-in quality layer — adds structured memory to any project        |
 
 ---
 
-## Quick Start (2 minutes, zero dependencies)
+## 🚀 Quick Start (2 minutes, zero dependencies)
 
 ```bash
 git clone https://github.com/creanlab/agent-genome-lab.git
@@ -80,22 +80,22 @@ node cli/nve-scaffold.js incident --slug broken-import --severity 8
 # 3. Generate compact memory
 node cli/nve-memory.js
 
-# 4. Your agent reads .evolution/MEMORY.md next session → bug class prevented
+# 4. Your agent reads .evolution/MEMORY.md next session → bug class prevented ✅
 ```
 
 ---
 
-## Agent Prompt Sequence (for full migration)
+## 📋 Agent Prompt Sequence (for full migration)
 
 If you want to **fully integrate** the genome system into an existing project, feed these 5 prompts to your AI agent **in order**:
 
 | Step | Prompt File                           | What it does                                                    |
 |:-----|:--------------------------------------|:----------------------------------------------------------------|
-| 1    | `prompts/01-PREFLIGHT.md`             | Agent inspects your repo and creates a safe migration plan      |
-| 2    | `prompts/02-MIGRATION.md`             | Agent installs the full structure: rules, workflows, `.evolution/`, schemas, CLI |
-| 3    | `prompts/03-GENOME_INSTALL.md`        | Agent adds the Failure Genome layer on top of canonical incidents |
-| 4    | `prompts/04-VALIDATION.md`            | Agent validates everything works — runs audit, manifest, validate |
-| 5    | `prompts/05-SKILLGRAPH_INSTALL.md`    | Agent adds the SkillGraph layer — skills, packages, search      |
+| 1️⃣  | `prompts/01-PREFLIGHT.md`             | Agent inspects your repo and creates a safe migration plan      |
+| 2️⃣  | `prompts/02-MIGRATION.md`             | Agent installs the full structure: rules, workflows, `.evolution/`, schemas, CLI |
+| 3️⃣  | `prompts/03-GENOME_INSTALL.md`        | Agent adds the Failure Genome layer on top of canonical incidents |
+| 4️⃣  | `prompts/04-VALIDATION.md`            | Agent validates everything works — runs audit, manifest, validate |
+| 5️⃣  | `prompts/05-SKILLGRAPH_INSTALL.md`    | Agent adds the SkillGraph layer — skills, packages, search      |
 
 **How to use:**
 1. Clone this repo → copy the `prompts/` folder into your project
@@ -106,11 +106,11 @@ If you want to **fully integrate** the genome system into an existing project, f
 6. Paste `04-VALIDATION.md` → agent runs all checks and reports status
 7. Paste `05-SKILLGRAPH_INSTALL.md` → agent adds skill extraction, indexing, packaging, and search
 
-> **Tip:** For a quick start without full migration, just use `node cli/nve-init.js --yes` — it creates the full `.evolution/` structure instantly (including SkillGraph dirs).
+> 💡 **Tip:** For a quick start without full migration, just use `node cli/nve-init.js --yes` — it creates the full `.evolution/` structure instantly (including SkillGraph dirs).
 
 ---
 
-## How It Works
+## 🧠 How It Works
 
 ### Experience Pipeline
 
@@ -148,7 +148,7 @@ scaffold → distill → replay → extract → index → package → palace →
 
 ---
 
-## 45 CLI Tools (Zero Dependencies)
+## 🛠️ 45 CLI Tools (Zero Dependencies)
 
 All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 
@@ -183,7 +183,7 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-skill-import`                     | Import external skills (with eval + dedup)                      |
 | `nve-skill-enrich`                     | Enrich skills with entity detection + knowledge graph links     |
 
-### Memory Palace & Knowledge Layer
+### 🏰 Memory Palace & Knowledge Layer
 
 | Command                                | Description                                                     |
 |:---------------------------------------|:----------------------------------------------------------------|
@@ -202,7 +202,7 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-aaak decompress "compressed"`     | Decompress AAAK back to natural language                        |
 | `nve-benchmark`                        | Benchmark memory retrieval quality across the system            |
 
-### Harness, Planning & Infrastructure
+### 🔧 Harness, Planning & Infrastructure
 
 | Command                               | Description                                                     |
 |:---------------------------------------|:----------------------------------------------------------------|
@@ -215,7 +215,7 @@ All tools are standalone Node.js scripts. Just `node cli/tool.js`.
 | `nve-report`                           | Generate formatted HTML/Markdown reports                        |
 | `nve-compact`                          | Compact/prune old data while preserving promoted knowledge      |
 
-### Runtime & Integration
+### ⚙️ Runtime & Integration
 
 | Command                               | Description                                                     |
 |:---------------------------------------|:----------------------------------------------------------------|
@@ -263,7 +263,7 @@ node cli/nve-analytics.js
 
 ---
 
-## MCP Server (Model Context Protocol)
+## 🔌 MCP Server (Model Context Protocol)
 
 Native integration with Claude Code, Cursor, and any MCP-compatible client:
 
@@ -278,7 +278,7 @@ Add to your Claude Code MCP config and the agent gets direct access to your enti
 
 ---
 
-## AAAK Compression
+## 🗜️ AAAK Compression
 
 **Lossless symbolic compression** inspired by MemPalace. Same meaning, fewer tokens — ideal for fitting more knowledge into agent context windows.
 
@@ -296,7 +296,7 @@ AAAK is automatically applied to diary entries, knowledge graph triples, and mem
 
 ---
 
-## Memory Palace
+## 🏰 Memory Palace
 
 Hierarchical navigation over your entire knowledge base, inspired by the [MemPalace](https://github.com/MillaJovworker/MemPalace) architecture (MIT).
 
@@ -323,16 +323,16 @@ Palace
 
 ---
 
-## 5-Axis Audit + SkillGraph Extension
+## 📊 5-Axis Audit + SkillGraph Extension
 
 ```
-NVE 5-Axis Audit
+🧬 NVE 5-Axis Audit
 
   Overall:        ████████████████████  100%
 
   Structure:      ████████████████████  100%   (9R 10W 8S)
   Memory:         ████████████████████  100%   incidents, EUs, genomes
-  Verification:   ████████████████████  100%   (security: pass)
+  Verification:   ████████████████████  100%   (security: ✅)
   Shareability:   ████████████████████  99%    (6/6 schemas)
   Evolution:      ████████████████████  100%   genome families growing
   SkillGraph*:    ████████████████████  100%   (skills, packages, relations)
@@ -344,7 +344,7 @@ Use in CI/CD: `node cli/nve-audit.js --ci` → exit code 1 if score < 70%.
 
 ---
 
-## Test Suite
+## ✅ Test Suite
 
 226 tests across 22 suites. All zero-dependency, all deterministic.
 
@@ -380,7 +380,7 @@ node tests/run-all.js
 
 ---
 
-## VS Code Extension
+## 🖥️ VS Code Extension
 
 Sidebar extension with **6 live panels** — no terminal needed.
 
@@ -400,19 +400,19 @@ cp -r vscode-extension ~/.vscode/extensions/nve-genome-explorer
 
 | Panel                     | What it shows                                           |
 |:--------------------------|:--------------------------------------------------------|
-| **5-Axis Audit**          | Live scores per axis + SkillGraph extension score       |
-| **Genome Families**       | Expandable tree — click to open JSON in editor          |
-| **Replay Gate**           | promoted / rejected / pending per genome                |
-| **Skill Registry**        | Skills grouped by status (admitted/candidate/rejected)  |
-| **Skill Packages**        | Packages with expandable skill lists                    |
-| **Quick Actions**         | One-click buttons for CLI tools                         |
+| 📊 **5-Axis Audit**       | Live scores per axis + SkillGraph extension score       |
+| 🧬 **Genome Families**    | Expandable tree — click to open JSON in editor          |
+| 🔄 **Replay Gate**        | promoted ✅ / rejected ❌ / pending ⏳ per genome       |
+| 🧩 **Skill Registry**     | Skills grouped by status (admitted/candidate/rejected)  |
+| 📦 **Skill Packages**     | Packages with expandable skill lists                    |
+| ⚡ **Quick Actions**       | One-click buttons for CLI tools                         |
 
 **Auto-refresh:** panels update when any `.evolution/**/*.json` changes.
 **Command Palette:** `Ctrl+Shift+P` → type `NVE` → available commands (incl. Skill Search with input box).
 
 ---
 
-## Antigravity Integration (Google AI Agent)
+## 🤖 Antigravity Integration (Google AI Agent)
 
 Agent Genome Lab includes **native Antigravity support** via `.agents/` directory — zero install, the agent picks up skills/rules/workflows automatically.
 
@@ -438,12 +438,12 @@ The `.agents/skills/nve-genome-explorer/SKILL.md` is the **Antigravity equivalen
 
 | VS Code Panel | Antigravity Equivalent |
 |---------------|----------------------|
-| Audit Dashboard | `node cli/nve-audit.js` → agent reports scores |
-| Genome Families | `node cli/nve-fg-summary.js` → family tree |
-| Replay Gate | Read `.evolution/genomes/*.json` → `replay.status` |
-| Skill Registry | `node cli/nve-skill-search.js ""` → all skills |
-| Skill Packages | `ls .evolution/skills/packages/` |
-| Quick Actions | CLI commands mapped 1:1 |
+| 📊 Audit Dashboard | `node cli/nve-audit.js` → agent reports scores |
+| 🧬 Genome Families | `node cli/nve-fg-summary.js` → family tree |
+| 🔄 Replay Gate | Read `.evolution/genomes/*.json` → `replay.status` |
+| 🧩 Skill Registry | `node cli/nve-skill-search.js ""` → all skills |
+| 📦 Skill Packages | `ls .evolution/skills/packages/` |
+| ⚡ Quick Actions | CLI commands mapped 1:1 |
 
 ### How to Install
 
@@ -451,7 +451,7 @@ Already installed! Just have the `.agents/` directory in your repo. Antigravity 
 
 ---
 
-## Anthropic Skills Ecosystem
+## 📦 Anthropic Skills Ecosystem
 
 Export learned patterns as Anthropic-compatible Skills:
 
@@ -474,7 +474,7 @@ Anyone can now install: `npx skills add <your-username>/my-awesome-pattern`
 
 ---
 
-## React Dashboard — Web UI
+## ⚛️ React Dashboard — Web UI
 
 A React + Vite dashboard with glassmorphism design, interactive SkillGraph, and real-time data visualization.
 
@@ -482,18 +482,18 @@ A React + Vite dashboard with glassmorphism design, interactive SkillGraph, and 
 
 | Tab | Description |
 |:----|:------------|
-| **Overview** | XP progression chart (dual-axis), genome/skill counters, level system |
-| **Risk Prediction** | Most likely failure family to recur + frequency ranking |
-| **AI Insights** | **Gemini-powered** analysis of genomes, blind spots, recommendations |
-| **Failure Genomes** | Card grid with family, invariant, utility score, replay status |
-| **Knowledge Leaderboard** | Unified skills + genomes ranked by Utility Score with type badges |
-| **Skill Graph** | **Interactive SVG force-directed graph** — 4-color nodes, hover tooltips |
-| **Community Hub** | Push/pull genomes, 4-tier privacy selector, semantic search |
-| **Upload Data** | Drag & drop `data.js` import + multi-user team sharing guide |
-| **Agent Constructor** | *BETA* — Describe task → Gemini builds ZIP with matched skills |
-| **Memory Palace** | Palace graph visualization — wings, rooms, genomes, tunnels |
-| **Knowledge Graph** | Triple explorer — subject/predicate/object with color-coded predicates |
-| **Agent Diary** | Session journal viewer with type filters and AAAK display |
+| 📊 **Overview** | XP progression chart (dual-axis), genome/skill counters, level system |
+| ⚠️ **Risk Prediction** | Most likely failure family to recur + frequency ranking |
+| ✨ **AI Insights** | **Gemini-powered** analysis of genomes, blind spots, recommendations |
+| 🧬 **Failure Genomes** | Card grid with family, invariant, utility score, replay status |
+| 🏆 **Knowledge Leaderboard** | Unified skills + genomes ranked by Utility Score with type badges |
+| 🔗 **Skill Graph** | **Interactive SVG force-directed graph** — 4-color nodes, hover tooltips |
+| 🌐 **Community Hub** | Push/pull genomes, 4-tier privacy selector, semantic search |
+| 📤 **Upload Data** | Drag & drop `data.js` import + multi-user team sharing guide |
+| 🧠 **Agent Constructor** | *BETA* — Describe task → Gemini builds ZIP with matched skills |
+| 🏰 **Memory Palace** | Palace graph visualization — wings, rooms, genomes, tunnels |
+| 🔗 **Knowledge Graph** | Triple explorer — subject/predicate/object with color-coded predicates |
+| 📔 **Agent Diary** | Session journal viewer with type filters and AAAK display |
 
 ### Multi-User Sharing Flow:
 
@@ -512,7 +512,7 @@ node cli/nve-export-dashboard.js    # generates web/data.js
 
 ---
 
-## Community Hub — Collective Intelligence
+## 🌐 Community Hub — Collective Intelligence
 
 Share verified knowledge across teams with built-in privacy controls.
 
@@ -520,16 +520,16 @@ Share verified knowledge across teams with built-in privacy controls.
 
 | Tier | What's shared | What's hidden |
 |:-----|:-------------|:--------------|
-| **Full** | Everything: family, invariant, repair, evidence, context | Only notes stripped |
-| **Distilled** *(default)* | Lessons + stack/surface tags | No code, no paths, no evidence |
-| **Anonymized** | Same as Distilled but no project names | Surface tags, reuse counts stripped |
-| **Metadata** | Only utility score + replay status + stack tags | Family/invariant = "redacted" |
+| 🟢 **Full** | Everything: family, invariant, repair, evidence, context | Only notes stripped |
+| 🔵 **Distilled** *(default)* | Lessons + stack/surface tags | No code, no paths, no evidence |
+| 🟡 **Anonymized** | Same as Distilled but no project names | Surface tags, reuse counts stripped |
+| 🔴 **Metadata** | Only utility score + replay status + stack tags | Family/invariant = "redacted" |
 
 **Key point:** Colleagues don't need any API keys. The server acts as intermediary.
 
 ---
 
-## Agent Constructor (Beta)
+## 🧠 Agent Constructor (Beta)
 
 Describe your task → get a ready-to-use agent kit with matched skills as a ZIP:
 
@@ -544,7 +544,7 @@ Prompt → Gemini Analysis → Skill Matching → ZIP Generation → Download
 
 ---
 
-## Works with ANY AI Agent
+## 🤝 Works with ANY AI Agent
 
 This toolkit is **agent-agnostic**. No lock-in.
 
@@ -569,7 +569,7 @@ After scaffolding: node cli/nve-memory.js
 
 ---
 
-## Privacy & Cross-Project Sharing
+## 🔒 Privacy & Cross-Project Sharing
 
 Share lessons without exposing source code. 4-tier redaction with **interactive UI selector**:
 
@@ -588,7 +588,7 @@ Auto-redaction strips: code snippets, file paths, API keys, environment variable
 
 ---
 
-## Example MEMORY.md
+## 📈 Example MEMORY.md
 
 This is what your agent reads at the start of each session (~35 lines, ~5 seconds):
 
@@ -602,18 +602,18 @@ This is what your agent reads at the start of each session (~35 lines, ~5 second
 - Palace: 3 wings, 8 rooms | Knowledge Graph: 42 triples
 - Diary: 23 entries across 5 sessions
 
-## Verified Lessons (Do This)
+## ✅ Verified Lessons (Do This)
 - **FG-000003** [build-time-env-var-loss]: always-use-build-args (utility: 0.95)
 - **FG-000001** [partial-import-missing]: add-import-and-verify (utility: 0.92)
 
-## Reusable Skills (Admitted)
+## 🧩 Reusable Skills (Admitted)
 - **SK-000001** [security]: Prevent credential-drift-after-refactor score=0.96
 - **SK-000002** [verification]: Prevent verification-skipped-before-done score=0.96
 
-## Skill Packages
+## 📦 Skill Packages
 - **PKG-verification-hardening**: Verification Hardening (3 skills)
 
-## Anti-Patterns (Don't Do This)
+## 🚫 Anti-Patterns (Don't Do This)
 - Adding module.method() without checking if import exists
 - Updating .env but forgetting build config
 ```
@@ -622,7 +622,7 @@ Verified lessons + admitted skills preventing known failures. **Your agent reads
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 Edit `.evolution/config.toml` (auto-created by `nve-init`):
 
@@ -643,7 +643,7 @@ redact_code = true             # Strip code from shared packs
 
 ---
 
-## What's Included
+## 📁 What's Included
 
 ```
 agent-genome-lab/
@@ -671,7 +671,7 @@ agent-genome-lab/
 
 ---
 
-## Beyond Bug Prevention — Use Cases
+## 🌍 Beyond Bug Prevention — Use Cases
 
 Agent Genome Lab works with any repeatable operational pattern, not just code bugs:
 
@@ -691,7 +691,7 @@ Agent Genome Lab works with any repeatable operational pattern, not just code bu
 
 ---
 
-## Research Foundations
+## 🔬 Research Foundations
 
 Built on peer-reviewed research (2025–2026):
 
@@ -708,7 +708,7 @@ Built on peer-reviewed research (2025–2026):
 
 ---
 
-## Before vs After
+## 🌟 Before vs After
 
 | Metric                    | Without Genome Lab                     | With Genome Lab                                   |
 |:--------------------------|:---------------------------------------|:--------------------------------------------------|
@@ -726,19 +726,19 @@ Built on peer-reviewed research (2025–2026):
 
 ---
 
-## Contributing
+## 🏆 Contributing
 
 We'd love your help! Here's how:
 
-- **Star this repo** — it helps others discover the project
-- **Report bugs** — open an issue
-- **Suggest features** — open a discussion
-- **Submit PRs** — improvements welcome
-- **Share** — tell others about Agent Genome Lab
+- ⭐ **Star this repo** — it helps others discover the project
+- 🐛 **Report bugs** — open an issue
+- 💡 **Suggest features** — open a discussion
+- 🔧 **Submit PRs** — improvements welcome
+- 📣 **Share** — tell others about Agent Genome Lab
 
 ---
 
-## Docs & Prompts
+## 📚 Docs & Prompts
 
 **Documentation:**
 - [Architecture Overview](docs/UNIVERSAL_ARCHITECTURE.md)
@@ -761,9 +761,9 @@ We'd love your help! Here's how:
 ---
 
 <p align="center">
-  <strong>Stop losing experience. Start compounding it.</strong>
+  <strong>Stop losing experience. Start compounding it. 🧬</strong>
   <br><br>
-  <a href="https://github.com/creanlab/agent-genome-lab/stargazers">Star</a> ·
-  <a href="https://github.com/creanlab/agent-genome-lab/issues">Issues</a> ·
-  <a href="https://github.com/creanlab/agent-genome-lab/discussions">Discuss</a>
+  <a href="https://github.com/creanlab/agent-genome-lab/stargazers">⭐ Star</a> ·
+  <a href="https://github.com/creanlab/agent-genome-lab/issues">🐛 Issues</a> ·
+  <a href="https://github.com/creanlab/agent-genome-lab/discussions">💬 Discuss</a>
 </p>
