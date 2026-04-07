@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 680" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="sh" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.18"/>
+    </filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#1e293b"/></linearGradient>
+    <linearGradient id="coreG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#14532d"/><stop offset="100%" stop-color="#166534"/></linearGradient>
+    <linearGradient id="palaceG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#312e81"/><stop offset="100%" stop-color="#1e1b4b"/></linearGradient>
+    <linearGradient id="compG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c2d12"/><stop offset="100%" stop-color="#9a3412"/></linearGradient>
+    <linearGradient id="outG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#164e63"/><stop offset="100%" stop-color="#155e75"/></linearGradient>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+    </marker>
+    <marker id="arrW" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="820" height="680" rx="16" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="410" y="38" text-anchor="middle" fill="#f1f5f9" font-size="22" font-weight="700">Agent Genome Lab v3.1.0</text>
+  <text x="410" y="58" text-anchor="middle" fill="#64748b" font-size="12">45 CLI Tools · Zero Dependencies · 226 Tests</text>
+
+  <!-- ═══ YOUR PROJECT box ═══ -->
+  <rect x="210" y="72" width="400" height="44" rx="8" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="410" y="88" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">YOUR PROJECT</text>
+  <text x="410" y="104" text-anchor="middle" fill="#64748b" font-size="10">11 Rules · 24 Skills · 16 Workflows</text>
+
+  <!-- ═══ CORE PIPELINE ═══ -->
+  <rect x="40" y="130" width="740" height="80" rx="12" fill="url(#coreG)" filter="url(#sh)"/>
+  <text x="410" y="152" text-anchor="middle" fill="#86efac" font-size="12" font-weight="700" letter-spacing="1">CORE PIPELINE</text>
+
+  <!-- Core boxes -->
+  <rect x="60" y="160" width="130" height="38" rx="6" fill="#dc2626"/>
+  <text x="125" y="183" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Incidents</text>
+
+  <path d="M195 179 L215 179" stroke="#86efac" stroke-width="1.5" marker-end="url(#arrW)"/>
+
+  <rect x="220" y="160" width="130" height="38" rx="6" fill="#d97706"/>
+  <text x="285" y="183" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Experience Units</text>
+
+  <path d="M355 179 L375 179" stroke="#86efac" stroke-width="1.5" marker-end="url(#arrW)"/>
+
+  <rect x="380" y="160" width="130" height="38" rx="6" fill="#16a34a"/>
+  <text x="445" y="183" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Failure Genomes</text>
+
+  <path d="M515 179 L535 179" stroke="#86efac" stroke-width="1.5" marker-end="url(#arrW)"/>
+
+  <rect x="540" y="160" width="120" height="38" rx="6" fill="#4f46e5"/>
+  <text x="600" y="183" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">SkillGraph</text>
+
+  <path d="M665 179 L685 179" stroke="#86efac" stroke-width="1.5" marker-end="url(#arrW)"/>
+
+  <rect x="690" y="160" width="70" height="38" rx="6" fill="#0284c7"/>
+  <text x="725" y="178" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">Replay</text>
+  <text x="725" y="191" text-anchor="middle" fill="#bae6fd" font-size="9">Gate</text>
+
+  <!-- Arrow down from Core -->
+  <path d="M410 210 L410 238" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ═══ MEMORY PALACE ═══ -->
+  <rect x="100" y="242" width="620" height="210" rx="12" fill="url(#palaceG)" filter="url(#sh)"/>
+  <text x="410" y="266" text-anchor="middle" fill="#a5b4fc" font-size="13" font-weight="700" letter-spacing="1">MEMORY PALACE</text>
+
+  <!-- Palace: Knowledge Graph -->
+  <rect x="130" y="280" width="260" height="52" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="260" y="302" text-anchor="middle" fill="#e0e7ff" font-size="13" font-weight="600">Knowledge Graph</text>
+  <text x="260" y="320" text-anchor="middle" fill="#818cf8" font-size="11">Temporal triples with confidence scores</text>
+
+  <!-- Palace: Drawers -->
+  <rect x="430" y="280" width="260" height="52" rx="8" fill="#1e293b" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="560" y="302" text-anchor="middle" fill="#e0e7ff" font-size="13" font-weight="600">Drawers</text>
+  <text x="560" y="320" text-anchor="middle" fill="#a78bfa" font-size="11">Verbatim text chunks in palace rooms</text>
+
+  <!-- Palace: Entity Detection -->
+  <rect x="130" y="344" width="260" height="52" rx="8" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="260" y="366" text-anchor="middle" fill="#e0e7ff" font-size="13" font-weight="600">Entity Detection</text>
+  <text x="260" y="384" text-anchor="middle" fill="#c084fc" font-size="11">2-pass NER for genome enrichment</text>
+
+  <!-- Palace: Agent Diary -->
+  <rect x="430" y="344" width="260" height="52" rx="8" fill="#1e293b" stroke="#d946ef" stroke-width="1.5"/>
+  <text x="560" y="366" text-anchor="middle" fill="#e0e7ff" font-size="13" font-weight="600">Agent Diary</text>
+  <text x="560" y="384" text-anchor="middle" fill="#e879f9" font-size="11">Session journal with auto-typing</text>
+
+  <!-- Palace: Benchmark (small) -->
+  <rect x="300" y="408" width="220" height="32" rx="6" fill="#1e293b" stroke="#64748b" stroke-width="1"/>
+  <text x="410" y="429" text-anchor="middle" fill="#94a3b8" font-size="11">Benchmark · Retrieval Quality Testing</text>
+
+  <!-- Arrow down from Palace -->
+  <path d="M410 452 L410 478" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ═══ AAAK COMPRESSION ═══ -->
+  <rect x="200" y="482" width="420" height="56" rx="12" fill="url(#compG)" filter="url(#sh)"/>
+  <text x="410" y="506" text-anchor="middle" fill="#fed7aa" font-size="13" font-weight="700" letter-spacing="1">AAAK COMPRESSION</text>
+  <text x="410" y="524" text-anchor="middle" fill="#fdba74" font-size="11">Symbolic lossless compression · 3-5x fewer tokens</text>
+
+  <!-- Arrow down from AAAK -->
+  <path d="M410 538 L410 564" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ═══ MEMORY.md ═══ -->
+  <rect x="300" y="568" width="220" height="44" rx="10" fill="url(#outG)" filter="url(#sh)"/>
+  <text x="410" y="594" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">MEMORY.md</text>
+
+  <!-- Arrow down from MEMORY.md -->
+  <path d="M410 612 L410 632" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ═══ YOUR AI AGENT ═══ -->
+  <rect x="300" y="636" width="220" height="34" rx="8" fill="none" stroke="#22d3ee" stroke-width="2"/>
+  <text x="410" y="658" text-anchor="middle" fill="#22d3ee" font-size="13" font-weight="700">YOUR AI AGENT</text>
+
+  <!-- Side labels -->
+  <!-- Left: Integration -->
+  <rect x="16" y="280" width="72" height="166" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="52" y="310" text-anchor="middle" fill="#64748b" font-size="9" font-weight="600">INTEGRATIONS</text>
+  <text x="52" y="332" text-anchor="middle" fill="#94a3b8" font-size="10">VS Code</text>
+  <text x="52" y="350" text-anchor="middle" fill="#94a3b8" font-size="10">MCP</text>
+  <text x="52" y="368" text-anchor="middle" fill="#94a3b8" font-size="10">Antigravity</text>
+  <text x="52" y="386" text-anchor="middle" fill="#94a3b8" font-size="10">Claude</text>
+  <text x="52" y="404" text-anchor="middle" fill="#94a3b8" font-size="10">Gemini</text>
+  <text x="52" y="422" text-anchor="middle" fill="#94a3b8" font-size="10">Cursor</text>
+  <text x="52" y="440" text-anchor="middle" fill="#94a3b8" font-size="10">GPT</text>
+
+  <!-- Right: Infrastructure -->
+  <rect x="732" y="280" width="72" height="166" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="768" y="306" text-anchor="middle" fill="#64748b" font-size="9" font-weight="600">RUNTIME</text>
+  <text x="768" y="328" text-anchor="middle" fill="#94a3b8" font-size="10">Event Bus</text>
+  <text x="768" y="346" text-anchor="middle" fill="#94a3b8" font-size="10">Hooks</text>
+  <text x="768" y="364" text-anchor="middle" fill="#94a3b8" font-size="10">Providers</text>
+  <text x="768" y="382" text-anchor="middle" fill="#94a3b8" font-size="10">Subagents</text>
+  <text x="768" y="400" text-anchor="middle" fill="#94a3b8" font-size="10">Bridge</text>
+  <text x="768" y="418" text-anchor="middle" fill="#94a3b8" font-size="10">Worktree</text>
+  <text x="768" y="436" text-anchor="middle" fill="#94a3b8" font-size="10">Doctor</text>
+
+  <!-- Bottom outputs -->
+  <rect x="60" y="576" width="150" height="56" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="135" y="600" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">Web Dashboard</text>
+  <text x="135" y="618" text-anchor="middle" fill="#64748b" font-size="10">React · Palace · KG · Diary</text>
+
+  <rect x="610" y="576" width="150" height="56" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="685" y="600" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600">Cross-Project</text>
+  <text x="685" y="618" text-anchor="middle" fill="#64748b" font-size="10">nve-pack · 4-tier privacy</text>
+</svg>
