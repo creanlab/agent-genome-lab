@@ -1,5 +1,9 @@
 node_modules/
 .env
+.env.*
+*.pem
+*.key
+*.p12
 *.log
 .evolution/exports/
 .evolution/benchmarks/

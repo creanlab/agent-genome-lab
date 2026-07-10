@@ -46,6 +46,17 @@ It's a layer where experience becomes **verifiable, transferable, and executable
 
 ---
 
+## 📄 Research
+
+The methodology behind this repo is documented in a research preprint:
+
+> **D. Popov, "Failure Genomes for Self-Evolving Agents: Error-Driven Skill Distillation, Replay-Gated Promotion, and Enterprise Agent Engineering."** Crean Labs, March 2026.
+> 📎 [Full text (PDF, in this repo)](docs/papers/failure-genomes-self-evolving-agents-2026.pdf)
+
+It defines the failure-genome representation (anti-pattern + corrective operator + verifier + transfer scope + utility score), the error-driven skill distillation pipeline, and replay-gated promotion — the mechanisms implemented by the CLI tools in this repo. A companion preprint, *"Managing Visibility in Agentic and AI Search"* (March 2026), covers the AI-search visibility side of Crean Labs' agent research.
+
+---
+
 ## ⚡ Who is this for?
 
 | If you are...                                                 | This toolkit...                                                      |
